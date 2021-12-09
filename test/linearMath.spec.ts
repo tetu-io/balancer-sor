@@ -6,8 +6,15 @@ import { BigNumber as OldBigNumber, scale } from '../src/utils/bignumber';
 import { bnum } from '../src/utils/bignumber';
 import * as linearMath from '../src/pools/linearPool/linearMath';
 import { LinearPoolPairData } from '../src/pools/linearPool/linearPool';
+import * as SDK from '@georgeroman/balancer-v2-pools';
 
-describe('linear math tests', () => {
+describe('linearMath', () => {
+    const params = {
+        fee: b(0.02),
+        lowerTarget: b(1000),
+        upperTarget: b(2000),
+    };
+
     let poolPairData; //  = makeLinearPoolPairData(0, 0);
     context('swap outcomes', () => {
         it('_exactTokenInForBPTOut', () => {
@@ -22,8 +29,15 @@ describe('linear math tests', () => {
                 linearMath._exactTokenInForBPTOut,
                 poolPairData,
                 100,
-                98.307150862,
-                0.000000001
+                SDK.LinearMath._calcBptOutPerMainIn(
+                    b(100),
+                    b(10000),
+                    b(110), // this includes the rate
+                    b(10000),
+                    params
+                ).toNumber() /
+                    10 ** 18,
+                0
             );
             poolPairData = makeLinearPoolPairData(
                 parseFixed('900', 18), // balanceIn
@@ -36,8 +50,15 @@ describe('linear math tests', () => {
                 linearMath._exactTokenInForBPTOut,
                 poolPairData,
                 1300,
-                12615.3259478,
-                0.0000001
+                SDK.LinearMath._calcBptOutPerMainIn(
+                    b(1300),
+                    b(900),
+                    b(110),
+                    b(10000),
+                    params
+                ).toNumber() /
+                    10 ** 18,
+                0
             );
         });
 
@@ -53,15 +74,29 @@ describe('linear math tests', () => {
                 linearMath._tokenInForExactBPTOut,
                 poolPairData,
                 100,
-                10.078,
-                0.000000001
+                SDK.LinearMath._calcMainInPerBptOut(
+                    b(100),
+                    b(900),
+                    b(110),
+                    b(10000),
+                    params
+                ).toNumber() /
+                    10 ** 18,
+                0
             );
             checkOutcome(
                 linearMath._tokenInForExactBPTOut,
                 poolPairData,
                 5000,
-                512.5510204,
-                0.0000001
+                SDK.LinearMath._calcMainInPerBptOut(
+                    b(5000),
+                    b(900),
+                    b(110),
+                    b(10000),
+                    params
+                ).toNumber() /
+                    10 ** 18,
+                0
             );
         });
 
@@ -77,8 +112,15 @@ describe('linear math tests', () => {
                 linearMath._BPTInForExactTokenOut,
                 poolPairData,
                 200,
-                1984.520738,
-                0.000001
+                SDK.LinearMath._calcBptInPerMainOut(
+                    b(200),
+                    b(900),
+                    b(110),
+                    b(10000),
+                    params
+                ).toNumber() /
+                    10 ** 18,
+                0
             );
             poolPairData = makeLinearPoolPairData(
                 parseFixed('10000', 18), // balanceIn
@@ -91,15 +133,29 @@ describe('linear math tests', () => {
                 linearMath._BPTInForExactTokenOut,
                 poolPairData,
                 1600,
-                6074.64002,
-                0.000001
+                SDK.LinearMath._calcBptInPerMainOut(
+                    b(1600),
+                    b(2500),
+                    b(110),
+                    b(10000),
+                    params
+                ).toNumber() /
+                    10 ** 18,
+                0
             );
             checkOutcome(
                 linearMath._BPTInForExactTokenOut,
                 poolPairData,
                 800,
-                3014.744405,
-                0.000001
+                SDK.LinearMath._calcBptInPerMainOut(
+                    b(800),
+                    b(2500),
+                    b(110),
+                    b(10000),
+                    params
+                ).toNumber() /
+                    10 ** 18,
+                0
             );
         });
 
@@ -115,15 +171,29 @@ describe('linear math tests', () => {
                 linearMath._exactBPTInForTokenOut,
                 poolPairData,
                 200,
-                53.444,
-                0.000001
+                SDK.LinearMath._calcMainOutPerBptIn(
+                    b(200),
+                    b(2500),
+                    b(110),
+                    b(10000),
+                    params
+                ).toNumber() /
+                    10 ** 18,
+                0
             );
             checkOutcome(
                 linearMath._exactBPTInForTokenOut,
                 poolPairData,
                 5000,
-                1320.098039,
-                0.000001
+                SDK.LinearMath._calcMainOutPerBptIn(
+                    b(5000),
+                    b(2500),
+                    b(110),
+                    b(10000),
+                    params
+                ).toNumber() /
+                    10 ** 18,
+                0
             );
         });
     });
@@ -369,4 +439,8 @@ function checkDerivative(
         error,
         'wrong result'
     );
+}
+
+function b(arg: number): OldBigNumber {
+    return bnum(arg * 10 ** 18);
 }

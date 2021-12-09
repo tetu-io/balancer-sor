@@ -301,7 +301,11 @@ export class PhantomStablePool implements PoolBase {
                     poolPairData.tokenIndexIn,
                     poolPairData.tokenIndexOut,
                     bnum(amountConverted.toString()),
-                    ZERO // Fee is handled above
+                    {
+                        swapFeePercentage: ZERO,
+                        tokenInDecimals: poolPairData.decimalsIn,
+                    }
+                    // Fee is handled above
                 );
             }
             // return normalised amount
@@ -370,7 +374,11 @@ export class PhantomStablePool implements PoolBase {
                     poolPairData.tokenIndexIn,
                     poolPairData.tokenIndexOut,
                     amountConverted,
-                    ZERO // Fee is handled above
+                    {
+                        swapFeePercentage: ZERO,
+                        tokenInDecimals: poolPairData.decimalsIn,
+                    }
+                    // Fee is handled above
                 );
             }
             const returnScaled = amt

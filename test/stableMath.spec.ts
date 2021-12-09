@@ -47,7 +47,10 @@ describe('stable-math tests', () => {
                 poolPairData.tokenIndexIn,
                 poolPairData.tokenIndexOut,
                 amtScaled,
-                bnum(poolPairData.swapFee.toString())
+                {
+                    swapFeePercentage: bnum(poolPairData.swapFee.toString()),
+                    tokenInDecimals: poolPairData.decimalsIn,
+                }
             );
             sdkValue = scale(sdkValue, -18).dp(poolPairData.decimalsOut, 1);
             checkOutcome(
@@ -71,7 +74,10 @@ describe('stable-math tests', () => {
                 poolPairData.tokenIndexIn,
                 poolPairData.tokenIndexOut,
                 amtScaled,
-                bnum(poolPairData.swapFee.toString())
+                {
+                    swapFeePercentage: bnum(poolPairData.swapFee.toString()),
+                    tokenInDecimals: poolPairData.decimalsIn,
+                }
             );
             sdkValue = scale(sdkValue, -18).dp(poolPairData.decimalsIn, 1);
             checkOutcome(

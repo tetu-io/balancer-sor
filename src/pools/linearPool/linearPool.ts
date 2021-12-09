@@ -177,7 +177,7 @@ export class LinearPool implements PoolBase {
             balanceOut: balanceOut,
             swapFee: this.swapFee,
             wrappedBalance: scale(
-                bnum(this.tokens[this.wrappedIndex].balance),
+                bnum(this.tokens[this.wrappedIndex].balance), // suggested: .times(bnum(this.tokens[this.wrappedIndex].priceRate))
                 this.wrappedDecimals
             ),
             wrappedDecimals: this.wrappedDecimals,
@@ -282,7 +282,6 @@ export class LinearPool implements PoolBase {
                     bnum(poolPairData.virtualBptSupply.toString()),
                     {
                         fee: bnum(poolPairData.swapFee.toString()),
-                        rate: poolPairData.rate,
                         lowerTarget: bnum(poolPairData.lowerTarget.toString()),
                         upperTarget: bnum(poolPairData.upperTarget.toString()),
                     }
@@ -318,7 +317,6 @@ export class LinearPool implements PoolBase {
                     bnum(poolPairData.virtualBptSupply.toString()),
                     {
                         fee: bnum(poolPairData.swapFee.toString()),
-                        rate: poolPairData.rate,
                         lowerTarget: bnum(poolPairData.lowerTarget.toString()),
                         upperTarget: bnum(poolPairData.upperTarget.toString()),
                     }
@@ -365,7 +363,6 @@ export class LinearPool implements PoolBase {
                     bnum(poolPairData.virtualBptSupply.toString()),
                     {
                         fee: bnum(poolPairData.swapFee.toString()),
-                        rate: poolPairData.rate,
                         lowerTarget: bnum(poolPairData.lowerTarget.toString()),
                         upperTarget: bnum(poolPairData.upperTarget.toString()),
                     }
@@ -400,7 +397,6 @@ export class LinearPool implements PoolBase {
                     bnum(poolPairData.virtualBptSupply.toString()),
                     {
                         fee: bnum(poolPairData.swapFee.toString()),
-                        rate: poolPairData.rate,
                         lowerTarget: bnum(poolPairData.lowerTarget.toString()),
                         upperTarget: bnum(poolPairData.upperTarget.toString()),
                     }

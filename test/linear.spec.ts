@@ -542,7 +542,7 @@ describe('linear pool tests', () => {
                     LINEAR_AUSDT.address,
                     USDT.address,
                     SwapTypes.SwapExactIn,
-                    parseFixed('26.0872140', LINEAR_AUSDT.decimals),
+                    parseFixed('26.0872140', LINEAR_AUSDT.decimals), // here
                     kovanPools.pools
                 );
                 expect(returnAmount).to.eq('26084605');

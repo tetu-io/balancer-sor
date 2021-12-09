@@ -219,7 +219,10 @@ export class MetaStablePool implements PoolBase {
                 poolPairData.tokenIndexIn,
                 poolPairData.tokenIndexOut,
                 amountConverted,
-                bnum(poolPairData.swapFee.toString())
+                {
+                    swapFeePercentage: bnum(poolPairData.swapFee.toString()),
+                    tokenInDecimals: poolPairData.decimalsIn,
+                }
             );
             // return normalised amount
             // Using BigNumber.js decimalPlaces (dp), allows us to consider token decimal accuracy correctly,
@@ -256,7 +259,10 @@ export class MetaStablePool implements PoolBase {
                 poolPairData.tokenIndexIn,
                 poolPairData.tokenIndexOut,
                 amountConverted,
-                bnum(poolPairData.swapFee.toString())
+                {
+                    swapFeePercentage: bnum(poolPairData.swapFee.toString()),
+                    tokenInDecimals: poolPairData.decimalsIn,
+                }
             );
 
             // return normalised amount
