@@ -11923,9 +11923,13 @@ const USDCCONNECTINGPOOL = {
 const STABAL3POOL = {
     // TO DO - Add Mainnet info
     // TO DO - Add for Polygon for staBAL3 pairs
+    1: {
+        id: '0x4fd63966879300cafafbb35d157dc5229278ed230000000000000000000000e9',
+        address: '0x4fd63966879300cafafbb35d157dc5229278ed23',
+    },
     42: {
-        id: '0x21ff756ca0cfcc5fff488ad67babadffee0c4149000000000000000000000240',
-        address: '0x21ff756ca0cfcc5fff488ad67babadffee0c4149',
+        id: '0x8fd162f338b770f7e879030830cde9173367f3010000000000000000000004d8',
+        address: '0x8fd162f338b770f7e879030830cde9173367f301',
     },
     99: {
         id: 'staBal3Id',
@@ -17032,76 +17036,54 @@ var linearPoolAbi = [
     {
         inputs: [
             {
-                components: [
-                    {
-                        internalType: 'contract IVault',
-                        name: 'vault',
-                        type: 'address',
-                    },
-                    {
-                        internalType: 'string',
-                        name: 'name',
-                        type: 'string',
-                    },
-                    {
-                        internalType: 'string',
-                        name: 'symbol',
-                        type: 'string',
-                    },
-                    {
-                        internalType: 'contract IERC20',
-                        name: 'mainToken',
-                        type: 'address',
-                    },
-                    {
-                        internalType: 'contract IERC20',
-                        name: 'wrappedToken',
-                        type: 'address',
-                    },
-                    {
-                        internalType: 'uint256',
-                        name: 'lowerTarget',
-                        type: 'uint256',
-                    },
-                    {
-                        internalType: 'uint256',
-                        name: 'upperTarget',
-                        type: 'uint256',
-                    },
-                    {
-                        internalType: 'uint256',
-                        name: 'swapFeePercentage',
-                        type: 'uint256',
-                    },
-                    {
-                        internalType: 'uint256',
-                        name: 'pauseWindowDuration',
-                        type: 'uint256',
-                    },
-                    {
-                        internalType: 'uint256',
-                        name: 'bufferPeriodDuration',
-                        type: 'uint256',
-                    },
-                    {
-                        internalType: 'contract IRateProvider',
-                        name: 'wrappedTokenRateProvider',
-                        type: 'address',
-                    },
-                    {
-                        internalType: 'uint256',
-                        name: 'wrappedTokenRateCacheDuration',
-                        type: 'uint256',
-                    },
-                    {
-                        internalType: 'address',
-                        name: 'owner',
-                        type: 'address',
-                    },
-                ],
-                internalType: 'struct LinearPool.NewPoolParams',
-                name: 'params',
-                type: 'tuple',
+                internalType: 'contract IVault',
+                name: 'vault',
+                type: 'address',
+            },
+            {
+                internalType: 'string',
+                name: 'name',
+                type: 'string',
+            },
+            {
+                internalType: 'string',
+                name: 'symbol',
+                type: 'string',
+            },
+            {
+                internalType: 'contract IERC20',
+                name: 'mainToken',
+                type: 'address',
+            },
+            {
+                internalType: 'contract IERC20',
+                name: 'wrappedToken',
+                type: 'address',
+            },
+            {
+                internalType: 'uint256',
+                name: 'upperTarget',
+                type: 'uint256',
+            },
+            {
+                internalType: 'uint256',
+                name: 'swapFeePercentage',
+                type: 'uint256',
+            },
+            {
+                internalType: 'uint256',
+                name: 'pauseWindowDuration',
+                type: 'uint256',
+            },
+            {
+                internalType: 'uint256',
+                name: 'bufferPeriodDuration',
+                type: 'uint256',
+            },
+            {
+                internalType: 'address',
+                name: 'owner',
+                type: 'address',
             },
         ],
         stateMutability: 'nonpayable',
@@ -17162,6 +17144,12 @@ var linearPoolAbi = [
         anonymous: false,
         inputs: [
             {
+                indexed: true,
+                internalType: 'contract IERC20',
+                name: 'token',
+                type: 'address',
+            },
+            {
                 indexed: false,
                 internalType: 'uint256',
                 name: 'lowerTarget',
@@ -17200,38 +17188,6 @@ var linearPoolAbi = [
             },
         ],
         name: 'Transfer',
-        type: 'event',
-    },
-    {
-        anonymous: false,
-        inputs: [
-            {
-                indexed: true,
-                internalType: 'contract IRateProvider',
-                name: 'provider',
-                type: 'address',
-            },
-            {
-                indexed: false,
-                internalType: 'uint256',
-                name: 'cacheDuration',
-                type: 'uint256',
-            },
-        ],
-        name: 'WrappedTokenRateProviderSet',
-        type: 'event',
-    },
-    {
-        anonymous: false,
-        inputs: [
-            {
-                indexed: false,
-                internalType: 'uint256',
-                name: 'rate',
-                type: 'uint256',
-            },
-        ],
-        name: 'WrappedTokenRateUpdated',
         type: 'event',
     },
     {
@@ -17543,6 +17499,19 @@ var linearPoolAbi = [
     },
     {
         inputs: [],
+        name: 'getVirtualSupply',
+        outputs: [
+            {
+                internalType: 'uint256',
+                name: '',
+                type: 'uint256',
+            },
+        ],
+        stateMutability: 'view',
+        type: 'function',
+    },
+    {
+        inputs: [],
         name: 'getWrappedIndex',
         outputs: [
             {
@@ -17569,35 +17538,12 @@ var linearPoolAbi = [
     },
     {
         inputs: [],
-        name: 'getWrappedTokenRateCache',
+        name: 'getWrappedTokenRate',
         outputs: [
             {
                 internalType: 'uint256',
-                name: 'rate',
-                type: 'uint256',
-            },
-            {
-                internalType: 'uint256',
-                name: 'duration',
-                type: 'uint256',
-            },
-            {
-                internalType: 'uint256',
-                name: 'expires',
-                type: 'uint256',
-            },
-        ],
-        stateMutability: 'view',
-        type: 'function',
-    },
-    {
-        inputs: [],
-        name: 'getWrappedTokenRateProvider',
-        outputs: [
-            {
-                internalType: 'contract IRateProvider',
                 name: '',
-                type: 'address',
+                type: 'uint256',
             },
         ],
         stateMutability: 'view',
@@ -17852,7 +17798,7 @@ var linearPoolAbi = [
                 type: 'uint256',
             },
         ],
-        stateMutability: 'nonpayable',
+        stateMutability: 'view',
         type: 'function',
     },
     {
@@ -17949,7 +17895,7 @@ var linearPoolAbi = [
                 type: 'uint256[]',
             },
         ],
-        stateMutability: 'view',
+        stateMutability: 'nonpayable',
         type: 'function',
     },
     {
@@ -18003,7 +17949,7 @@ var linearPoolAbi = [
                 type: 'uint256[]',
             },
         ],
-        stateMutability: 'view',
+        stateMutability: 'nonpayable',
         type: 'function',
     },
     {
@@ -18054,29 +18000,16 @@ var linearPoolAbi = [
         inputs: [
             {
                 internalType: 'uint256',
-                name: 'lowerTarget',
+                name: 'newLowerTarget',
                 type: 'uint256',
             },
             {
                 internalType: 'uint256',
-                name: 'upperTarget',
+                name: 'newUpperTarget',
                 type: 'uint256',
             },
         ],
         name: 'setTargets',
-        outputs: [],
-        stateMutability: 'nonpayable',
-        type: 'function',
-    },
-    {
-        inputs: [
-            {
-                internalType: 'uint256',
-                name: 'duration',
-                type: 'uint256',
-            },
-        ],
-        name: 'setWrappedTokenRateCacheDuration',
         outputs: [],
         stateMutability: 'nonpayable',
         type: 'function',
@@ -18160,13 +18093,6 @@ var linearPoolAbi = [
         stateMutability: 'nonpayable',
         type: 'function',
     },
-    {
-        inputs: [],
-        name: 'updateWrappedTokenRateCache',
-        outputs: [],
-        stateMutability: 'nonpayable',
-        type: 'function',
-    },
 ];
 
 function getOnChainBalances(
@@ -18192,7 +18118,6 @@ function getOnChainBalances(
         );
         const multiPool = new Multicaller(multiAddress, provider, abis);
         subgraphPools.forEach((pool) => {
-            var _a;
             multiPool.call(
                 `${pool.id}.poolTokens`,
                 vaultAddress,
@@ -18253,26 +18178,11 @@ function getOnChainBalances(
                     pool.address,
                     'getTargets'
                 );
-                if (pool.wrappedIndex !== undefined) {
-                    // We want to find the priceRate provider for the wrappedToken
-                    const wrappedToken = pool.tokensList[pool.wrappedIndex];
-                    const provider =
-                        (_a = pool.priceRateProviders) === null || _a === void 0
-                            ? void 0
-                            : _a.find((provider) =>
-                                  isSameAddress(
-                                      provider.token.address,
-                                      wrappedToken
-                                  )
-                              );
-                    if (provider !== undefined) {
-                        multiPool.call(
-                            `${pool.id}.rate`,
-                            provider.address,
-                            'getRate'
-                        );
-                    }
-                }
+                multiPool.call(
+                    `${pool.id}.rate`,
+                    pool.address,
+                    'getWrappedTokenRate'
+                );
             }
         });
         let pools = {};
