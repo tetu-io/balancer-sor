@@ -553,13 +553,20 @@ function rightDerivativeFromNominal(
 */
 // old-end
 
+// cambiar scaled balance
+
 function toNominal(amount: BigNumber, params: BigNumber[]): BigNumber {
     const fee = params[0];
     const lowerTarget = params[2];
     const upperTarget = params[3];
     if (amount.lt(lowerTarget)) {
         const fees = lowerTarget.minus(amount).times(fee);
-        return amount.minus(fees);
+        const result = amount.minus(fees);
+        if (result.lt(0)) {
+            console.log('negative nominal balance');
+            return bnum(0).minus(result);
+        }
+        return result;
     } else if (amount.lt(upperTarget)) {
         return amount;
     } else {

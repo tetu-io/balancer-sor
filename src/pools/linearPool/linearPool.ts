@@ -156,8 +156,11 @@ export class LinearPool implements PoolBase {
         const allBalancesScaled = this.tokens.map(({ balance }) =>
             parseFixed(balance, 18)
         );
+        const priceRate = this.tokens[this.wrappedIndex].priceRate;
         const mainBalanceScaled = allBalancesScaled[this.mainIndex];
-        const wrappedBalanceScaled = allBalancesScaled[this.wrappedIndex];
+        const wrappedBalanceScaled = allBalancesScaled[this.wrappedIndex]
+            .mul(parseFixed(priceRate, 18))
+            .div(ONE);
         const bptBalanceScaled = allBalancesScaled[this.bptIndex];
         // https://github.com/balancer-labs/balancer-v2-monorepo/blob/88a14eb623f6a22ef3f1afc5a8c49ebfa7eeceed/pkg/pool-linear/contracts/LinearPool.sol#L247
         // VirtualBPTSupply must be used for the maths
@@ -177,11 +180,11 @@ export class LinearPool implements PoolBase {
             balanceOut: balanceOut,
             swapFee: this.swapFee,
             wrappedBalance: scale(
-                bnum(this.tokens[this.wrappedIndex].balance), // suggested: .times(bnum(this.tokens[this.wrappedIndex].priceRate))
+                bnum(this.tokens[this.wrappedIndex].balance),
                 this.wrappedDecimals
             ),
             wrappedDecimals: this.wrappedDecimals,
-            rate: scale(bnum(this.tokens[this.wrappedIndex].priceRate), 18),
+            rate: scale(bnum(priceRate), 18),
             lowerTarget: this.lowerTarget,
             upperTarget: this.upperTarget,
             mainBalanceScaled,
@@ -269,34 +272,40 @@ export class LinearPool implements PoolBase {
         amount: OldBigNumber,
         exact: boolean
     ): OldBigNumber {
-        if (exact) {
-            try {
-                // All values should use 1e18 fixed point
-                // i.e. 1USDC => 1e18 not 1e6
-                const amtScaled = scale(amount, 18);
-
-                const amt = SDK.LinearMath._calcBptOutPerMainIn(
-                    amtScaled,
-                    bnum(poolPairData.mainBalanceScaled.toString()),
-                    bnum(poolPairData.wrappedBalanceScaled.toString()),
-                    bnum(poolPairData.virtualBptSupply.toString()),
-                    {
-                        fee: bnum(poolPairData.swapFee.toString()),
-                        lowerTarget: bnum(poolPairData.lowerTarget.toString()),
-                        upperTarget: bnum(poolPairData.upperTarget.toString()),
-                    }
-                );
-                // return human readable number
-                // Using BigNumber.js decimalPlaces (dp), allows us to consider token decimal accuracy correctly,
-                // i.e. when using token with 2decimals 0.002 should be returned as 0
-                // Uses ROUND_DOWN mode (1)
-                return scale(amt, -18).dp(poolPairData.decimalsOut, 1);
-            } catch (err) {
-                return ZERO;
-            }
+        //        if (exact) {
+        try {
+            // All values should use 1e18 fixed point
+            // i.e. 1USDC => 1e18 not 1e6
+            const amtScaled = scale(amount, 18);
+            const amt = SDK.LinearMath._calcBptOutPerMainIn(
+                amtScaled,
+                bnum(poolPairData.mainBalanceScaled.toString()),
+                bnum(poolPairData.wrappedBalanceScaled.toString()),
+                bnum(poolPairData.virtualBptSupply.toString()),
+                {
+                    fee: bnum(poolPairData.swapFee.toString()),
+                    lowerTarget: bnum(poolPairData.lowerTarget.toString()),
+                    upperTarget: bnum(poolPairData.upperTarget.toString()),
+                }
+            );
+            // return human readable number
+            // Using BigNumber.js decimalPlaces (dp), allows us to consider token decimal accuracy correctly,
+            // i.e. when using token with 2decimals 0.002 should be returned as 0
+            // Uses ROUND_DOWN mode (1)
+            console.log(
+                'result: ',
+                scale(amt, -18).dp(poolPairData.decimalsOut, 1).toString()
+            );
+            return scale(amt, -18).dp(poolPairData.decimalsOut, 1);
+        } catch (err) {
+            //                console.log(err);
+            console.log('returns ZERO');
+            return ZERO;
+        }
+        /*            
         } else {
             return _exactTokenInForBPTOut(amount, poolPairData);
-        }
+        }*/
     }
 
     _exactBPTInForTokenOut(
@@ -304,32 +313,45 @@ export class LinearPool implements PoolBase {
         amount: OldBigNumber,
         exact: boolean
     ): OldBigNumber {
-        if (exact) {
-            try {
-                // All values should use 1e18 fixed point
-                // i.e. 1USDC => 1e18 not 1e6
-                const amtScaled = scale(amount, 18);
-
-                const amt = SDK.LinearMath._calcMainOutPerBptIn(
-                    amtScaled,
-                    bnum(poolPairData.mainBalanceScaled.toString()),
-                    bnum(poolPairData.wrappedBalanceScaled.toString()),
-                    bnum(poolPairData.virtualBptSupply.toString()),
-                    {
-                        fee: bnum(poolPairData.swapFee.toString()),
-                        lowerTarget: bnum(poolPairData.lowerTarget.toString()),
-                        upperTarget: bnum(poolPairData.upperTarget.toString()),
-                    }
-                );
-                // return human readable number
-                // Using BigNumber.js decimalPlaces (dp), allows us to consider token decimal accuracy correctly,
-                // i.e. when using token with 2decimals 0.002 should be returned as 0
-                // Uses ROUND_DOWN mode (1)
-                return scale(amt, -18).dp(poolPairData.decimalsOut, 1);
-            } catch (err) {
-                return ZERO;
-            }
-        } else return _exactBPTInForTokenOut(amount, poolPairData);
+        //        if (exact) {
+        try {
+            // All values should use 1e18 fixed point
+            // i.e. 1USDC => 1e18 not 1e6
+            const amtScaled = scale(amount, 18);
+            /*                
+                console.log("amtScaled:            ", amtScaled.toString() );
+                console.log("mainBalanceScaled:    ", poolPairData.mainBalanceScaled.toString());
+                console.log("wrappedBalanceScaled: ", poolPairData.wrappedBalanceScaled.toString());
+                console.log("virtualBptSupply:     ", poolPairData.virtualBptSupply.toString());
+                console.log("fee:                  ", poolPairData.swapFee.toString());
+                console.log("lowerTarget:     ", poolPairData.lowerTarget.toString());
+                console.log("upperTarget:     ", poolPairData.upperTarget.toString());*/
+            const amt = SDK.LinearMath._calcMainOutPerBptIn(
+                amtScaled,
+                bnum(poolPairData.mainBalanceScaled.toString()),
+                bnum(poolPairData.wrappedBalanceScaled.toString()),
+                bnum(poolPairData.virtualBptSupply.toString()),
+                {
+                    fee: bnum(poolPairData.swapFee.toString()),
+                    lowerTarget: bnum(poolPairData.lowerTarget.toString()),
+                    upperTarget: bnum(poolPairData.upperTarget.toString()),
+                }
+            );
+            // return human readable number
+            // Using BigNumber.js decimalPlaces (dp), allows us to consider token decimal accuracy correctly,
+            // i.e. when using token with 2decimals 0.002 should be returned as 0
+            // Uses ROUND_DOWN mode (1)
+            console.log(
+                'result: ',
+                scale(amt, -18).dp(poolPairData.decimalsOut, 1).toString()
+            );
+            return scale(amt, -18).dp(poolPairData.decimalsOut, 1);
+        } catch (err) {
+            //                console.log(err);
+            console.log('returns ZERO');
+            return ZERO;
+        }
+        //        } else return _exactBPTInForTokenOut(amount, poolPairData);
     }
 
     _tokenInForExactTokenOut(
@@ -349,34 +371,34 @@ export class LinearPool implements PoolBase {
         amount: OldBigNumber,
         exact: boolean
     ): OldBigNumber {
-        if (exact) {
-            try {
-                // All values should use 1e18 fixed point
-                // i.e. 1USDC => 1e18 not 1e6
-                const amtScaled = scale(amount, 18);
-                // in = main
-                // out = BPT
-                const amt = SDK.LinearMath._calcMainInPerBptOut(
-                    amtScaled,
-                    bnum(poolPairData.mainBalanceScaled.toString()),
-                    bnum(poolPairData.wrappedBalanceScaled.toString()),
-                    bnum(poolPairData.virtualBptSupply.toString()),
-                    {
-                        fee: bnum(poolPairData.swapFee.toString()),
-                        lowerTarget: bnum(poolPairData.lowerTarget.toString()),
-                        upperTarget: bnum(poolPairData.upperTarget.toString()),
-                    }
-                );
-                // return human readable number
-                // Using BigNumber.js decimalPlaces (dp), allows us to consider token decimal accuracy correctly,
-                // i.e. when using token with 2decimals 0.002 should be returned as 0
-                // Uses ROUND_UP mode (0)
-                return scale(amt, -18).dp(poolPairData.decimalsIn, 0);
-            } catch (err) {
-                return ZERO;
-            }
+        //        if (exact) {
+        try {
+            // All values should use 1e18 fixed point
+            // i.e. 1USDC => 1e18 not 1e6
+            const amtScaled = scale(amount, 18);
+            // in = main
+            // out = BPT
+            const amt = SDK.LinearMath._calcMainInPerBptOut(
+                amtScaled,
+                bnum(poolPairData.mainBalanceScaled.toString()),
+                bnum(poolPairData.wrappedBalanceScaled.toString()),
+                bnum(poolPairData.virtualBptSupply.toString()),
+                {
+                    fee: bnum(poolPairData.swapFee.toString()),
+                    lowerTarget: bnum(poolPairData.lowerTarget.toString()),
+                    upperTarget: bnum(poolPairData.upperTarget.toString()),
+                }
+            );
+            // return human readable number
+            // Using BigNumber.js decimalPlaces (dp), allows us to consider token decimal accuracy correctly,
+            // i.e. when using token with 2decimals 0.002 should be returned as 0
+            // Uses ROUND_UP mode (0)
+            return scale(amt, -18).dp(poolPairData.decimalsIn, 0);
+        } catch (err) {
+            return ZERO;
         }
-        return _tokenInForExactBPTOut(amount, poolPairData);
+        //        }
+        //        return _tokenInForExactBPTOut(amount, poolPairData);
     }
 
     _BPTInForExactTokenOut(
@@ -384,33 +406,33 @@ export class LinearPool implements PoolBase {
         amount: OldBigNumber,
         exact: boolean
     ): OldBigNumber {
-        if (exact) {
-            try {
-                // All values should use 1e18 fixed point
-                // i.e. 1USDC => 1e18 not 1e6
-                const amtScaled = scale(amount, 18);
+        //        if (exact) {
+        try {
+            // All values should use 1e18 fixed point
+            // i.e. 1USDC => 1e18 not 1e6
+            const amtScaled = scale(amount, 18);
 
-                const amt = SDK.LinearMath._calcBptInPerMainOut(
-                    amtScaled,
-                    bnum(poolPairData.mainBalanceScaled.toString()),
-                    bnum(poolPairData.wrappedBalanceScaled.toString()),
-                    bnum(poolPairData.virtualBptSupply.toString()),
-                    {
-                        fee: bnum(poolPairData.swapFee.toString()),
-                        lowerTarget: bnum(poolPairData.lowerTarget.toString()),
-                        upperTarget: bnum(poolPairData.upperTarget.toString()),
-                    }
-                );
-                // return human readable number
-                // Using BigNumber.js decimalPlaces (dp), allows us to consider token decimal accuracy correctly,
-                // i.e. when using token with 2decimals 0.002 should be returned as 0
-                // Uses ROUND_UP mode (0)
-                return scale(amt, -18).dp(poolPairData.decimalsIn, 0);
-            } catch (err) {
-                return ZERO;
-            }
+            const amt = SDK.LinearMath._calcBptInPerMainOut(
+                amtScaled,
+                bnum(poolPairData.mainBalanceScaled.toString()),
+                bnum(poolPairData.wrappedBalanceScaled.toString()),
+                bnum(poolPairData.virtualBptSupply.toString()),
+                {
+                    fee: bnum(poolPairData.swapFee.toString()),
+                    lowerTarget: bnum(poolPairData.lowerTarget.toString()),
+                    upperTarget: bnum(poolPairData.upperTarget.toString()),
+                }
+            );
+            // return human readable number
+            // Using BigNumber.js decimalPlaces (dp), allows us to consider token decimal accuracy correctly,
+            // i.e. when using token with 2decimals 0.002 should be returned as 0
+            // Uses ROUND_UP mode (0)
+            return scale(amt, -18).dp(poolPairData.decimalsIn, 0);
+        } catch (err) {
+            return ZERO;
         }
-        return _BPTInForExactTokenOut(amount, poolPairData);
+        //        }
+        //        return _BPTInForExactTokenOut(amount, poolPairData);
     }
 
     _spotPriceAfterSwapExactTokenInForTokenOut(

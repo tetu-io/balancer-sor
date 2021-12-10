@@ -2,7 +2,7 @@ import { BigNumber, parseFixed } from '@ethersproject/bignumber';
 import { Zero } from '@ethersproject/constants';
 import { SwapTypes, NewPath } from '../types';
 import { getOutputAmountSwap } from '../pools';
-import { ZERO } from '../utils/bignumber';
+import { bnum, ZERO } from '../utils/bignumber';
 
 export function calculatePathLimits(
     paths: NewPath[],
@@ -26,6 +26,9 @@ export function getLimitAmountSwapForPath(
     path: NewPath,
     swapType: SwapTypes
 ): BigNumber {
+    console.log('inside getLimitAmountSwapForPath');
+    console.log('swapType: ', swapType.toString());
+    console.log('path length', path.swaps.length);
     const poolPairData = path.poolPairData;
     let limit = ZERO;
     if (swapType === SwapTypes.SwapExactIn) {
@@ -38,14 +41,19 @@ export function getLimitAmountSwapForPath(
                 poolPairData[i],
                 SwapTypes.SwapExactIn
             );
+            // suggested: check that "limit" is below pool limit
             const pulledLimit = getOutputAmountSwap(
                 path.pools[i],
                 path.poolPairData[i],
                 SwapTypes.SwapExactOut,
                 limit
             );
-            limit = poolLimit.lt(pulledLimit) ? poolLimit : pulledLimit;
+            limit =
+                poolLimit.lt(pulledLimit) || pulledLimit == ZERO
+                    ? poolLimit
+                    : pulledLimit;
         }
+        if (limit.isZero()) console.log('limit is zero');
         if (limit.isZero()) return Zero;
         return parseFixed(
             limit.dp(poolPairData[0].decimalsIn).toString(),
@@ -67,7 +75,13 @@ export function getLimitAmountSwapForPath(
                 SwapTypes.SwapExactIn,
                 limit
             );
-            limit = poolLimit.lte(pushedLimit) ? poolLimit : pushedLimit;
+            limit =
+                poolLimit.lte(pushedLimit) || pushedLimit == ZERO
+                    ? poolLimit
+                    : pushedLimit;
+        }
+        if (limit.isZero()) {
+            console.log('limit is zero');
         }
         if (limit.isZero()) return Zero;
         return parseFixed(

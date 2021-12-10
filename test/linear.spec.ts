@@ -123,7 +123,7 @@ describe('linear pool tests', () => {
                 SwapTypes.SwapExactIn,
                 singleLinear.pools,
                 0,
-                bnum('2435042129339820.944893716608291347')
+                bnum('2434913944417925.620330674866547508')
             );
         });
 
@@ -513,6 +513,11 @@ describe('linear pool tests', () => {
         });
     });
 
+    // linear pools, previous lower targets:
+    // USDT: 1900000000000000000000000
+    // DAI : 1900000000000000000000000
+    //   1900000000000000000000000
+
     context('SOR Full Swaps', () => {
         context('Linear Swaps', () => {
             it('MainToken>BPT, SwapExactIn', async () => {
@@ -523,7 +528,7 @@ describe('linear pool tests', () => {
                     parseFixed('25.001542', USDT.decimals),
                     kovanPools.pools
                 );
-                expect(returnAmount).to.eq('25004042400437802798');
+                expect(returnAmount).to.eq('25004552099099202302');
             });
 
             it('MainToken>BPT, SwapExactOut', async () => {
@@ -534,7 +539,7 @@ describe('linear pool tests', () => {
                     parseFixed('0.981028', LINEAR_AUSDT.decimals),
                     kovanPools.pools
                 );
-                expect(returnAmount).to.eq('980930');
+                expect(returnAmount).to.eq('980910');
             });
 
             it('BPT>MainToken, SwapExactIn', async () => {
@@ -545,7 +550,7 @@ describe('linear pool tests', () => {
                     parseFixed('26.0872140', LINEAR_AUSDT.decimals), // here
                     kovanPools.pools
                 );
-                expect(returnAmount).to.eq('26084605');
+                expect(returnAmount).to.eq('26084073');
             });
 
             it('BPT>MainToken, SwapExactOut', async () => {
@@ -556,7 +561,7 @@ describe('linear pool tests', () => {
                     parseFixed('71.204293', USDT.decimals),
                     kovanPools.pools
                 );
-                expect(returnAmount).to.eq('71211414130584291114');
+                expect(returnAmount).to.eq('71212865750361503175');
             });
 
             it('MainToken>BPT, SwapExactIn, No MainToken Initial Balance', async () => {
@@ -569,7 +574,7 @@ describe('linear pool tests', () => {
                     parseFixed('491.23098', DAI.decimals),
                     pools
                 );
-                expect(returnAmount).to.eq('491280107230911728741');
+                expect(returnAmount).to.eq('491230979220188637567');
             });
         });
 
@@ -583,10 +588,10 @@ describe('linear pool tests', () => {
                     kovanPools.pools,
                     42
                 );
-                expect(returnAmount).to.eq('10128362');
+                expect(returnAmount).to.eq('10127143');
             });
 
-            it('DAI>USDT, SwapExactOut', async () => {
+            it('debug-case DAI>USDT, SwapExactOut', async () => {
                 const pools = cloneDeep(kovanPools.pools);
                 pools[3].tokens[0].priceRate = '1.151626716671544199';
                 pools[2].tokens[2].priceRate = '1.000680737603270490';
@@ -599,7 +604,7 @@ describe('linear pool tests', () => {
                     pools,
                     42
                 );
-                expect(returnAmount).to.eq('124706170943552492');
+                expect(returnAmount).to.eq('124721185153919559');
             });
         });
 
@@ -669,7 +674,7 @@ describe('linear pool tests', () => {
                     pools,
                     42
                 );
-                expect(returnAmount).to.eq('990084758365948255');
+                expect(returnAmount).to.eq('989985749906811070');
             });
 
             it('USDT>staBAL3, SwapExactOut', async () => {
@@ -681,7 +686,7 @@ describe('linear pool tests', () => {
                     kovanPools.pools,
                     42
                 );
-                expect(returnAmount).to.eq('1009990');
+                expect(returnAmount).to.eq('1009969');
             });
 
             it('staBAL3>USDT, SwapExactIn', async () => {
@@ -693,7 +698,7 @@ describe('linear pool tests', () => {
                     kovanPools.pools,
                     42
                 );
-                expect(returnAmount).to.eq('989890');
+                expect(returnAmount).to.eq('989869');
             });
 
             it('staBAL3>USDT, SwapExactOut', async () => {
@@ -705,7 +710,7 @@ describe('linear pool tests', () => {
                     kovanPools.pools,
                     42
                 );
-                expect(returnAmount).to.eq('1010213212557663050');
+                expect(returnAmount).to.eq('1010233805404347502');
             });
 
             // it('aUSDT>staBAL3, SwapExactIn', async () => {
