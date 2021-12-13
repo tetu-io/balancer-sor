@@ -4968,7 +4968,7 @@ var PoolFilter;
     PoolFilter['LBP'] = 'LiquidityBootstrapping';
     PoolFilter['Investment'] = 'Investment';
     PoolFilter['Element'] = 'Element';
-    PoolFilter['Linear'] = 'Linear';
+    PoolFilter['AaveLinear'] = 'AaveLinear';
     PoolFilter['StablePhantom'] = 'StablePhantom';
 })(PoolFilter || (PoolFilter = {}));
 
@@ -9506,7 +9506,7 @@ function parseNewPool(pool, currentBlockTimestamp = 0) {
         } else if (pool.poolType === 'Element') {
             newPool = ElementPool.fromPool(pool);
             newPool.setCurrentBlockTimestamp(currentBlockTimestamp);
-        } else if (pool.poolType === 'Linear')
+        } else if (pool.poolType === 'AaveLinear')
             newPool = LinearPool.fromPool(pool);
         else if (pool.poolType === 'StablePhantom')
             newPool = PhantomStablePool.fromPool(pool);
@@ -18033,7 +18033,7 @@ function getOnChainBalances(
                     pool.address,
                     'percentFee'
                 );
-            } else if (pool.poolType === 'Linear') {
+            } else if (pool.poolType === 'AaveLinear') {
                 multiPool.call(
                     `${pool.id}.swapFee`,
                     pool.address,
@@ -18078,7 +18078,7 @@ function getOnChainBalances(
                         );
                     }
                 }
-                if (subgraphPools[index].poolType === 'Linear') {
+                if (subgraphPools[index].poolType === 'AaveLinear') {
                     if (!onchainData.targets) {
                         console.error(`Linear Pool Missing Targets: ${poolId}`);
                         return;
