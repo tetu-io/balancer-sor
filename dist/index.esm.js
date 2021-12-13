@@ -18278,12 +18278,7 @@ function getOnChainBalances(
     });
 }
 
-// Returns all public pools
-function fetchSubgraphPools(subgraphUrl) {
-    var _a;
-    return __awaiter(this, void 0, void 0, function* () {
-        // can filter for publicSwap too??
-        const query = `
+const queryWithLinear = `
       {
         pools: pools(
           first: 1000,
@@ -18318,15 +18313,57 @@ function fetchSubgraphPools(subgraphUrl) {
         }
       }
     `;
+const queryWithOutLinear = `
+      {
+        pools: pools(
+          first: 1000,
+          where: { swapEnabled: true },
+          orderBy: totalLiquidity,
+          orderDirection: desc
+        ) {
+          id
+          address
+          poolType
+          swapFee
+          totalShares
+          tokens {
+            address
+            balance
+            decimals
+            weight
+            priceRate
+          }
+          tokensList
+          totalWeight
+          amp
+          expiryTime
+          unitSeconds
+          principalToken
+          baseToken
+          swapEnabled
+        }
+      }
+    `;
+const Query = {
+    1: queryWithLinear,
+    3: queryWithLinear,
+    4: queryWithLinear,
+    5: queryWithLinear,
+    42: queryWithLinear,
+    137: queryWithOutLinear,
+    42161: queryWithLinear,
+};
+// Returns all public pools
+function fetchSubgraphPools(subgraphUrl, chainId = 1) {
+    var _a;
+    return __awaiter(this, void 0, void 0, function* () {
         const response = yield fetch(subgraphUrl, {
             method: 'POST',
             headers: {
                 Accept: 'application/json',
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({
-                query,
-            }),
+            body: JSON.stringify({ query: Query[chainId] }),
         });
         const { data } = yield response.json();
         return (_a = data.pools) !== null && _a !== void 0 ? _a : [];
@@ -18365,7 +18402,10 @@ class PoolCacher {
                 } else {
                     // Retrieve from URL if set otherwise use data passed in constructor
                     if (this.poolsUrl !== null) {
-                        newPools = yield fetchSubgraphPools(this.poolsUrl);
+                        newPools = yield fetchSubgraphPools(
+                            this.poolsUrl,
+                            this.chainId
+                        );
                     } else {
                         newPools = this.pools;
                     }
