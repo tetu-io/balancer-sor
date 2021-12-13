@@ -4966,6 +4966,10 @@ var PoolFilter;
     PoolFilter['Stable'] = 'Stable';
     PoolFilter['MetaStable'] = 'MetaStable';
     PoolFilter['LBP'] = 'LiquidityBootstrapping';
+    PoolFilter['Investment'] = 'Investment';
+    PoolFilter['Element'] = 'Element';
+    PoolFilter['Linear'] = 'Linear';
+    PoolFilter['StablePhantom'] = 'StablePhantom';
 })(PoolFilter || (PoolFilter = {}));
 
 // All functions came from https://www.wolframcloud.com/obj/fernando.martinel/Published/SOR_equations_published.nb
@@ -9085,8 +9089,7 @@ var PairTypes;
 class PhantomStablePool {
     constructor(id, address, amp, swapFee, totalShares, tokens, tokensList) {
         this.poolType = PoolTypes.MetaStable;
-        this.MAX_IN_RATIO = parseFixed('0.3', 18);
-        this.MAX_OUT_RATIO = parseFixed('0.3', 18);
+        this.ALMOST_ONE = parseFixed('0.99', 18);
         // Used for VirutalBpt and can be removed if SG is updated with VirtualBpt value
         this.MAX_TOKEN_BALANCE = BigNumber$1.from('2').pow('112').sub('1');
         this.id = id;
@@ -9209,24 +9212,24 @@ class PhantomStablePool {
         );
     }
     getLimitAmountSwap(poolPairData, swapType) {
-        // We multiply ratios by 10**-18 because we are in normalized space
-        // so 0.5 should be 0.5 and not 500000000000000000
-        // TODO: update bmath to use everything normalized
         // PoolPairData is using balances that have already been exchanged so need to convert back
         if (swapType === SwapTypes.SwapExactIn) {
-            return bnum(
-                formatFixed(
-                    poolPairData.balanceIn
-                        .mul(this.MAX_IN_RATIO)
-                        .div(poolPairData.tokenInPriceRate),
-                    poolPairData.decimalsIn
-                )
-            );
-        } else {
+            // Return max valid amount of tokenIn
+            // As an approx - use almost the total balance of token out as we can add any amount of tokenIn and expect some back
             return bnum(
                 formatFixed(
                     poolPairData.balanceOut
-                        .mul(this.MAX_OUT_RATIO)
+                        .mul(this.ALMOST_ONE)
+                        .div(poolPairData.tokenOutPriceRate),
+                    poolPairData.decimalsOut
+                )
+            );
+        } else {
+            // Return max amount of tokenOut - approx is almost all balance
+            return bnum(
+                formatFixed(
+                    poolPairData.balanceOut
+                        .mul(this.ALMOST_ONE)
                         .div(poolPairData.tokenOutPriceRate),
                     poolPairData.decimalsOut
                 )
@@ -17952,13 +17955,13 @@ var linearPoolAbi = [
 ];
 
 function getOnChainBalances(
-    subgraphPools,
+    subgraphPoolsOriginal,
     multiAddress,
     vaultAddress,
     provider
 ) {
     return __awaiter(this, void 0, void 0, function* () {
-        if (subgraphPools.length === 0) return subgraphPools;
+        if (subgraphPoolsOriginal.length === 0) return subgraphPoolsOriginal;
         const abis = Object.values(
             // Remove duplicate entries using their names
             Object.fromEntries(
@@ -17973,7 +17976,14 @@ function getOnChainBalances(
             )
         );
         const multiPool = new Multicaller(multiAddress, provider, abis);
-        subgraphPools.forEach((pool) => {
+        const supportedPoolTypes = Object.values(PoolFilter);
+        const subgraphPools = [];
+        subgraphPoolsOriginal.forEach((pool) => {
+            if (!supportedPoolTypes.includes(pool.poolType)) {
+                console.error(`Unknown pool type: ${pool.poolType} ${pool.id}`);
+                return;
+            }
+            subgraphPools.push(pool);
             multiPool.call(
                 `${pool.id}.poolTokens`,
                 vaultAddress,
@@ -18155,12 +18165,6 @@ function fetchSubgraphPools(subgraphUrl) {
           mainIndex
           lowerTarget
           upperTarget
-          priceRateProviders {
-            address
-            token{
-              address
-            }
-          }
         }
       }
     `;

@@ -61,14 +61,6 @@ interface SubgraphPoolBase {
     totalShares: string;
     tokens: SubgraphToken[];
     tokensList: string[];
-    priceRateProviders?: [
-        {
-            address: string;
-            token: {
-                address: string;
-            };
-        }
-    ];
     totalWeight?: string;
     amp?: string;
     expiryTime?: number;
@@ -126,6 +118,10 @@ declare enum PoolFilter {
     Stable = 'Stable',
     MetaStable = 'MetaStable',
     LBP = 'LiquidityBootstrapping',
+    Investment = 'Investment',
+    Element = 'Element',
+    Linear = 'Linear',
+    StablePhantom = 'StablePhantom',
 }
 interface PoolBase {
     poolType: PoolTypes;
