@@ -72,7 +72,6 @@ export class LinearPool implements PoolBase {
     bptIndex: number;
     lowerTarget: BigNumber;
     upperTarget: BigNumber;
-    MAX_RATIO = parseFixed('10', 18); // Specific for Linear pool types
     ALMOST_ONE = parseFixed('0.99', 18);
     // Used for VirutalBpt and can be removed if SG is updated with VirtualBpt value
     MAX_TOKEN_BALANCE = BigNumber.from('2').pow('112').sub('1');
@@ -131,8 +130,6 @@ export class LinearPool implements PoolBase {
     }
 
     parsePoolPairData(tokenIn: string, tokenOut: string): LinearPoolPairData {
-        let pairType: PairTypes;
-
         const tI = this.tokens.find((t) => isSameAddress(t.address, tokenIn));
         if (!tI) throw Error(`Pool does not contain token in ${tokenIn}`);
         const decimalsIn = tI.decimals;
@@ -144,6 +141,7 @@ export class LinearPool implements PoolBase {
         const balanceOut = parseFixed(tO.balance, decimalsOut);
 
         // Linear pools allow trading between token and pool BPT (phantom BPT)
+        let pairType: PairTypes;
         if (isSameAddress(tokenIn, this.address)) {
             pairType = PairTypes.BptToToken;
         } else if (isSameAddress(tokenOut, this.address)) {
@@ -208,17 +206,20 @@ export class LinearPool implements PoolBase {
         const linearPoolPairData = poolPairData as LinearPoolPairData;
 
         if (swapType === SwapTypes.SwapExactIn) {
+            const balanceOutHuman = scale(
+                bnum(poolPairData.balanceOut.toString()),
+                -poolPairData.decimalsOut
+            );
             if (linearPoolPairData.pairType === PairTypes.TokenToBpt) {
-                // Swapping to BPT allows for a very large amount so using pre-minted amount as estimation
-                return scale(bnum(this.MAX_TOKEN_BALANCE.toString()), -18);
+                return _tokenInForExactBPTOut(
+                    balanceOutHuman,
+                    linearPoolPairData
+                )
+                    .times(bnum(this.ALMOST_ONE.toString()))
+                    .div(bnum(ONE.toString()));
             } else if (linearPoolPairData.pairType === PairTypes.BptToToken) {
                 // Limit is amount of BPT in for pool balance of tokenOut
                 // Amount must be in human scale
-                const balanceOutHuman = scale(
-                    bnum(poolPairData.balanceOut.toString()),
-                    -poolPairData.decimalsOut
-                );
-
                 const limit = _BPTInForExactTokenOut(
                     balanceOutHuman,
                     linearPoolPairData
@@ -231,7 +232,7 @@ export class LinearPool implements PoolBase {
             if (linearPoolPairData.pairType === PairTypes.TokenToBpt) {
                 const limit = bnum(
                     poolPairData.balanceOut
-                        .mul(this.MAX_RATIO)
+                        .mul(this.ALMOST_ONE)
                         .div(ONE)
                         .toString()
                 );
@@ -272,7 +273,6 @@ export class LinearPool implements PoolBase {
         amount: OldBigNumber,
         exact: boolean
     ): OldBigNumber {
-        //        if (exact) {
         try {
             // All values should use 1e18 fixed point
             // i.e. 1USDC => 1e18 not 1e6
@@ -292,20 +292,10 @@ export class LinearPool implements PoolBase {
             // Using BigNumber.js decimalPlaces (dp), allows us to consider token decimal accuracy correctly,
             // i.e. when using token with 2decimals 0.002 should be returned as 0
             // Uses ROUND_DOWN mode (1)
-            console.log(
-                'result: ',
-                scale(amt, -18).dp(poolPairData.decimalsOut, 1).toString()
-            );
             return scale(amt, -18).dp(poolPairData.decimalsOut, 1);
         } catch (err) {
-            //                console.log(err);
-            console.log('returns ZERO');
             return ZERO;
         }
-        /*            
-        } else {
-            return _exactTokenInForBPTOut(amount, poolPairData);
-        }*/
     }
 
     _exactBPTInForTokenOut(
@@ -313,19 +303,10 @@ export class LinearPool implements PoolBase {
         amount: OldBigNumber,
         exact: boolean
     ): OldBigNumber {
-        //        if (exact) {
         try {
             // All values should use 1e18 fixed point
             // i.e. 1USDC => 1e18 not 1e6
             const amtScaled = scale(amount, 18);
-            /*                
-                console.log("amtScaled:            ", amtScaled.toString() );
-                console.log("mainBalanceScaled:    ", poolPairData.mainBalanceScaled.toString());
-                console.log("wrappedBalanceScaled: ", poolPairData.wrappedBalanceScaled.toString());
-                console.log("virtualBptSupply:     ", poolPairData.virtualBptSupply.toString());
-                console.log("fee:                  ", poolPairData.swapFee.toString());
-                console.log("lowerTarget:     ", poolPairData.lowerTarget.toString());
-                console.log("upperTarget:     ", poolPairData.upperTarget.toString());*/
             const amt = SDK.LinearMath._calcMainOutPerBptIn(
                 amtScaled,
                 bnum(poolPairData.mainBalanceScaled.toString()),
@@ -341,17 +322,10 @@ export class LinearPool implements PoolBase {
             // Using BigNumber.js decimalPlaces (dp), allows us to consider token decimal accuracy correctly,
             // i.e. when using token with 2decimals 0.002 should be returned as 0
             // Uses ROUND_DOWN mode (1)
-            console.log(
-                'result: ',
-                scale(amt, -18).dp(poolPairData.decimalsOut, 1).toString()
-            );
             return scale(amt, -18).dp(poolPairData.decimalsOut, 1);
         } catch (err) {
-            //                console.log(err);
-            console.log('returns ZERO');
             return ZERO;
         }
-        //        } else return _exactBPTInForTokenOut(amount, poolPairData);
     }
 
     _tokenInForExactTokenOut(
@@ -371,7 +345,6 @@ export class LinearPool implements PoolBase {
         amount: OldBigNumber,
         exact: boolean
     ): OldBigNumber {
-        //        if (exact) {
         try {
             // All values should use 1e18 fixed point
             // i.e. 1USDC => 1e18 not 1e6
@@ -397,8 +370,6 @@ export class LinearPool implements PoolBase {
         } catch (err) {
             return ZERO;
         }
-        //        }
-        //        return _tokenInForExactBPTOut(amount, poolPairData);
     }
 
     _BPTInForExactTokenOut(
@@ -406,7 +377,6 @@ export class LinearPool implements PoolBase {
         amount: OldBigNumber,
         exact: boolean
     ): OldBigNumber {
-        //        if (exact) {
         try {
             // All values should use 1e18 fixed point
             // i.e. 1USDC => 1e18 not 1e6
@@ -431,8 +401,6 @@ export class LinearPool implements PoolBase {
         } catch (err) {
             return ZERO;
         }
-        //        }
-        //        return _BPTInForExactTokenOut(amount, poolPairData);
     }
 
     _spotPriceAfterSwapExactTokenInForTokenOut(
