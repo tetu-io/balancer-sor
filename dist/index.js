@@ -2000,1171 +2000,6 @@ function bnum(val) {
 
 var src = {};
 
-var linear = {};
-
-var bigNumber = {};
-
-(function (exports) {
-    Object.defineProperty(exports, '__esModule', { value: true });
-    exports.scaleAll = exports.scale = exports.bn = void 0;
-    const bignumber_js_1 = require$$0__default['default'];
-    bignumber_js_1.BigNumber.config({
-        EXPONENTIAL_AT: [-100, 100],
-        ROUNDING_MODE: 1,
-        DECIMAL_PLACES: 18,
-    });
-    exports.default = bignumber_js_1.BigNumber;
-    const bn = (value) => new bignumber_js_1.BigNumber(value);
-    exports.bn = bn;
-    const scale = (value, decimalPlaces) =>
-        (0, exports.bn)(value).times((0, exports.bn)(10).pow(decimalPlaces));
-    exports.scale = scale;
-    const scaleAll = (values, decimalPlaces) =>
-        values.map((x) => (0, exports.scale)(x, decimalPlaces));
-    exports.scaleAll = scaleAll;
-})(bigNumber);
-
-var base = {};
-
-var math$8 = {};
-
-(function (exports) {
-    // Ported from Solidity:
-    // https://github.com/balancer-labs/balancer-v2-monorepo/blob/ce70f7663e0ac94b25ed60cb86faaa8199fd9e13/pkg/solidity-utils/contracts/math/Math.sol
-    Object.defineProperty(exports, '__esModule', { value: true });
-    exports.divUp =
-        exports.divDown =
-        exports.div =
-        exports.mul =
-        exports.min =
-        exports.max =
-        exports.sub =
-        exports.add =
-        exports.TWO =
-        exports.ONE =
-        exports.ZERO =
-            void 0;
-    const big_number_1 = bigNumber;
-    exports.ZERO = (0, big_number_1.bn)(0);
-    exports.ONE = (0, big_number_1.bn)(1);
-    exports.TWO = (0, big_number_1.bn)(2);
-    const add = (a, b) => {
-        return a.plus(b);
-    };
-    exports.add = add;
-    const sub = (a, b) => {
-        if (b.gt(a)) {
-            throw new Error('SUB_OVERFLOW');
-        }
-        return a.minus(b);
-    };
-    exports.sub = sub;
-    const max = (a, b) => {
-        return a.gte(b) ? a : b;
-    };
-    exports.max = max;
-    const min = (a, b) => {
-        return a.lt(b) ? a : b;
-    };
-    exports.min = min;
-    const mul = (a, b) => {
-        return a.times(b);
-    };
-    exports.mul = mul;
-    const div = (a, b, roundUp) => {
-        return roundUp ? (0, exports.divUp)(a, b) : (0, exports.divDown)(a, b);
-    };
-    exports.div = div;
-    const divDown = (a, b) => {
-        if (b.isZero()) {
-            throw new Error('ZERO_DIVISION');
-        }
-        return a.idiv(b);
-    };
-    exports.divDown = divDown;
-    const divUp = (a, b) => {
-        if (b.isZero()) {
-            throw new Error('ZERO_DIVISION');
-        }
-        return a.isZero()
-            ? exports.ZERO
-            : exports.ONE.plus(a.minus(exports.ONE).idiv(b));
-    };
-    exports.divUp = divUp;
-})(math$8);
-
-Object.defineProperty(base, '__esModule', { value: true });
-const big_number_1$4 = bigNumber;
-const math$7 = math$8;
-class BasePool {
-    // ---------------------- Constructor ----------------------
-    constructor(params) {
-        this.MIN_SWAP_FEE_PERCENTAGE = (0, big_number_1$4.bn)('0.000001'); // 0.0001%
-        this.MAX_SWAP_FEE_PERCENTAGE = (0, big_number_1$4.bn)('0.1'); // 10%
-        this._query = false;
-        this._id = params.id;
-        this._address = params.address;
-        this._bptTotalSupply = params.bptTotalSupply;
-        this.setSwapFeePercentage(params.swapFeePercentage);
-        if (params.query) {
-            this._query = params.query;
-        }
-    }
-    // ---------------------- Getters ----------------------
-    get id() {
-        return this._id;
-    }
-    get address() {
-        return this._address;
-    }
-    get bptTotalSupply() {
-        return this._bptTotalSupply;
-    }
-    get swapFeePercentage() {
-        return this._swapFeePercentage;
-    }
-    get query() {
-        return this._query;
-    }
-    // ---------------------- Setters ----------------------
-    setSwapFeePercentage(swapFeePercentage) {
-        if (
-            (0, big_number_1$4.bn)(swapFeePercentage).lt(
-                this.MIN_SWAP_FEE_PERCENTAGE
-            )
-        ) {
-            throw new Error('MIN_SWAP_FEE_PERCENTAGE');
-        }
-        if (
-            (0, big_number_1$4.bn)(swapFeePercentage).gt(
-                this.MAX_SWAP_FEE_PERCENTAGE
-            )
-        ) {
-            throw new Error('MAX_SWAP_FEE_PERCENTAGE');
-        }
-        this._swapFeePercentage = swapFeePercentage;
-    }
-    setQuery(query) {
-        this._query = query;
-    }
-    // ---------------------- Internal ----------------------
-    _upScale(amount, decimals) {
-        return math$7.mul(
-            (0, big_number_1$4.scale)(amount, decimals),
-            (0, big_number_1$4.bn)(10).pow(18 - decimals)
-        );
-    }
-    _downScaleDown(amount, decimals) {
-        return (0, big_number_1$4.scale)(
-            math$7.divDown(
-                (0, big_number_1$4.bn)(amount),
-                (0, big_number_1$4.bn)(10).pow(18 - decimals)
-            ),
-            -decimals
-        );
-    }
-    _downScaleUp(amount, decimals) {
-        return (0, big_number_1$4.scale)(
-            math$7.divUp(
-                (0, big_number_1$4.bn)(amount),
-                (0, big_number_1$4.bn)(10).pow(18 - decimals)
-            ),
-            -decimals
-        );
-    }
-}
-base.default = BasePool;
-
-var math$6 = {};
-
-var fixedPoint = {};
-
-var logExp = {};
-
-(function (exports) {
-    // Ported from Solidity:
-    // https://github.com/balancer-labs/balancer-core-v2/blob/70843e6a61ad11208c1cfabf5cfe15be216ca8d3/pkg/solidity-utils/contracts/math/LogExpMath.sol
-    Object.defineProperty(exports, '__esModule', { value: true });
-    exports.ln = exports.log = exports.exp = exports.pow = void 0;
-    const big_number_1 = bigNumber;
-    // All fixed point multiplications and divisions are inlined
-    // This means we need to divide by ONE when multiplying two numbers, and multiply by ONE when dividing them
-    // All arguments and return values are 18 decimal fixed point numbers
-    const ONE_18 = (0, big_number_1.bn)('1000000000000000000'); // 1e18
-    // Internally, intermediate values are computed with higher precision as 20 decimal fixed point numbers, and in the case of ln36, 36 decimals
-    const ONE_20 = (0, big_number_1.bn)('100000000000000000000'); // 1e20
-    const ONE_36 = (0, big_number_1.bn)(
-        '1000000000000000000000000000000000000'
-    ); // 1e36
-    // The domain of natural exponentiation is bound by the word size and number of decimals used
-    // Because internally the result will be stored using 20 decimals, the largest possible result is
-    // (2^255 - 1) / 10^20, which makes the largest exponent ln((2^255 - 1) / 10^20) = 130.700829182905140221
-    // The smallest possible result is 10^(-18), which makes largest negative argument
-    // ln(10^(-18)) = -41.446531673892822312.
-    // We use 130.0 and -41.0 to have some safety margin
-    const MAX_NATURAL_EXPONENT = (0, big_number_1.bn)('130000000000000000000'); // 130e18
-    const MIN_NATURAL_EXPONENT = (0, big_number_1.bn)('-41000000000000000000'); // (-41)e18
-    // Bounds for ln_36's argument
-    // Both ln(0.9) and ln(1.1) can be represented with 36 decimal places in a fixed point 256 bit integer
-    const LN_36_LOWER_BOUND = ONE_18.minus(
-        (0, big_number_1.bn)('100000000000000000')
-    ); // 1e18 - 1e17
-    const LN_36_UPPER_BOUND = ONE_18.plus(
-        (0, big_number_1.bn)('100000000000000000')
-    ); // 1e18 + 1e17
-    const MILD_EXPONENT_BOUND = (0, big_number_1.bn)(2).pow(254).idiv(ONE_20);
-    // 18 decimal constants
-    const x0 = (0, big_number_1.bn)('128000000000000000000'); // 2ˆ7
-    const a0 = (0, big_number_1.bn)(
-        '38877084059945950922200000000000000000000000000000000000'
-    ); // eˆ(x0) (no decimals)
-    const x1 = (0, big_number_1.bn)('64000000000000000000'); // 2ˆ6
-    const a1 = (0, big_number_1.bn)('6235149080811616882910000000'); // eˆ(x1) (no decimals)
-    // 20 decimal constants
-    const x2 = (0, big_number_1.bn)('3200000000000000000000'); // 2ˆ5
-    const a2 = (0, big_number_1.bn)('7896296018268069516100000000000000'); // eˆ(x2)
-    const x3 = (0, big_number_1.bn)('1600000000000000000000'); // 2ˆ4
-    const a3 = (0, big_number_1.bn)('888611052050787263676000000'); // eˆ(x3)
-    const x4 = (0, big_number_1.bn)('800000000000000000000'); // 2ˆ3
-    const a4 = (0, big_number_1.bn)('298095798704172827474000'); // eˆ(x4)
-    const x5 = (0, big_number_1.bn)('400000000000000000000'); // 2ˆ2
-    const a5 = (0, big_number_1.bn)('5459815003314423907810'); // eˆ(x5)
-    const x6 = (0, big_number_1.bn)('200000000000000000000'); // 2ˆ1
-    const a6 = (0, big_number_1.bn)('738905609893065022723'); // eˆ(x6)
-    const x7 = (0, big_number_1.bn)('100000000000000000000'); // 2ˆ0
-    const a7 = (0, big_number_1.bn)('271828182845904523536'); // eˆ(x7)
-    const x8 = (0, big_number_1.bn)('50000000000000000000'); // 2ˆ(-1)
-    const a8 = (0, big_number_1.bn)('164872127070012814685'); // eˆ(x8)
-    const x9 = (0, big_number_1.bn)('25000000000000000000'); // 2ˆ(-2)
-    const a9 = (0, big_number_1.bn)('128402541668774148407'); // eˆ(x9)
-    const x10 = (0, big_number_1.bn)('12500000000000000000'); // 2ˆ(-3)
-    const a10 = (0, big_number_1.bn)('113314845306682631683'); // eˆ(x10)
-    const x11 = (0, big_number_1.bn)('6250000000000000000'); // 2ˆ(-4)
-    const a11 = (0, big_number_1.bn)('106449445891785942956'); // eˆ(x11)
-    const pow = (x, y) => {
-        if (y.isZero()) {
-            // We solve the 0^0 indetermination by making it equal one.
-            return ONE_18;
-        }
-        if (x.isZero()) {
-            return (0, big_number_1.bn)(0);
-        }
-        // Instead of computing x^y directly, we instead rely on the properties of logarithms and exponentiation to
-        // arrive at that result. In particular, exp(ln(x)) = x, and ln(x^y) = y * ln(x). This means
-        // x^y = exp(y * ln(x)).
-        // The ln function takes a signed value, so we need to make sure x fits in the signed 256 bit range.
-        if (x.gte((0, big_number_1.bn)(2).pow(255))) {
-            throw new Error('X_OUT_OF_BOUNDS');
-        }
-        // We will compute y * ln(x) in a single step. Depending on the value of x, we can either use ln or ln_36. In
-        // both cases, we leave the division by ONE_18 (due to fixed point multiplication) to the end.
-        // This prevents y * ln(x) from overflowing, and at the same time guarantees y fits in the signed 256 bit range.
-        if (y.gte(MILD_EXPONENT_BOUND)) {
-            throw new Error('Y_OUT_OF_BOUNDS');
-        }
-        let logx_times_y;
-        if (LN_36_LOWER_BOUND.lt(x) && x.lt(LN_36_UPPER_BOUND)) {
-            let ln_36_x = _ln_36(x);
-            // ln_36_x has 36 decimal places, so multiplying by y_int256 isn't as straightforward, since we can't just
-            // bring y_int256 to 36 decimal places, as it might overflow. Instead, we perform two 18 decimal
-            // multiplications and add the results: one with the first 18 decimals of ln_36_x, and one with the
-            // (downscaled) last 18 decimals.
-            logx_times_y = ln_36_x
-                .idiv(ONE_18)
-                .times(y)
-                .plus(ln_36_x.mod(ONE_18).times(y).idiv(ONE_18));
-        } else {
-            logx_times_y = _ln(x).times(y);
-        }
-        logx_times_y = logx_times_y.idiv(ONE_18);
-        // Finally, we compute exp(y * ln(x)) to arrive at x^y
-        if (
-            logx_times_y.lt(MIN_NATURAL_EXPONENT) ||
-            logx_times_y.gt(MAX_NATURAL_EXPONENT)
-        ) {
-            throw new Error('PRODUCT_OUT_OF_BOUNDS');
-        }
-        return (0, exports.exp)(logx_times_y);
-    };
-    exports.pow = pow;
-    const exp = (x) => {
-        if (x.lt(MIN_NATURAL_EXPONENT) || x.gt(MAX_NATURAL_EXPONENT)) {
-            throw new Error('INVALID_EXPONENT');
-        }
-        if (x.lt(0)) {
-            // We only handle positive exponents: e^(-x) is computed as 1 / e^x. We can safely make x positive since it
-            // fits in the signed 256 bit range (as it is larger than MIN_NATURAL_EXPONENT).
-            // Fixed point division requires multiplying by ONE_18.
-            return ONE_18.times(ONE_18).idiv((0, exports.exp)(x.negated()));
-        }
-        // First, we use the fact that e^(x+y) = e^x * e^y to decompose x into a sum of powers of two, which we call x_n,
-        // where x_n == 2^(7 - n), and e^x_n = a_n has been precomputed. We choose the first x_n, x0, to equal 2^7
-        // because all larger powers are larger than MAX_NATURAL_EXPONENT, and therefore not present in the
-        // decomposition.
-        // At the end of this process we will have the product of all e^x_n = a_n that apply, and the remainder of this
-        // decomposition, which will be lower than the smallest x_n.
-        // exp(x) = k_0 * a_0 * k_1 * a_1 * ... + k_n * a_n * exp(remainder), where each k_n equals either 0 or 1.
-        // We mutate x by subtracting x_n, making it the remainder of the decomposition.
-        // The first two a_n (e^(2^7) and e^(2^6)) are too large if stored as 18 decimal numbers, and could cause
-        // intermediate overflows. Instead we store them as plain integers, with 0 decimals.
-        // Additionally, x0 + x1 is larger than MAX_NATURAL_EXPONENT, which means they will not both be present in the
-        // decomposition.
-        // For each x_n, we test if that term is present in the decomposition (if x is larger than it), and if so deduct
-        // it and compute the accumulated product.
-        let firstAN;
-        if (x.gte(x0)) {
-            x = x.minus(x0);
-            firstAN = a0;
-        } else if (x.gte(x1)) {
-            x = x.minus(x1);
-            firstAN = a1;
-        } else {
-            firstAN = (0, big_number_1.bn)(1); // One with no decimal places
-        }
-        // We now transform x into a 20 decimal fixed point number, to have enhanced precision when computing the
-        // smaller terms.
-        x = x.times(100);
-        // `product` is the accumulated product of all a_n (except a0 and a1), which starts at 20 decimal fixed point
-        // one. Recall that fixed point multiplication requires dividing by ONE_20.
-        let product = ONE_20;
-        if (x.gte(x2)) {
-            x = x.minus(x2);
-            product = product.times(a2).idiv(ONE_20);
-        }
-        if (x.gte(x3)) {
-            x = x.minus(x3);
-            product = product.times(a3).idiv(ONE_20);
-        }
-        if (x.gte(x4)) {
-            x = x.minus(x4);
-            product = product.times(a4).idiv(ONE_20);
-        }
-        if (x.gte(x5)) {
-            x = x.minus(x5);
-            product = product.times(a5).idiv(ONE_20);
-        }
-        if (x.gte(x6)) {
-            x = x.minus(x6);
-            product = product.times(a6).idiv(ONE_20);
-        }
-        if (x.gte(x7)) {
-            x = x.minus(x7);
-            product = product.times(a7).idiv(ONE_20);
-        }
-        if (x.gte(x8)) {
-            x = x.minus(x8);
-            product = product.times(a8).idiv(ONE_20);
-        }
-        if (x.gte(x9)) {
-            x = x.minus(x9);
-            product = product.times(a9).idiv(ONE_20);
-        }
-        // x10 and x11 are unnecessary here since we have high enough precision already.
-        // Now we need to compute e^x, where x is small (in particular, it is smaller than x9). We use the Taylor series
-        // expansion for e^x: 1 + x + (x^2 / 2!) + (x^3 / 3!) + ... + (x^n / n!).
-        let seriesSum = ONE_20; // The initial one in the sum, with 20 decimal places.
-        let term; // Each term in the sum, where the nth term is (x^n / n!).
-        // The first term is simply x.
-        term = x;
-        seriesSum = seriesSum.plus(term);
-        // Each term (x^n / n!) equals the previous one times x, divided by n. Since x is a fixed point number,
-        // multiplying by it requires dividing by ONE_20, but dividing by the non-fixed point n values does not.
-        term = term.times(x).idiv(ONE_20).idiv(2);
-        seriesSum = seriesSum.plus(term);
-        term = term.times(x).idiv(ONE_20).idiv(3);
-        seriesSum = seriesSum.plus(term);
-        term = term.times(x).idiv(ONE_20).idiv(4);
-        seriesSum = seriesSum.plus(term);
-        term = term.times(x).idiv(ONE_20).idiv(5);
-        seriesSum = seriesSum.plus(term);
-        term = term.times(x).idiv(ONE_20).idiv(6);
-        seriesSum = seriesSum.plus(term);
-        term = term.times(x).idiv(ONE_20).idiv(7);
-        seriesSum = seriesSum.plus(term);
-        term = term.times(x).idiv(ONE_20).idiv(8);
-        seriesSum = seriesSum.plus(term);
-        term = term.times(x).idiv(ONE_20).idiv(9);
-        seriesSum = seriesSum.plus(term);
-        term = term.times(x).idiv(ONE_20).idiv(10);
-        seriesSum = seriesSum.plus(term);
-        term = term.times(x).idiv(ONE_20).idiv(11);
-        seriesSum = seriesSum.plus(term);
-        term = term.times(x).idiv(ONE_20).idiv(12);
-        seriesSum = seriesSum.plus(term);
-        // 12 Taylor terms are sufficient for 18 decimal precision.
-        // We now have the first a_n (with no decimals), and the product of all other a_n present, and the Taylor
-        // approximation of the exponentiation of the remainder (both with 20 decimals). All that remains is to multiply
-        // all three (one 20 decimal fixed point multiplication, dividing by ONE_20, and one integer multiplication),
-        // and then drop two digits to return an 18 decimal value.
-        return product.times(seriesSum).idiv(ONE_20).times(firstAN).idiv(100);
-    };
-    exports.exp = exp;
-    const log = (arg, base) => {
-        // This performs a simple base change: log(arg, base) = ln(arg) / ln(base).
-        // Both logBase and logArg are computed as 36 decimal fixed point numbers, either by using ln_36, or by
-        // upscaling.
-        let logBase;
-        if (LN_36_LOWER_BOUND.lt(base) && base.lt(LN_36_UPPER_BOUND)) {
-            logBase = _ln_36(base);
-        } else {
-            logBase = _ln(base).times(ONE_18);
-        }
-        let logArg;
-        if (LN_36_LOWER_BOUND.lt(arg) && arg.lt(LN_36_UPPER_BOUND)) {
-            logArg = _ln_36(arg);
-        } else {
-            logArg = _ln(arg).times(ONE_18);
-        }
-        // When dividing, we multiply by ONE_18 to arrive at a result with 18 decimal places
-        return logArg.times(ONE_18).idiv(logBase);
-    };
-    exports.log = log;
-    const ln = (a) => {
-        // The real natural logarithm is not defined for negative numbers or zero.
-        if (a.lte(0)) {
-            throw new Error('OUT_OF_BOUNDS');
-        }
-        if (LN_36_LOWER_BOUND.lt(a) && a.lt(LN_36_UPPER_BOUND)) {
-            return _ln_36(a).idiv(ONE_18);
-        } else {
-            return _ln(a);
-        }
-    };
-    exports.ln = ln;
-    const _ln = (a) => {
-        if (a.lt(ONE_18)) {
-            // Since ln(a^k) = k * ln(a), we can compute ln(a) as ln(a) = ln((1/a)^(-1)) = - ln((1/a))
-            // If a is less than one, 1/a will be greater than one, and this if statement will not be entered in the recursive call
-            // Fixed point division requires multiplying by ONE_18
-            return _ln(ONE_18.times(ONE_18).idiv(a)).negated();
-        }
-        // First, we use the fact that ln^(a * b) = ln(a) + ln(b) to decompose ln(a) into a sum of powers of two, which
-        // we call x_n, where x_n == 2^(7 - n), which are the natural logarithm of precomputed quantities a_n (that is,
-        // ln(a_n) = x_n). We choose the first x_n, x0, to equal 2^7 because the exponential of all larger powers cannot
-        // be represented as 18 fixed point decimal numbers in 256 bits, and are therefore larger than a.
-        // At the end of this process we will have the sum of all x_n = ln(a_n) that apply, and the remainder of this
-        // decomposition, which will be lower than the smallest a_n.
-        // ln(a) = k_0 * x_0 + k_1 * x_1 + ... + k_n * x_n + ln(remainder), where each k_n equals either 0 or 1
-        // We mutate a by subtracting a_n, making it the remainder of the decomposition
-        // For reasons related to how `exp` works, the first two a_n (e^(2^7) and e^(2^6)) are not stored as fixed point
-        // numbers with 18 decimals, but instead as plain integers with 0 decimals, so we need to multiply them by
-        // ONE_18 to convert them to fixed point.
-        // For each a_n, we test if that term is present in the decomposition (if a is larger than it), and if so divide
-        // by it and compute the accumulated sum.
-        let sum = (0, big_number_1.bn)(0);
-        if (a.gte(a0.times(ONE_18))) {
-            a = a.idiv(a0); // Integer, not fixed point division
-            sum = sum.plus(x0);
-        }
-        if (a.gte(a1.times(ONE_18))) {
-            a = a.idiv(a1); // Integer, not fixed point division
-            sum = sum.plus(x1);
-        }
-        // All other a_n and x_n are stored as 20 digit fixed point numbers, so we convert the sum and a to this format.
-        sum = sum.times(100);
-        a = a.times(100);
-        // Because further a_n are  20 digit fixed point numbers, we multiply by ONE_20 when dividing by them.
-        if (a.gte(a2)) {
-            a = a.times(ONE_20).idiv(a2);
-            sum = sum.plus(x2);
-        }
-        if (a.gte(a3)) {
-            a = a.times(ONE_20).idiv(a3);
-            sum = sum.plus(x3);
-        }
-        if (a.gte(a4)) {
-            a = a.times(ONE_20).idiv(a4);
-            sum = sum.plus(x4);
-        }
-        if (a.gte(a5)) {
-            a = a.times(ONE_20).idiv(a5);
-            sum = sum.plus(x5);
-        }
-        if (a.gte(a6)) {
-            a = a.times(ONE_20).idiv(a6);
-            sum = sum.plus(x6);
-        }
-        if (a.gte(a7)) {
-            a = a.times(ONE_20).idiv(a7);
-            sum = sum.plus(x7);
-        }
-        if (a.gte(a8)) {
-            a = a.times(ONE_20).idiv(a8);
-            sum = sum.plus(x8);
-        }
-        if (a.gte(a9)) {
-            a = a.times(ONE_20).idiv(a9);
-            sum = sum.plus(x9);
-        }
-        if (a.gte(a10)) {
-            a = a.times(ONE_20).idiv(a10);
-            sum = sum.plus(x10);
-        }
-        if (a.gte(a11)) {
-            a = a.times(ONE_20).idiv(a11);
-            sum = sum.plus(x11);
-        }
-        // a is now a small number (smaller than a_11, which roughly equals 1.06). This means we can use a Taylor series
-        // that converges rapidly for values of `a` close to one - the same one used in ln_36.
-        // Let z = (a - 1) / (a + 1).
-        // ln(a) = 2 * (z + z^3 / 3 + z^5 / 5 + z^7 / 7 + ... + z^(2 * n + 1) / (2 * n + 1))
-        // Recall that 20 digit fixed point division requires multiplying by ONE_20, and multiplication requires
-        // division by ONE_20.
-        const z = a.minus(ONE_20).times(ONE_20).idiv(a.plus(ONE_20));
-        const z_squared = z.times(z).idiv(ONE_20);
-        // num is the numerator of the series: the z^(2 * n + 1) term
-        let num = z;
-        // seriesSum holds the accumulated sum of each term in the series, starting with the initial z
-        let seriesSum = num;
-        // In each step, the numerator is multiplied by z^2
-        num = num.times(z_squared).idiv(ONE_20);
-        seriesSum = seriesSum.plus(num.idiv(3));
-        num = num.times(z_squared).idiv(ONE_20);
-        seriesSum = seriesSum.plus(num.idiv(5));
-        num = num.times(z_squared).idiv(ONE_20);
-        seriesSum = seriesSum.plus(num.idiv(7));
-        num = num.times(z_squared).idiv(ONE_20);
-        seriesSum = seriesSum.plus(num.idiv(9));
-        num = num.times(z_squared).idiv(ONE_20);
-        seriesSum = seriesSum.plus(num.idiv(11));
-        // 6 Taylor terms are sufficient for 36 decimal precision.
-        // Finally, we multiply by 2 (non fixed point) to compute ln(remainder)
-        seriesSum = seriesSum.times(2);
-        // We now have the sum of all x_n present, and the Taylor approximation of the logarithm of the remainder (both
-        // with 20 decimals). All that remains is to sum these two, and then drop two digits to return a 18 decimal
-        // value.
-        return sum.plus(seriesSum).idiv(100);
-    };
-    const _ln_36 = (x) => {
-        // Since ln(1) = 0, a value of x close to one will yield a very small result, which makes using 36 digits worthwhile
-        // First, we transform x to a 36 digit fixed point value
-        x = x.times(ONE_18);
-        // We will use the following Taylor expansion, which converges very rapidly. Let z = (x - 1) / (x + 1)
-        // ln(x) = 2 * (z + z^3 / 3 + z^5 / 5 + z^7 / 7 + ... + z^(2 * n + 1) / (2 * n + 1))
-        // Recall that 36 digit fixed point division requires multiplying by ONE_36, and multiplication requires division by ONE_36
-        const z = x.minus(ONE_36).times(ONE_36).idiv(x.plus(ONE_36));
-        const z_squared = z.times(z).idiv(ONE_36);
-        // num is the numerator of the series: the z^(2 * n + 1) term
-        let num = z;
-        // seriesSum holds the accumulated sum of each term in the series, starting with the initial z
-        let seriesSum = num;
-        // In each step, the numerator is multiplied by z^2
-        num = num.times(z_squared).idiv(ONE_36);
-        seriesSum = seriesSum.plus(num.idiv(3));
-        num = num.times(z_squared).idiv(ONE_36);
-        seriesSum = seriesSum.plus(num.idiv(5));
-        num = num.times(z_squared).idiv(ONE_36);
-        seriesSum = seriesSum.plus(num.idiv(7));
-        num = num.times(z_squared).idiv(ONE_36);
-        seriesSum = seriesSum.plus(num.idiv(9));
-        num = num.times(z_squared).idiv(ONE_36);
-        seriesSum = seriesSum.plus(num.idiv(11));
-        num = num.times(z_squared).idiv(ONE_36);
-        seriesSum = seriesSum.plus(num.idiv(13));
-        num = num.times(z_squared).idiv(ONE_36);
-        seriesSum = seriesSum.plus(num.idiv(15));
-        // 8 Taylor terms are sufficient for 36 decimal precision
-        // All that remains is multiplying by 2 (non fixed point)
-        return seriesSum.times(2);
-    };
-})(logExp);
-
-(function (exports) {
-    // Ported from Solidity:
-    // https://github.com/balancer-labs/balancer-core-v2/blob/70843e6a61ad11208c1cfabf5cfe15be216ca8d3/pkg/solidity-utils/contracts/math/FixedPoint.sol
-    Object.defineProperty(exports, '__esModule', { value: true });
-    exports.complement =
-        exports.powUp =
-        exports.powDown =
-        exports.divUp =
-        exports.divDown =
-        exports.mulUp =
-        exports.mulDown =
-        exports.sub =
-        exports.add =
-        exports.MIN_POW_BASE_FREE_EXPONENT =
-        exports.MAX_POW_RELATIVE_ERROR =
-        exports.ONE =
-        exports.ZERO =
-            void 0;
-    const big_number_1 = bigNumber;
-    const logExp$1 = logExp;
-    exports.ZERO = (0, big_number_1.bn)(0);
-    exports.ONE = (0, big_number_1.bn)('1000000000000000000'); // 10^18
-    exports.MAX_POW_RELATIVE_ERROR = (0, big_number_1.bn)(10000); // 10^(-14)
-    // Minimum base for the power function when the exponent is 'free' (larger than ONE)
-    exports.MIN_POW_BASE_FREE_EXPONENT = (0, big_number_1.bn)(
-        '700000000000000000'
-    ); // 0.7e18
-    const add = (a, b) => {
-        // Fixed Point addition is the same as regular checked addition
-        return a.plus(b);
-    };
-    exports.add = add;
-    const sub = (a, b) => {
-        // Fixed Point subtraction is the same as regular checked subtraction
-        if (b.gt(a)) {
-            throw new Error('SUB_OVERFLOW');
-        }
-        return a.minus(b);
-    };
-    exports.sub = sub;
-    const mulDown = (a, b) => {
-        return a.times(b).idiv(exports.ONE);
-    };
-    exports.mulDown = mulDown;
-    const mulUp = (a, b) => {
-        const product = a.times(b);
-        if (product.isZero()) {
-            return product;
-        } else {
-            // The traditional divUp formula is:
-            // divUp(x, y) := (x + y - 1) / y
-            // To avoid intermediate overflow in the addition, we distribute the division and get:
-            // divUp(x, y) := (x - 1) / y + 1
-            // Note that this requires x != 0, which we already tested for
-            return product
-                .minus((0, big_number_1.bn)(1))
-                .idiv(exports.ONE)
-                .plus((0, big_number_1.bn)(1));
-        }
-    };
-    exports.mulUp = mulUp;
-    const divDown = (a, b) => {
-        if (b.isZero()) {
-            throw new Error('ZERO_DIVISION');
-        }
-        if (a.isZero()) {
-            return a;
-        } else {
-            return a.times(exports.ONE).idiv(b);
-        }
-    };
-    exports.divDown = divDown;
-    const divUp = (a, b) => {
-        if (b.isZero()) {
-            throw new Error('ZERO_DIVISION');
-        }
-        if (a.isZero()) {
-            return a;
-        } else {
-            // The traditional divUp formula is:
-            // divUp(x, y) := (x + y - 1) / y
-            // To avoid intermediate overflow in the addition, we distribute the division and get:
-            // divUp(x, y) := (x - 1) / y + 1
-            // Note that this requires x != 0, which we already tested for.
-            return a
-                .times(exports.ONE)
-                .minus((0, big_number_1.bn)(1))
-                .idiv(b)
-                .plus((0, big_number_1.bn)(1));
-        }
-    };
-    exports.divUp = divUp;
-    const powDown = (x, y) => {
-        const raw = logExp$1.pow(x, y);
-        const maxError = (0, exports.add)(
-            (0, exports.mulUp)(raw, exports.MAX_POW_RELATIVE_ERROR),
-            (0, big_number_1.bn)(1)
-        );
-        if (raw.lt(maxError)) {
-            return (0, big_number_1.bn)(0);
-        } else {
-            return (0, exports.sub)(raw, maxError);
-        }
-    };
-    exports.powDown = powDown;
-    const powUp = (x, y) => {
-        const raw = logExp$1.pow(x, y);
-        const maxError = (0, exports.add)(
-            (0, exports.mulUp)(raw, exports.MAX_POW_RELATIVE_ERROR),
-            (0, big_number_1.bn)(1)
-        );
-        return (0, exports.add)(raw, maxError);
-    };
-    exports.powUp = powUp;
-    const complement = (x) => {
-        return x.lt(exports.ONE)
-            ? exports.ONE.minus(x)
-            : (0, big_number_1.bn)(0);
-    };
-    exports.complement = complement;
-})(fixedPoint);
-
-// Ported from Solidity:
-// // https://github.com/balancer-labs/balancer-v2-monorepo/blob/589542001aeca5bdc120404874fe0137f6a4c749/pkg/pool-linear/contracts/LinearMath.sol
-Object.defineProperty(math$6, '__esModule', { value: true });
-math$6._calcMainInPerWrappedOut =
-    math$6._calcMainOutPerWrappedIn =
-    math$6._calcMainOutPerBptIn =
-    math$6._calcMainInPerBptOut =
-    math$6._calcWrappedInPerMainOut =
-    math$6._calcWrappedOutPerMainIn =
-    math$6._calcBptInPerMainOut =
-    math$6._calcBptOutPerMainIn =
-        void 0;
-const fp$1 = fixedPoint;
-const math$5 = math$8;
-const _calcBptOutPerMainIn = (
-    mainIn,
-    mainBalance,
-    wrappedBalance,
-    bptSupply,
-    params
-) => {
-    // Amount out, so we round down overall.
-    if (bptSupply.isZero()) {
-        return _toNominal(mainIn, params);
-    }
-    const previousNominalMain = _toNominal(mainBalance, params);
-    const afterNominalMain = _toNominal(fp$1.add(mainBalance, mainIn), params);
-    const deltaNominalMain = fp$1.sub(afterNominalMain, previousNominalMain);
-    const invariant = _calcInvariantUp(
-        previousNominalMain,
-        wrappedBalance,
-        params
-    );
-    return fp$1.divDown(fp$1.mulDown(bptSupply, deltaNominalMain), invariant);
-};
-math$6._calcBptOutPerMainIn = _calcBptOutPerMainIn;
-const _calcBptInPerMainOut = (
-    mainOut,
-    mainBalance,
-    wrappedBalance,
-    bptSupply,
-    params
-) => {
-    // Amount in, so we round up overall.
-    const previousNominalMain = _toNominal(mainBalance, params);
-    const afterNominalMain = _toNominal(fp$1.sub(mainBalance, mainOut), params);
-    const deltaNominalMain = fp$1.sub(previousNominalMain, afterNominalMain);
-    const invariant = _calcInvariantDown(
-        previousNominalMain,
-        wrappedBalance,
-        params
-    );
-    return fp$1.divUp(fp$1.mulUp(bptSupply, deltaNominalMain), invariant);
-};
-math$6._calcBptInPerMainOut = _calcBptInPerMainOut;
-const _calcWrappedOutPerMainIn = (
-    mainIn,
-    mainBalance,
-    wrappedBalance,
-    params
-) => {
-    // Amount out, so we round down overall.
-    const previousNominalMain = _toNominal(mainBalance, params);
-    const afterNominalMain = _toNominal(fp$1.add(mainBalance, mainIn), params);
-    const deltaNominalMain = fp$1.sub(afterNominalMain, previousNominalMain);
-    const newWrappedBalance = fp$1.sub(
-        wrappedBalance,
-        fp$1.mulDown(deltaNominalMain, params.rate)
-    );
-    return fp$1.sub(wrappedBalance, newWrappedBalance);
-};
-math$6._calcWrappedOutPerMainIn = _calcWrappedOutPerMainIn;
-const _calcWrappedInPerMainOut = (
-    mainOut,
-    mainBalance,
-    wrappedBalance,
-    params
-) => {
-    // Amount in, so we round up overall.
-    const previousNominalMain = _toNominal(mainBalance, params);
-    const afterNominalMain = _toNominal(fp$1.sub(mainBalance, mainOut), params);
-    const deltaNominalMain = fp$1.sub(previousNominalMain, afterNominalMain);
-    const newWrappedBalance = fp$1.add(
-        wrappedBalance,
-        fp$1.mulUp(deltaNominalMain, params.rate)
-    );
-    return fp$1.sub(newWrappedBalance, wrappedBalance);
-};
-math$6._calcWrappedInPerMainOut = _calcWrappedInPerMainOut;
-const _calcMainInPerBptOut = (
-    bptOut,
-    mainBalance,
-    wrappedBalance,
-    bptSupply,
-    params
-) => {
-    // Amount in, so we round up overall.
-    if (bptSupply.isZero()) {
-        return _fromNominal(bptOut, params);
-    }
-    const previousNominalMain = _toNominal(mainBalance, params);
-    const invariant = _calcInvariantUp(
-        previousNominalMain,
-        wrappedBalance,
-        params
-    );
-    const deltaNominalMain = fp$1.divUp(
-        fp$1.mulUp(invariant, bptOut),
-        bptSupply
-    );
-    const afterNominalMain = fp$1.add(previousNominalMain, deltaNominalMain);
-    const newMainBalance = _fromNominal(afterNominalMain, params);
-    return fp$1.sub(newMainBalance, mainBalance);
-};
-math$6._calcMainInPerBptOut = _calcMainInPerBptOut;
-const _calcMainOutPerBptIn = (
-    bptIn,
-    mainBalance,
-    wrappedBalance,
-    bptSupply,
-    params
-) => {
-    // Amount out, so we round down overall.
-    const previousNominalMain = _toNominal(mainBalance, params);
-    const invariant = _calcInvariantDown(
-        previousNominalMain,
-        wrappedBalance,
-        params
-    );
-    const deltaNominalMain = fp$1.divDown(
-        fp$1.mulDown(invariant, bptIn),
-        bptSupply
-    );
-    const afterNominalMain = fp$1.sub(previousNominalMain, deltaNominalMain);
-    const newMainBalance = _fromNominal(afterNominalMain, params);
-    return fp$1.sub(mainBalance, newMainBalance);
-};
-math$6._calcMainOutPerBptIn = _calcMainOutPerBptIn;
-const _calcMainOutPerWrappedIn = (wrappedIn, mainBalance, params) => {
-    // Amount out, so we round down overall.
-    const previousNominalMain = _toNominal(mainBalance, params);
-    const deltaNominalMain = fp$1.mulDown(wrappedIn, params.rate);
-    const afterNominalMain = fp$1.sub(previousNominalMain, deltaNominalMain);
-    const newMainBalance = _fromNominal(afterNominalMain, params);
-    return fp$1.sub(mainBalance, newMainBalance);
-};
-math$6._calcMainOutPerWrappedIn = _calcMainOutPerWrappedIn;
-const _calcMainInPerWrappedOut = (wrappedOut, mainBalance, params) => {
-    // Amount in, so we round up overall.
-    const previousNominalMain = _toNominal(mainBalance, params);
-    const deltaNominalMain = fp$1.mulUp(wrappedOut, params.rate);
-    const afterNominalMain = fp$1.add(previousNominalMain, deltaNominalMain);
-    const newMainBalance = _fromNominal(afterNominalMain, params);
-    return fp$1.sub(newMainBalance, mainBalance);
-};
-math$6._calcMainInPerWrappedOut = _calcMainInPerWrappedOut;
-const _calcInvariantUp = (nominalMainBalance, wrappedBalance, params) => {
-    return fp$1.add(
-        nominalMainBalance,
-        fp$1.mulUp(wrappedBalance, params.rate)
-    );
-};
-const _calcInvariantDown = (nominalMainBalance, wrappedBalance, params) => {
-    return fp$1.add(
-        nominalMainBalance,
-        fp$1.mulDown(wrappedBalance, params.rate)
-    );
-};
-const _toNominal = (amount, params) => {
-    if (
-        amount.lt(
-            fp$1.mulUp(math$5.sub(fp$1.ONE, params.fee), params.lowerTarget)
-        )
-    ) {
-        return fp$1.divUp(amount, math$5.sub(fp$1.ONE, params.fee));
-    } else if (
-        amount.lt(
-            math$5.sub(
-                params.upperTarget,
-                fp$1.mulUp(params.fee, params.lowerTarget)
-            )
-        )
-    ) {
-        return fp$1.add(amount, fp$1.mulUp(params.fee, params.lowerTarget));
-    } else {
-        return fp$1.divUp(
-            fp$1.add(
-                amount,
-                fp$1.mulUp(
-                    math$5.add(params.lowerTarget, params.upperTarget),
-                    params.fee
-                )
-            ),
-            math$5.add(fp$1.ONE, params.fee)
-        );
-    }
-};
-const _fromNominal = (nominal, params) => {
-    if (nominal.lt(params.lowerTarget)) {
-        return fp$1.mulUp(nominal, math$5.sub(fp$1.ONE, params.fee));
-    } else if (nominal.lt(params.upperTarget)) {
-        return fp$1.sub(nominal, fp$1.mulUp(params.fee, params.lowerTarget));
-    } else {
-        return fp$1.sub(
-            fp$1.mulUp(nominal, math$5.add(fp$1.ONE, params.fee)),
-            fp$1.mulUp(
-                params.fee,
-                math$5.add(params.lowerTarget, params.upperTarget)
-            )
-        );
-    }
-};
-
-Object.defineProperty(linear, '__esModule', { value: true });
-const big_number_1$3 = bigNumber;
-const base_1$2 = base;
-const math$4 = math$6;
-class LinearPool extends base_1$2.default {
-    // ---------------------- Constructor ----------------------
-    constructor(params) {
-        super(params);
-        this.MAX_TOKEN_BALANCE = (0, big_number_1$3.bn)(2).pow(112).minus(1);
-        this._mainToken = params.mainToken;
-        this._wrappedToken = params.wrappedToken;
-        this._bptToken = {
-            address: params.address,
-            symbol: 'BPT',
-            balance: '0',
-            decimals: 18,
-        };
-        if ((0, big_number_1$3.bn)(params.lowerTarget).gt(params.upperTarget)) {
-            throw new Error('LOWER_GREATER_THAN_UPPER_TARGET');
-        }
-        if (
-            (0, big_number_1$3.bn)(params.upperTarget).gt(
-                this.MAX_TOKEN_BALANCE
-            )
-        ) {
-            throw new Error('UPPER_TARGET_TOO_HIGH');
-        }
-        this._lowerTarget = params.lowerTarget;
-        this._upperTarget = params.upperTarget;
-    }
-    // ---------------------- Getters ----------------------
-    get tokens() {
-        return [this._mainToken, this._wrappedToken, this._bptToken];
-    }
-    get lowerTarget() {
-        return this._lowerTarget;
-    }
-    get upperTarget() {
-        return this._upperTarget;
-    }
-    // ---------------------- Swap actions ----------------------
-    swapGivenIn(tokenInSymbol, tokenOutSymbol, amountIn) {
-        const tokenIndexIn = this.tokens.findIndex(
-            (t) => t.symbol === tokenInSymbol
-        );
-        const tokenIndexOut = this.tokens.findIndex(
-            (t) => t.symbol === tokenOutSymbol
-        );
-        const tokenIn = this.tokens[tokenIndexIn];
-        const tokenOut = this.tokens[tokenIndexOut];
-        let scaledAmountOut;
-        if (tokenIn.symbol === this._bptToken.symbol) {
-            if (tokenOut.symbol !== this._mainToken.symbol) {
-                throw new Error('INVALID_TOKEN');
-            }
-            scaledAmountOut = math$4._calcMainOutPerBptIn(
-                this._upScale(amountIn, tokenIn.decimals),
-                this._upScale(
-                    this._mainToken.balance,
-                    this._mainToken.decimals
-                ),
-                this._upScale(
-                    this._wrappedToken.balance,
-                    this._wrappedToken.decimals
-                ),
-                // MAX_TOKEN_BALANCE is always greater than BPT balance
-                this.MAX_TOKEN_BALANCE.minus(this._bptToken.balance),
-                {
-                    fee: this._upScale(this._swapFeePercentage, 18),
-                    rate: this._upScale('1', 18),
-                    lowerTarget: this._upScale(this._lowerTarget, 18),
-                    upperTarget: this._upScale(this._upperTarget, 18),
-                }
-            );
-        } else if (tokenIn.symbol === this._mainToken.symbol) {
-            if (tokenOut.symbol === this._wrappedToken.symbol) {
-                scaledAmountOut = math$4._calcWrappedOutPerMainIn(
-                    this._upScale(amountIn, tokenIn.decimals),
-                    this._upScale(
-                        this._mainToken.balance,
-                        this._mainToken.decimals
-                    ),
-                    this._upScale(
-                        this._wrappedToken.balance,
-                        this._wrappedToken.decimals
-                    ),
-                    {
-                        fee: this._upScale(this._swapFeePercentage, 18),
-                        rate: this._upScale('1', 18),
-                        lowerTarget: this._upScale(this._lowerTarget, 18),
-                        upperTarget: this._upScale(this._upperTarget, 18),
-                    }
-                );
-            }
-            if (tokenOut.symbol === this._bptToken.symbol) {
-                scaledAmountOut = math$4._calcBptOutPerMainIn(
-                    this._upScale(amountIn, tokenIn.decimals),
-                    this._upScale(
-                        this._mainToken.balance,
-                        this._mainToken.decimals
-                    ),
-                    this._upScale(
-                        this._wrappedToken.balance,
-                        this._wrappedToken.decimals
-                    ),
-                    // MAX_TOKEN_BALANCE is always greater than BPT balance
-                    this.MAX_TOKEN_BALANCE.minus(this._bptToken.balance),
-                    {
-                        fee: this._upScale(this._swapFeePercentage, 18),
-                        rate: this._upScale('1', 18),
-                        lowerTarget: this._upScale(this._lowerTarget, 18),
-                        upperTarget: this._upScale(this._upperTarget, 18),
-                    }
-                );
-            }
-            throw new Error('INVALID_TOKEN');
-        } else if (tokenIn.symbol === this._wrappedToken.symbol) {
-            if (tokenOut.symbol !== this._mainToken.symbol) {
-                throw new Error('INVALID_TOKEN');
-            }
-            scaledAmountOut = math$4._calcMainOutPerWrappedIn(
-                this._upScale(amountIn, tokenIn.decimals),
-                this._upScale(
-                    this._mainToken.balance,
-                    this._mainToken.decimals
-                ),
-                {
-                    fee: this._upScale(this._swapFeePercentage, 18),
-                    rate: this._upScale('1', 18),
-                    lowerTarget: this._upScale(this._lowerTarget, 18),
-                    upperTarget: this._upScale(this._upperTarget, 18),
-                }
-            );
-        } else {
-            throw new Error('INVALID_TOKEN');
-        }
-        const amountOut = this._downScaleDown(
-            scaledAmountOut,
-            tokenOut.decimals
-        );
-        // In-place balance updates
-        if (!this._query) {
-            tokenIn.balance = (0, big_number_1$3.bn)(tokenIn.balance)
-                .plus(amountIn)
-                .toString();
-            tokenOut.balance = (0, big_number_1$3.bn)(tokenOut.balance)
-                .minus(amountOut)
-                .toString();
-        }
-        return amountOut.toString();
-    }
-    swapGivenOut(tokenInSymbol, tokenOutSymbol, amountOut) {
-        const tokenIndexIn = this.tokens.findIndex(
-            (t) => t.symbol === tokenInSymbol
-        );
-        const tokenIndexOut = this.tokens.findIndex(
-            (t) => t.symbol === tokenOutSymbol
-        );
-        const tokenIn = this.tokens[tokenIndexIn];
-        const tokenOut = this.tokens[tokenIndexOut];
-        let scaledAmountIn;
-        if (tokenOut.symbol === this._bptToken.symbol) {
-            if (tokenIn.symbol !== this._mainToken.symbol) {
-                throw new Error('INVALID_TOKEN');
-            }
-            scaledAmountIn = math$4._calcMainInPerBptOut(
-                this._upScale(amountOut, tokenOut.decimals),
-                this._upScale(
-                    this._mainToken.balance,
-                    this._mainToken.decimals
-                ),
-                this._upScale(
-                    this._wrappedToken.balance,
-                    this._wrappedToken.decimals
-                ),
-                // MAX_TOKEN_BALANCE is always greater than BPT balance
-                this.MAX_TOKEN_BALANCE.minus(this._bptToken.balance),
-                {
-                    fee: this._upScale(this._swapFeePercentage, 18),
-                    rate: this._upScale('1', 18),
-                    lowerTarget: this._upScale(this._lowerTarget, 18),
-                    upperTarget: this._upScale(this._upperTarget, 18),
-                }
-            );
-        } else if (tokenOut.symbol === this._mainToken.symbol) {
-            if (tokenIn.symbol === this._wrappedToken.symbol) {
-                scaledAmountIn = math$4._calcWrappedInPerMainOut(
-                    this._upScale(amountOut, tokenOut.decimals),
-                    this._upScale(
-                        this._mainToken.balance,
-                        this._mainToken.decimals
-                    ),
-                    this._upScale(
-                        this._wrappedToken.balance,
-                        this._wrappedToken.decimals
-                    ),
-                    {
-                        fee: this._upScale(this._swapFeePercentage, 18),
-                        rate: this._upScale('1', 18),
-                        lowerTarget: this._upScale(this._lowerTarget, 18),
-                        upperTarget: this._upScale(this._upperTarget, 18),
-                    }
-                );
-            }
-            if (tokenIn.symbol === this._bptToken.symbol) {
-                scaledAmountIn = math$4._calcBptInPerMainOut(
-                    this._upScale(amountOut, tokenOut.decimals),
-                    this._upScale(
-                        this._mainToken.balance,
-                        this._mainToken.decimals
-                    ),
-                    this._upScale(
-                        this._wrappedToken.balance,
-                        this._wrappedToken.decimals
-                    ),
-                    // MAX_TOKEN_BALANCE is always greater than BPT balance
-                    this.MAX_TOKEN_BALANCE.minus(this._bptToken.balance),
-                    {
-                        fee: this._upScale(this._swapFeePercentage, 18),
-                        rate: this._upScale('1', 18),
-                        lowerTarget: this._upScale(this._lowerTarget, 18),
-                        upperTarget: this._upScale(this._upperTarget, 18),
-                    }
-                );
-            }
-            throw new Error('INVALID_TOKEN');
-        } else if (tokenOut.symbol === this._wrappedToken.symbol) {
-            if (tokenIn.symbol !== this._mainToken.symbol) {
-                throw new Error('INVALID_TOKEN');
-            }
-            scaledAmountIn = math$4._calcMainInPerWrappedOut(
-                this._upScale(amountOut, tokenOut.decimals),
-                this._upScale(
-                    this._mainToken.balance,
-                    this._mainToken.decimals
-                ),
-                {
-                    fee: this._upScale(this._swapFeePercentage, 18),
-                    rate: this._upScale('1', 18),
-                    lowerTarget: this._upScale(this._lowerTarget, 18),
-                    upperTarget: this._upScale(this._upperTarget, 18),
-                }
-            );
-        } else {
-            throw new Error('INVALID_TOKEN');
-        }
-        const amountIn = this._downScaleUp(scaledAmountIn, tokenIn.decimals);
-        // In-place balance updates
-        if (!this._query) {
-            tokenIn.balance = (0, big_number_1$3.bn)(tokenIn.balance)
-                .plus(amountIn)
-                .toString();
-            tokenOut.balance = (0, big_number_1$3.bn)(tokenOut.balance)
-                .minus(amountOut)
-                .toString();
-        }
-        return amountIn.toString();
-    }
-}
-linear.default = LinearPool;
-
 var stable = {};
 
 var subgraph = {};
@@ -16613,7 +15448,7 @@ const getPool = async (poolId, blockNumber, testnet) => {
   `;
     let query;
     if (blockNumber) {
-        query = (0, graphql_request_1.gql)`
+        query = graphql_request_1.gql`
       query getPool($poolId: ID!, $blockNumber: Int!) {
         pools(where: { id: $poolId }, block: { number: $blockNumber }) {
           ${data}
@@ -16621,7 +15456,7 @@ const getPool = async (poolId, blockNumber, testnet) => {
       }
     `;
     } else {
-        query = (0, graphql_request_1.gql)`
+        query = graphql_request_1.gql`
       query getPool($poolId: ID!) {
         pools(where: { id: $poolId }) {
           ${data}
@@ -16629,7 +15464,7 @@ const getPool = async (poolId, blockNumber, testnet) => {
       }
     `;
     }
-    const result = await (0, graphql_request_1.request)(
+    const result = await graphql_request_1.request(
         testnet
             ? 'https://api.thegraph.com/subgraphs/name/balancer-labs/balancer-kovan-v2'
             : 'https://api.thegraph.com/subgraphs/name/balancer-labs/balancer-v2',
@@ -16642,6 +15477,28 @@ const getPool = async (poolId, blockNumber, testnet) => {
     return null;
 };
 subgraph.getPool = getPool;
+
+var bigNumber = {};
+
+(function (exports) {
+    Object.defineProperty(exports, '__esModule', { value: true });
+    exports.scaleAll = exports.scale = exports.bn = void 0;
+    const bignumber_js_1 = require$$0__default['default'];
+    bignumber_js_1.BigNumber.config({
+        EXPONENTIAL_AT: [-100, 100],
+        ROUNDING_MODE: 1,
+        DECIMAL_PLACES: 18,
+    });
+    exports.default = bignumber_js_1.BigNumber;
+    const bn = (value) => new bignumber_js_1.BigNumber(value);
+    exports.bn = bn;
+    const scale = (value, decimalPlaces) =>
+        exports.bn(value).times(exports.bn(10).pow(decimalPlaces));
+    exports.scale = scale;
+    const scaleAll = (values, decimalPlaces) =>
+        values.map((x) => exports.scale(x, decimalPlaces));
+    exports.scaleAll = scaleAll;
+})(bigNumber);
 
 var common = {};
 
@@ -16658,7 +15515,666 @@ var common = {};
     exports.shallowCopyAll = shallowCopyAll;
 })(common);
 
+var base = {};
+
+var math$5 = {};
+
+(function (exports) {
+    // Ported from Solidity:
+    // https://github.com/balancer-labs/balancer-v2-monorepo/blob/ce70f7663e0ac94b25ed60cb86faaa8199fd9e13/pkg/solidity-utils/contracts/math/Math.sol
+    Object.defineProperty(exports, '__esModule', { value: true });
+    exports.divUp =
+        exports.divDown =
+        exports.div =
+        exports.mul =
+        exports.min =
+        exports.max =
+        exports.sub =
+        exports.add =
+        exports.TWO =
+        exports.ONE =
+        exports.ZERO =
+            void 0;
+    const big_number_1 = bigNumber;
+    exports.ZERO = big_number_1.bn(0);
+    exports.ONE = big_number_1.bn(1);
+    exports.TWO = big_number_1.bn(2);
+    const add = (a, b) => {
+        return a.plus(b);
+    };
+    exports.add = add;
+    const sub = (a, b) => {
+        if (b.gt(a)) {
+            throw new Error('SUB_OVERFLOW');
+        }
+        return a.minus(b);
+    };
+    exports.sub = sub;
+    const max = (a, b) => {
+        return a.gte(b) ? a : b;
+    };
+    exports.max = max;
+    const min = (a, b) => {
+        return a.lt(b) ? a : b;
+    };
+    exports.min = min;
+    const mul = (a, b) => {
+        return a.times(b);
+    };
+    exports.mul = mul;
+    const div = (a, b, roundUp) => {
+        return roundUp ? exports.divUp(a, b) : exports.divDown(a, b);
+    };
+    exports.div = div;
+    const divDown = (a, b) => {
+        if (b.isZero()) {
+            throw new Error('ZERO_DIVISION');
+        }
+        return a.idiv(b);
+    };
+    exports.divDown = divDown;
+    const divUp = (a, b) => {
+        if (b.isZero()) {
+            throw new Error('ZERO_DIVISION');
+        }
+        return a.isZero()
+            ? exports.ZERO
+            : exports.ONE.plus(a.minus(exports.ONE).idiv(b));
+    };
+    exports.divUp = divUp;
+})(math$5);
+
+Object.defineProperty(base, '__esModule', { value: true });
+const big_number_1$3 = bigNumber;
+const math$4 = math$5;
+class BasePool {
+    // ---------------------- Constructor ----------------------
+    constructor(params) {
+        this.MIN_SWAP_FEE_PERCENTAGE = big_number_1$3.bn('0.000001'); // 0.0001%
+        this.MAX_SWAP_FEE_PERCENTAGE = big_number_1$3.bn('0.1'); // 10%
+        this._query = false;
+        this._id = params.id;
+        this._address = params.address;
+        this._bptTotalSupply = params.bptTotalSupply;
+        this.setSwapFeePercentage(params.swapFeePercentage);
+        if (params.query) {
+            this._query = params.query;
+        }
+    }
+    // ---------------------- Getters ----------------------
+    get id() {
+        return this._id;
+    }
+    get address() {
+        return this._address;
+    }
+    get bptTotalSupply() {
+        return this._bptTotalSupply;
+    }
+    get swapFeePercentage() {
+        return this._swapFeePercentage;
+    }
+    get query() {
+        return this._query;
+    }
+    // ---------------------- Setters ----------------------
+    setSwapFeePercentage(swapFeePercentage) {
+        if (
+            big_number_1$3
+                .bn(swapFeePercentage)
+                .lt(this.MIN_SWAP_FEE_PERCENTAGE)
+        ) {
+            throw new Error('MIN_SWAP_FEE_PERCENTAGE');
+        }
+        if (
+            big_number_1$3
+                .bn(swapFeePercentage)
+                .gt(this.MAX_SWAP_FEE_PERCENTAGE)
+        ) {
+            throw new Error('MAX_SWAP_FEE_PERCENTAGE');
+        }
+        this._swapFeePercentage = swapFeePercentage;
+    }
+    setQuery(query) {
+        this._query = query;
+    }
+    // ---------------------- Internal ----------------------
+    _upScale(amount, decimals) {
+        return math$4.mul(
+            big_number_1$3.scale(amount, decimals),
+            big_number_1$3.bn(10).pow(18 - decimals)
+        );
+    }
+    _downScaleDown(amount, decimals) {
+        return big_number_1$3.scale(
+            math$4.divDown(
+                big_number_1$3.bn(amount),
+                big_number_1$3.bn(10).pow(18 - decimals)
+            ),
+            -decimals
+        );
+    }
+    _downScaleUp(amount, decimals) {
+        return big_number_1$3.scale(
+            math$4.divUp(
+                big_number_1$3.bn(amount),
+                big_number_1$3.bn(10).pow(18 - decimals)
+            ),
+            -decimals
+        );
+    }
+}
+base.default = BasePool;
+
 var math$3 = {};
+
+var fixedPoint = {};
+
+var logExp = {};
+
+(function (exports) {
+    // Ported from Solidity:
+    // https://github.com/balancer-labs/balancer-core-v2/blob/70843e6a61ad11208c1cfabf5cfe15be216ca8d3/pkg/solidity-utils/contracts/math/LogExpMath.sol
+    Object.defineProperty(exports, '__esModule', { value: true });
+    exports.ln = exports.log = exports.exp = exports.pow = void 0;
+    const big_number_1 = bigNumber;
+    // All fixed point multiplications and divisions are inlined
+    // This means we need to divide by ONE when multiplying two numbers, and multiply by ONE when dividing them
+    // All arguments and return values are 18 decimal fixed point numbers
+    const ONE_18 = big_number_1.bn('1000000000000000000'); // 1e18
+    // Internally, intermediate values are computed with higher precision as 20 decimal fixed point numbers, and in the case of ln36, 36 decimals
+    const ONE_20 = big_number_1.bn('100000000000000000000'); // 1e20
+    const ONE_36 = big_number_1.bn('1000000000000000000000000000000000000'); // 1e36
+    // The domain of natural exponentiation is bound by the word size and number of decimals used
+    // Because internally the result will be stored using 20 decimals, the largest possible result is
+    // (2^255 - 1) / 10^20, which makes the largest exponent ln((2^255 - 1) / 10^20) = 130.700829182905140221
+    // The smallest possible result is 10^(-18), which makes largest negative argument
+    // ln(10^(-18)) = -41.446531673892822312.
+    // We use 130.0 and -41.0 to have some safety margin
+    const MAX_NATURAL_EXPONENT = big_number_1.bn('130000000000000000000'); // 130e18
+    const MIN_NATURAL_EXPONENT = big_number_1.bn('-41000000000000000000'); // (-41)e18
+    // Bounds for ln_36's argument
+    // Both ln(0.9) and ln(1.1) can be represented with 36 decimal places in a fixed point 256 bit integer
+    const LN_36_LOWER_BOUND = ONE_18.minus(
+        big_number_1.bn('100000000000000000')
+    ); // 1e18 - 1e17
+    const LN_36_UPPER_BOUND = ONE_18.plus(
+        big_number_1.bn('100000000000000000')
+    ); // 1e18 + 1e17
+    const MILD_EXPONENT_BOUND = big_number_1.bn(2).pow(254).idiv(ONE_20);
+    // 18 decimal constants
+    const x0 = big_number_1.bn('128000000000000000000'); // 2ˆ7
+    const a0 = big_number_1.bn(
+        '38877084059945950922200000000000000000000000000000000000'
+    ); // eˆ(x0) (no decimals)
+    const x1 = big_number_1.bn('64000000000000000000'); // 2ˆ6
+    const a1 = big_number_1.bn('6235149080811616882910000000'); // eˆ(x1) (no decimals)
+    // 20 decimal constants
+    const x2 = big_number_1.bn('3200000000000000000000'); // 2ˆ5
+    const a2 = big_number_1.bn('7896296018268069516100000000000000'); // eˆ(x2)
+    const x3 = big_number_1.bn('1600000000000000000000'); // 2ˆ4
+    const a3 = big_number_1.bn('888611052050787263676000000'); // eˆ(x3)
+    const x4 = big_number_1.bn('800000000000000000000'); // 2ˆ3
+    const a4 = big_number_1.bn('298095798704172827474000'); // eˆ(x4)
+    const x5 = big_number_1.bn('400000000000000000000'); // 2ˆ2
+    const a5 = big_number_1.bn('5459815003314423907810'); // eˆ(x5)
+    const x6 = big_number_1.bn('200000000000000000000'); // 2ˆ1
+    const a6 = big_number_1.bn('738905609893065022723'); // eˆ(x6)
+    const x7 = big_number_1.bn('100000000000000000000'); // 2ˆ0
+    const a7 = big_number_1.bn('271828182845904523536'); // eˆ(x7)
+    const x8 = big_number_1.bn('50000000000000000000'); // 2ˆ(-1)
+    const a8 = big_number_1.bn('164872127070012814685'); // eˆ(x8)
+    const x9 = big_number_1.bn('25000000000000000000'); // 2ˆ(-2)
+    const a9 = big_number_1.bn('128402541668774148407'); // eˆ(x9)
+    const x10 = big_number_1.bn('12500000000000000000'); // 2ˆ(-3)
+    const a10 = big_number_1.bn('113314845306682631683'); // eˆ(x10)
+    const x11 = big_number_1.bn('6250000000000000000'); // 2ˆ(-4)
+    const a11 = big_number_1.bn('106449445891785942956'); // eˆ(x11)
+    const pow = (x, y) => {
+        if (y.isZero()) {
+            // We solve the 0^0 indetermination by making it equal one.
+            return ONE_18;
+        }
+        if (x.isZero()) {
+            return big_number_1.bn(0);
+        }
+        // Instead of computing x^y directly, we instead rely on the properties of logarithms and exponentiation to
+        // arrive at that result. In particular, exp(ln(x)) = x, and ln(x^y) = y * ln(x). This means
+        // x^y = exp(y * ln(x)).
+        // The ln function takes a signed value, so we need to make sure x fits in the signed 256 bit range.
+        if (x.gte(big_number_1.bn(2).pow(255))) {
+            throw new Error('X_OUT_OF_BOUNDS');
+        }
+        // We will compute y * ln(x) in a single step. Depending on the value of x, we can either use ln or ln_36. In
+        // both cases, we leave the division by ONE_18 (due to fixed point multiplication) to the end.
+        // This prevents y * ln(x) from overflowing, and at the same time guarantees y fits in the signed 256 bit range.
+        if (y.gte(MILD_EXPONENT_BOUND)) {
+            throw new Error('Y_OUT_OF_BOUNDS');
+        }
+        let logx_times_y;
+        if (LN_36_LOWER_BOUND.lt(x) && x.lt(LN_36_UPPER_BOUND)) {
+            let ln_36_x = _ln_36(x);
+            // ln_36_x has 36 decimal places, so multiplying by y_int256 isn't as straightforward, since we can't just
+            // bring y_int256 to 36 decimal places, as it might overflow. Instead, we perform two 18 decimal
+            // multiplications and add the results: one with the first 18 decimals of ln_36_x, and one with the
+            // (downscaled) last 18 decimals.
+            logx_times_y = ln_36_x
+                .idiv(ONE_18)
+                .times(y)
+                .plus(ln_36_x.mod(ONE_18).times(y).idiv(ONE_18));
+        } else {
+            logx_times_y = _ln(x).times(y);
+        }
+        logx_times_y = logx_times_y.idiv(ONE_18);
+        // Finally, we compute exp(y * ln(x)) to arrive at x^y
+        if (
+            logx_times_y.lt(MIN_NATURAL_EXPONENT) ||
+            logx_times_y.gt(MAX_NATURAL_EXPONENT)
+        ) {
+            throw new Error('PRODUCT_OUT_OF_BOUNDS');
+        }
+        return exports.exp(logx_times_y);
+    };
+    exports.pow = pow;
+    const exp = (x) => {
+        if (x.lt(MIN_NATURAL_EXPONENT) || x.gt(MAX_NATURAL_EXPONENT)) {
+            throw new Error('INVALID_EXPONENT');
+        }
+        if (x.lt(0)) {
+            // We only handle positive exponents: e^(-x) is computed as 1 / e^x. We can safely make x positive since it
+            // fits in the signed 256 bit range (as it is larger than MIN_NATURAL_EXPONENT).
+            // Fixed point division requires multiplying by ONE_18.
+            return ONE_18.times(ONE_18).idiv(exports.exp(x.negated()));
+        }
+        // First, we use the fact that e^(x+y) = e^x * e^y to decompose x into a sum of powers of two, which we call x_n,
+        // where x_n == 2^(7 - n), and e^x_n = a_n has been precomputed. We choose the first x_n, x0, to equal 2^7
+        // because all larger powers are larger than MAX_NATURAL_EXPONENT, and therefore not present in the
+        // decomposition.
+        // At the end of this process we will have the product of all e^x_n = a_n that apply, and the remainder of this
+        // decomposition, which will be lower than the smallest x_n.
+        // exp(x) = k_0 * a_0 * k_1 * a_1 * ... + k_n * a_n * exp(remainder), where each k_n equals either 0 or 1.
+        // We mutate x by subtracting x_n, making it the remainder of the decomposition.
+        // The first two a_n (e^(2^7) and e^(2^6)) are too large if stored as 18 decimal numbers, and could cause
+        // intermediate overflows. Instead we store them as plain integers, with 0 decimals.
+        // Additionally, x0 + x1 is larger than MAX_NATURAL_EXPONENT, which means they will not both be present in the
+        // decomposition.
+        // For each x_n, we test if that term is present in the decomposition (if x is larger than it), and if so deduct
+        // it and compute the accumulated product.
+        let firstAN;
+        if (x.gte(x0)) {
+            x = x.minus(x0);
+            firstAN = a0;
+        } else if (x.gte(x1)) {
+            x = x.minus(x1);
+            firstAN = a1;
+        } else {
+            firstAN = big_number_1.bn(1); // One with no decimal places
+        }
+        // We now transform x into a 20 decimal fixed point number, to have enhanced precision when computing the
+        // smaller terms.
+        x = x.times(100);
+        // `product` is the accumulated product of all a_n (except a0 and a1), which starts at 20 decimal fixed point
+        // one. Recall that fixed point multiplication requires dividing by ONE_20.
+        let product = ONE_20;
+        if (x.gte(x2)) {
+            x = x.minus(x2);
+            product = product.times(a2).idiv(ONE_20);
+        }
+        if (x.gte(x3)) {
+            x = x.minus(x3);
+            product = product.times(a3).idiv(ONE_20);
+        }
+        if (x.gte(x4)) {
+            x = x.minus(x4);
+            product = product.times(a4).idiv(ONE_20);
+        }
+        if (x.gte(x5)) {
+            x = x.minus(x5);
+            product = product.times(a5).idiv(ONE_20);
+        }
+        if (x.gte(x6)) {
+            x = x.minus(x6);
+            product = product.times(a6).idiv(ONE_20);
+        }
+        if (x.gte(x7)) {
+            x = x.minus(x7);
+            product = product.times(a7).idiv(ONE_20);
+        }
+        if (x.gte(x8)) {
+            x = x.minus(x8);
+            product = product.times(a8).idiv(ONE_20);
+        }
+        if (x.gte(x9)) {
+            x = x.minus(x9);
+            product = product.times(a9).idiv(ONE_20);
+        }
+        // x10 and x11 are unnecessary here since we have high enough precision already.
+        // Now we need to compute e^x, where x is small (in particular, it is smaller than x9). We use the Taylor series
+        // expansion for e^x: 1 + x + (x^2 / 2!) + (x^3 / 3!) + ... + (x^n / n!).
+        let seriesSum = ONE_20; // The initial one in the sum, with 20 decimal places.
+        let term; // Each term in the sum, where the nth term is (x^n / n!).
+        // The first term is simply x.
+        term = x;
+        seriesSum = seriesSum.plus(term);
+        // Each term (x^n / n!) equals the previous one times x, divided by n. Since x is a fixed point number,
+        // multiplying by it requires dividing by ONE_20, but dividing by the non-fixed point n values does not.
+        term = term.times(x).idiv(ONE_20).idiv(2);
+        seriesSum = seriesSum.plus(term);
+        term = term.times(x).idiv(ONE_20).idiv(3);
+        seriesSum = seriesSum.plus(term);
+        term = term.times(x).idiv(ONE_20).idiv(4);
+        seriesSum = seriesSum.plus(term);
+        term = term.times(x).idiv(ONE_20).idiv(5);
+        seriesSum = seriesSum.plus(term);
+        term = term.times(x).idiv(ONE_20).idiv(6);
+        seriesSum = seriesSum.plus(term);
+        term = term.times(x).idiv(ONE_20).idiv(7);
+        seriesSum = seriesSum.plus(term);
+        term = term.times(x).idiv(ONE_20).idiv(8);
+        seriesSum = seriesSum.plus(term);
+        term = term.times(x).idiv(ONE_20).idiv(9);
+        seriesSum = seriesSum.plus(term);
+        term = term.times(x).idiv(ONE_20).idiv(10);
+        seriesSum = seriesSum.plus(term);
+        term = term.times(x).idiv(ONE_20).idiv(11);
+        seriesSum = seriesSum.plus(term);
+        term = term.times(x).idiv(ONE_20).idiv(12);
+        seriesSum = seriesSum.plus(term);
+        // 12 Taylor terms are sufficient for 18 decimal precision.
+        // We now have the first a_n (with no decimals), and the product of all other a_n present, and the Taylor
+        // approximation of the exponentiation of the remainder (both with 20 decimals). All that remains is to multiply
+        // all three (one 20 decimal fixed point multiplication, dividing by ONE_20, and one integer multiplication),
+        // and then drop two digits to return an 18 decimal value.
+        return product.times(seriesSum).idiv(ONE_20).times(firstAN).idiv(100);
+    };
+    exports.exp = exp;
+    const log = (arg, base) => {
+        // This performs a simple base change: log(arg, base) = ln(arg) / ln(base).
+        // Both logBase and logArg are computed as 36 decimal fixed point numbers, either by using ln_36, or by
+        // upscaling.
+        let logBase;
+        if (LN_36_LOWER_BOUND.lt(base) && base.lt(LN_36_UPPER_BOUND)) {
+            logBase = _ln_36(base);
+        } else {
+            logBase = _ln(base).times(ONE_18);
+        }
+        let logArg;
+        if (LN_36_LOWER_BOUND.lt(arg) && arg.lt(LN_36_UPPER_BOUND)) {
+            logArg = _ln_36(arg);
+        } else {
+            logArg = _ln(arg).times(ONE_18);
+        }
+        // When dividing, we multiply by ONE_18 to arrive at a result with 18 decimal places
+        return logArg.times(ONE_18).idiv(logBase);
+    };
+    exports.log = log;
+    const ln = (a) => {
+        // The real natural logarithm is not defined for negative numbers or zero.
+        if (a.lte(0)) {
+            throw new Error('OUT_OF_BOUNDS');
+        }
+        if (LN_36_LOWER_BOUND.lt(a) && a.lt(LN_36_UPPER_BOUND)) {
+            return _ln_36(a).idiv(ONE_18);
+        } else {
+            return _ln(a);
+        }
+    };
+    exports.ln = ln;
+    const _ln = (a) => {
+        if (a.lt(ONE_18)) {
+            // Since ln(a^k) = k * ln(a), we can compute ln(a) as ln(a) = ln((1/a)^(-1)) = - ln((1/a))
+            // If a is less than one, 1/a will be greater than one, and this if statement will not be entered in the recursive call
+            // Fixed point division requires multiplying by ONE_18
+            return _ln(ONE_18.times(ONE_18).idiv(a)).negated();
+        }
+        // First, we use the fact that ln^(a * b) = ln(a) + ln(b) to decompose ln(a) into a sum of powers of two, which
+        // we call x_n, where x_n == 2^(7 - n), which are the natural logarithm of precomputed quantities a_n (that is,
+        // ln(a_n) = x_n). We choose the first x_n, x0, to equal 2^7 because the exponential of all larger powers cannot
+        // be represented as 18 fixed point decimal numbers in 256 bits, and are therefore larger than a.
+        // At the end of this process we will have the sum of all x_n = ln(a_n) that apply, and the remainder of this
+        // decomposition, which will be lower than the smallest a_n.
+        // ln(a) = k_0 * x_0 + k_1 * x_1 + ... + k_n * x_n + ln(remainder), where each k_n equals either 0 or 1
+        // We mutate a by subtracting a_n, making it the remainder of the decomposition
+        // For reasons related to how `exp` works, the first two a_n (e^(2^7) and e^(2^6)) are not stored as fixed point
+        // numbers with 18 decimals, but instead as plain integers with 0 decimals, so we need to multiply them by
+        // ONE_18 to convert them to fixed point.
+        // For each a_n, we test if that term is present in the decomposition (if a is larger than it), and if so divide
+        // by it and compute the accumulated sum.
+        let sum = big_number_1.bn(0);
+        if (a.gte(a0.times(ONE_18))) {
+            a = a.idiv(a0); // Integer, not fixed point division
+            sum = sum.plus(x0);
+        }
+        if (a.gte(a1.times(ONE_18))) {
+            a = a.idiv(a1); // Integer, not fixed point division
+            sum = sum.plus(x1);
+        }
+        // All other a_n and x_n are stored as 20 digit fixed point numbers, so we convert the sum and a to this format.
+        sum = sum.times(100);
+        a = a.times(100);
+        // Because further a_n are  20 digit fixed point numbers, we multiply by ONE_20 when dividing by them.
+        if (a.gte(a2)) {
+            a = a.times(ONE_20).idiv(a2);
+            sum = sum.plus(x2);
+        }
+        if (a.gte(a3)) {
+            a = a.times(ONE_20).idiv(a3);
+            sum = sum.plus(x3);
+        }
+        if (a.gte(a4)) {
+            a = a.times(ONE_20).idiv(a4);
+            sum = sum.plus(x4);
+        }
+        if (a.gte(a5)) {
+            a = a.times(ONE_20).idiv(a5);
+            sum = sum.plus(x5);
+        }
+        if (a.gte(a6)) {
+            a = a.times(ONE_20).idiv(a6);
+            sum = sum.plus(x6);
+        }
+        if (a.gte(a7)) {
+            a = a.times(ONE_20).idiv(a7);
+            sum = sum.plus(x7);
+        }
+        if (a.gte(a8)) {
+            a = a.times(ONE_20).idiv(a8);
+            sum = sum.plus(x8);
+        }
+        if (a.gte(a9)) {
+            a = a.times(ONE_20).idiv(a9);
+            sum = sum.plus(x9);
+        }
+        if (a.gte(a10)) {
+            a = a.times(ONE_20).idiv(a10);
+            sum = sum.plus(x10);
+        }
+        if (a.gte(a11)) {
+            a = a.times(ONE_20).idiv(a11);
+            sum = sum.plus(x11);
+        }
+        // a is now a small number (smaller than a_11, which roughly equals 1.06). This means we can use a Taylor series
+        // that converges rapidly for values of `a` close to one - the same one used in ln_36.
+        // Let z = (a - 1) / (a + 1).
+        // ln(a) = 2 * (z + z^3 / 3 + z^5 / 5 + z^7 / 7 + ... + z^(2 * n + 1) / (2 * n + 1))
+        // Recall that 20 digit fixed point division requires multiplying by ONE_20, and multiplication requires
+        // division by ONE_20.
+        const z = a.minus(ONE_20).times(ONE_20).idiv(a.plus(ONE_20));
+        const z_squared = z.times(z).idiv(ONE_20);
+        // num is the numerator of the series: the z^(2 * n + 1) term
+        let num = z;
+        // seriesSum holds the accumulated sum of each term in the series, starting with the initial z
+        let seriesSum = num;
+        // In each step, the numerator is multiplied by z^2
+        num = num.times(z_squared).idiv(ONE_20);
+        seriesSum = seriesSum.plus(num.idiv(3));
+        num = num.times(z_squared).idiv(ONE_20);
+        seriesSum = seriesSum.plus(num.idiv(5));
+        num = num.times(z_squared).idiv(ONE_20);
+        seriesSum = seriesSum.plus(num.idiv(7));
+        num = num.times(z_squared).idiv(ONE_20);
+        seriesSum = seriesSum.plus(num.idiv(9));
+        num = num.times(z_squared).idiv(ONE_20);
+        seriesSum = seriesSum.plus(num.idiv(11));
+        // 6 Taylor terms are sufficient for 36 decimal precision.
+        // Finally, we multiply by 2 (non fixed point) to compute ln(remainder)
+        seriesSum = seriesSum.times(2);
+        // We now have the sum of all x_n present, and the Taylor approximation of the logarithm of the remainder (both
+        // with 20 decimals). All that remains is to sum these two, and then drop two digits to return a 18 decimal
+        // value.
+        return sum.plus(seriesSum).idiv(100);
+    };
+    const _ln_36 = (x) => {
+        // Since ln(1) = 0, a value of x close to one will yield a very small result, which makes using 36 digits worthwhile
+        // First, we transform x to a 36 digit fixed point value
+        x = x.times(ONE_18);
+        // We will use the following Taylor expansion, which converges very rapidly. Let z = (x - 1) / (x + 1)
+        // ln(x) = 2 * (z + z^3 / 3 + z^5 / 5 + z^7 / 7 + ... + z^(2 * n + 1) / (2 * n + 1))
+        // Recall that 36 digit fixed point division requires multiplying by ONE_36, and multiplication requires division by ONE_36
+        const z = x.minus(ONE_36).times(ONE_36).idiv(x.plus(ONE_36));
+        const z_squared = z.times(z).idiv(ONE_36);
+        // num is the numerator of the series: the z^(2 * n + 1) term
+        let num = z;
+        // seriesSum holds the accumulated sum of each term in the series, starting with the initial z
+        let seriesSum = num;
+        // In each step, the numerator is multiplied by z^2
+        num = num.times(z_squared).idiv(ONE_36);
+        seriesSum = seriesSum.plus(num.idiv(3));
+        num = num.times(z_squared).idiv(ONE_36);
+        seriesSum = seriesSum.plus(num.idiv(5));
+        num = num.times(z_squared).idiv(ONE_36);
+        seriesSum = seriesSum.plus(num.idiv(7));
+        num = num.times(z_squared).idiv(ONE_36);
+        seriesSum = seriesSum.plus(num.idiv(9));
+        num = num.times(z_squared).idiv(ONE_36);
+        seriesSum = seriesSum.plus(num.idiv(11));
+        num = num.times(z_squared).idiv(ONE_36);
+        seriesSum = seriesSum.plus(num.idiv(13));
+        num = num.times(z_squared).idiv(ONE_36);
+        seriesSum = seriesSum.plus(num.idiv(15));
+        // 8 Taylor terms are sufficient for 36 decimal precision
+        // All that remains is multiplying by 2 (non fixed point)
+        return seriesSum.times(2);
+    };
+})(logExp);
+
+(function (exports) {
+    // Ported from Solidity:
+    // https://github.com/balancer-labs/balancer-core-v2/blob/70843e6a61ad11208c1cfabf5cfe15be216ca8d3/pkg/solidity-utils/contracts/math/FixedPoint.sol
+    Object.defineProperty(exports, '__esModule', { value: true });
+    exports.complement =
+        exports.powUp =
+        exports.powDown =
+        exports.divUp =
+        exports.divDown =
+        exports.mulUp =
+        exports.mulDown =
+        exports.sub =
+        exports.add =
+        exports.MIN_POW_BASE_FREE_EXPONENT =
+        exports.MAX_POW_RELATIVE_ERROR =
+        exports.ONE =
+        exports.ZERO =
+            void 0;
+    const big_number_1 = bigNumber;
+    const logExp$1 = logExp;
+    exports.ZERO = big_number_1.bn(0);
+    exports.ONE = big_number_1.bn('1000000000000000000'); // 10^18
+    exports.MAX_POW_RELATIVE_ERROR = big_number_1.bn(10000); // 10^(-14)
+    // Minimum base for the power function when the exponent is 'free' (larger than ONE)
+    exports.MIN_POW_BASE_FREE_EXPONENT = big_number_1.bn('700000000000000000'); // 0.7e18
+    const add = (a, b) => {
+        // Fixed Point addition is the same as regular checked addition
+        return a.plus(b);
+    };
+    exports.add = add;
+    const sub = (a, b) => {
+        // Fixed Point subtraction is the same as regular checked subtraction
+        if (b.gt(a)) {
+            throw new Error('SUB_OVERFLOW');
+        }
+        return a.minus(b);
+    };
+    exports.sub = sub;
+    const mulDown = (a, b) => {
+        return a.times(b).idiv(exports.ONE);
+    };
+    exports.mulDown = mulDown;
+    const mulUp = (a, b) => {
+        const product = a.times(b);
+        if (product.isZero()) {
+            return product;
+        } else {
+            // The traditional divUp formula is:
+            // divUp(x, y) := (x + y - 1) / y
+            // To avoid intermediate overflow in the addition, we distribute the division and get:
+            // divUp(x, y) := (x - 1) / y + 1
+            // Note that this requires x != 0, which we already tested for
+            return product
+                .minus(big_number_1.bn(1))
+                .idiv(exports.ONE)
+                .plus(big_number_1.bn(1));
+        }
+    };
+    exports.mulUp = mulUp;
+    const divDown = (a, b) => {
+        if (b.isZero()) {
+            throw new Error('ZERO_DIVISION');
+        }
+        if (a.isZero()) {
+            return a;
+        } else {
+            return a.times(exports.ONE).idiv(b);
+        }
+    };
+    exports.divDown = divDown;
+    const divUp = (a, b) => {
+        if (b.isZero()) {
+            throw new Error('ZERO_DIVISION');
+        }
+        if (a.isZero()) {
+            return a;
+        } else {
+            // The traditional divUp formula is:
+            // divUp(x, y) := (x + y - 1) / y
+            // To avoid intermediate overflow in the addition, we distribute the division and get:
+            // divUp(x, y) := (x - 1) / y + 1
+            // Note that this requires x != 0, which we already tested for.
+            return a
+                .times(exports.ONE)
+                .minus(big_number_1.bn(1))
+                .idiv(b)
+                .plus(big_number_1.bn(1));
+        }
+    };
+    exports.divUp = divUp;
+    const powDown = (x, y) => {
+        const raw = logExp$1.pow(x, y);
+        const maxError = exports.add(
+            exports.mulUp(raw, exports.MAX_POW_RELATIVE_ERROR),
+            big_number_1.bn(1)
+        );
+        if (raw.lt(maxError)) {
+            return big_number_1.bn(0);
+        } else {
+            return exports.sub(raw, maxError);
+        }
+    };
+    exports.powDown = powDown;
+    const powUp = (x, y) => {
+        const raw = logExp$1.pow(x, y);
+        const maxError = exports.add(
+            exports.mulUp(raw, exports.MAX_POW_RELATIVE_ERROR),
+            big_number_1.bn(1)
+        );
+        return exports.add(raw, maxError);
+    };
+    exports.powUp = powUp;
+    const complement = (x) => {
+        return x.lt(exports.ONE) ? exports.ONE.minus(x) : big_number_1.bn(0);
+    };
+    exports.complement = complement;
+})(fixedPoint);
 
 (function (exports) {
     // Ported from Solidity:
@@ -16680,10 +16196,10 @@ var math$3 = {};
             void 0;
     const big_number_1 = bigNumber;
     const fp = fixedPoint;
-    const math = math$8;
-    exports.MIN_AMP = (0, big_number_1.bn)(1);
-    exports.MAX_AMP = (0, big_number_1.bn)(5000);
-    exports.AMP_PRECISION = (0, big_number_1.bn)(1000);
+    const math = math$5;
+    exports.MIN_AMP = big_number_1.bn(1);
+    exports.MAX_AMP = big_number_1.bn(5000);
+    exports.AMP_PRECISION = big_number_1.bn(1000);
     exports.MAX_STABLE_TOKENS = 5;
     // Computes the invariant given the current balances, using the Newton-Raphson approximation.
     // The amplification parameter equals: A n^(n-1)
@@ -16698,7 +16214,7 @@ var math$3 = {};
     **********************************************************************************************/
         // We support rounding up or down.
         let sum = math.ZERO;
-        let numTokens = (0, big_number_1.bn)(balances.length);
+        let numTokens = big_number_1.bn(balances.length);
         for (let i = 0; i < balances.length; i++) {
             sum = fp.add(sum, balances[i]);
         }
@@ -16781,7 +16297,7 @@ var math$3 = {};
         }
         // Amount out, so we round down overall.
         // Given that we need to have a greater final balance out, the invariant needs to be rounded up
-        const invariant = (0, exports._calculateInvariant)(
+        const invariant = exports._calculateInvariant(
             amplificationParameter,
             balances,
             true
@@ -16825,7 +16341,7 @@ var math$3 = {};
     **************************************************************************************************************/
         // Amount in, so we round up overall.
         // Given that we need to have a greater final balance in, the invariant needs to be rounded up
-        const invariant = (0, exports._calculateInvariant)(
+        const invariant = exports._calculateInvariant(
             amplificationParameter,
             balances,
             true
@@ -16906,12 +16422,12 @@ var math$3 = {};
             newBalances[i] = fp.add(balances[i], amountInWithoutFee);
         }
         // Get current and new invariants, taking swap fees into account
-        const currentInvariant = (0, exports._calculateInvariant)(
+        const currentInvariant = exports._calculateInvariant(
             amp,
             balances,
             true
         );
-        const newInvariant = (0, exports._calculateInvariant)(
+        const newInvariant = exports._calculateInvariant(
             amp,
             newBalances,
             false
@@ -16935,7 +16451,7 @@ var math$3 = {};
     ) => {
         // Token in, so we round up overall.
         // Get the current invariant
-        const currentInvariant = (0, exports._calculateInvariant)(
+        const currentInvariant = exports._calculateInvariant(
             amp,
             balances,
             true
@@ -17030,12 +16546,12 @@ var math$3 = {};
             newBalances[i] = fp.sub(balances[i], amountOutWithFee);
         }
         // Get current and new invariants, taking into account swap fees
-        const currentInvariant = (0, exports._calculateInvariant)(
+        const currentInvariant = exports._calculateInvariant(
             amp,
             balances,
             true
         );
-        const newInvariant = (0, exports._calculateInvariant)(
+        const newInvariant = exports._calculateInvariant(
             amp,
             newBalances,
             false
@@ -17055,7 +16571,7 @@ var math$3 = {};
     ) => {
         // Token out, so we round down overall.
         // Get the current and new invariants. Since we need a bigger new invariant, we round the current one up.
-        const currentInvariant = (0, exports._calculateInvariant)(
+        const currentInvariant = exports._calculateInvariant(
             amp,
             balances,
             true
@@ -17172,7 +16688,7 @@ var math$3 = {};
         tokenIndex
     ) => {
         // Rounds result up overall
-        const numTokens = (0, big_number_1.bn)(balances.length);
+        const numTokens = big_number_1.bn(balances.length);
         const ampTimesTotal = math.mul(amplificationParameter, numTokens);
         let sum = balances[0];
         let P_D = math.mul(numTokens, balances[0]);
@@ -17236,40 +16752,36 @@ class StablePool$1 extends base_1$1.default {
         if (params.tokens.length > math$2.MAX_STABLE_TOKENS) {
             throw new Error('MAX_STABLE_TOKENS');
         }
-        this._tokens = (0, common_1$1.shallowCopyAll)(params.tokens);
+        this._tokens = common_1$1.shallowCopyAll(params.tokens);
         if (
-            (0, big_number_1$2.bn)(params.amplificationParameter).lt(
-                math$2.MIN_AMP
-            )
+            big_number_1$2.bn(params.amplificationParameter).lt(math$2.MIN_AMP)
         ) {
             throw new Error('MIN_AMP');
         }
         if (
-            (0, big_number_1$2.bn)(params.amplificationParameter).gt(
-                math$2.MAX_AMP
-            )
+            big_number_1$2.bn(params.amplificationParameter).gt(math$2.MAX_AMP)
         ) {
             throw new Error('MAX_AMP');
         }
-        this._amplificationParameter = (0, big_number_1$2.bn)(
-            params.amplificationParameter
-        )
+        this._amplificationParameter = big_number_1$2
+            .bn(params.amplificationParameter)
             .times(math$2.AMP_PRECISION)
             .toString();
     }
     // ---------------------- Getters ----------------------
     get tokens() {
         // Shallow-copy to disallow direct changes
-        return (0, common_1$1.shallowCopyAll)(this._tokens);
+        return common_1$1.shallowCopyAll(this._tokens);
     }
     get amplificationParameter() {
-        return (0, big_number_1$2.bn)(this._amplificationParameter)
+        return big_number_1$2
+            .bn(this._amplificationParameter)
             .idiv(math$2.AMP_PRECISION)
             .toString();
     }
     // ---------------------- Subgraph initializer ----------------------
     static async initFromRealPool(poolId, query = false, blockNumber, testnet) {
-        const pool = await (0, index_1$1.getPool)(poolId, blockNumber, testnet);
+        const pool = await index_1$1.getPool(poolId, blockNumber, testnet);
         if (!pool) {
             throw new Error('Could not fetch pool data');
         }
@@ -17311,7 +16823,7 @@ class StablePool$1 extends base_1$1.default {
         const tokenIn = this._tokens[tokenIndexIn];
         const tokenOut = this._tokens[tokenIndexOut];
         const scaledAmountOut = math$2._calcOutGivenIn(
-            (0, big_number_1$2.bn)(this._amplificationParameter),
+            big_number_1$2.bn(this._amplificationParameter),
             this._tokens.map((t) => this._upScale(t.balance, t.decimals)),
             tokenIndexIn,
             tokenIndexOut,
@@ -17324,10 +16836,12 @@ class StablePool$1 extends base_1$1.default {
         );
         // In-place balance updates
         if (!this._query) {
-            tokenIn.balance = (0, big_number_1$2.bn)(tokenIn.balance)
+            tokenIn.balance = big_number_1$2
+                .bn(tokenIn.balance)
                 .plus(amountIn)
                 .toString();
-            tokenOut.balance = (0, big_number_1$2.bn)(tokenOut.balance)
+            tokenOut.balance = big_number_1$2
+                .bn(tokenOut.balance)
                 .minus(amountOut)
                 .toString();
         }
@@ -17343,7 +16857,7 @@ class StablePool$1 extends base_1$1.default {
         const tokenIn = this._tokens[tokenIndexIn];
         const tokenOut = this._tokens[tokenIndexOut];
         const scaledAmountIn = math$2._calcInGivenOut(
-            (0, big_number_1$2.bn)(this._amplificationParameter),
+            big_number_1$2.bn(this._amplificationParameter),
             this._tokens.map((t) => this._upScale(t.balance, t.decimals)),
             tokenIndexIn,
             tokenIndexOut,
@@ -17353,10 +16867,12 @@ class StablePool$1 extends base_1$1.default {
         const amountIn = this._downScaleUp(scaledAmountIn, tokenIn.decimals);
         // In-place balance updates
         if (!this._query) {
-            tokenIn.balance = (0, big_number_1$2.bn)(tokenIn.balance)
+            tokenIn.balance = big_number_1$2
+                .bn(tokenIn.balance)
                 .plus(amountIn)
                 .toString();
-            tokenOut.balance = (0, big_number_1$2.bn)(tokenOut.balance)
+            tokenOut.balance = big_number_1$2
+                .bn(tokenOut.balance)
                 .minus(amountOut)
                 .toString();
         }
@@ -17368,7 +16884,7 @@ class StablePool$1 extends base_1$1.default {
             throw new Error('Invalid input');
         }
         const scaledBptOut = math$2._calcBptOutGivenExactTokensIn(
-            (0, big_number_1$2.bn)(this._amplificationParameter),
+            big_number_1$2.bn(this._amplificationParameter),
             this._tokens.map((t) => this._upScale(t.balance, t.decimals)),
             this._tokens.map((t) =>
                 this._upScale(amountsIn[t.symbol], t.decimals)
@@ -17381,11 +16897,13 @@ class StablePool$1 extends base_1$1.default {
         if (!this._query) {
             for (let i = 0; i < this._tokens.length; i++) {
                 const token = this._tokens[i];
-                token.balance = (0, big_number_1$2.bn)(token.balance)
+                token.balance = big_number_1$2
+                    .bn(token.balance)
                     .plus(amountsIn[token.symbol])
                     .toString();
             }
-            this._bptTotalSupply = (0, big_number_1$2.bn)(this._bptTotalSupply)
+            this._bptTotalSupply = big_number_1$2
+                .bn(this._bptTotalSupply)
                 .plus(bptOut)
                 .toString();
         }
@@ -17400,7 +16918,7 @@ class StablePool$1 extends base_1$1.default {
             throw new Error('Invalid input');
         }
         const scaledAmountIn = math$2._calcTokenInGivenExactBptOut(
-            (0, big_number_1$2.bn)(this._amplificationParameter),
+            big_number_1$2.bn(this._amplificationParameter),
             this._tokens.map((t) => this._upScale(t.balance, t.decimals)),
             tokenIndex,
             this._upScale(bptOut, 18),
@@ -17410,10 +16928,12 @@ class StablePool$1 extends base_1$1.default {
         const amountIn = this._downScaleUp(scaledAmountIn, tokenIn.decimals);
         // In-place balance updates
         if (!this._query) {
-            tokenIn.balance = (0, big_number_1$2.bn)(tokenIn.balance)
+            tokenIn.balance = big_number_1$2
+                .bn(tokenIn.balance)
                 .plus(amountIn)
                 .toString();
-            this._bptTotalSupply = (0, big_number_1$2.bn)(this._bptTotalSupply)
+            this._bptTotalSupply = big_number_1$2
+                .bn(this._bptTotalSupply)
                 .plus(bptOut)
                 .toString();
         }
@@ -17428,7 +16948,7 @@ class StablePool$1 extends base_1$1.default {
             throw new Error('Invalid input');
         }
         const scaledAmountOut = math$2._calcTokenOutGivenExactBptIn(
-            (0, big_number_1$2.bn)(this._amplificationParameter),
+            big_number_1$2.bn(this._amplificationParameter),
             this._tokens.map((t) => this._upScale(t.balance, t.decimals)),
             tokenIndex,
             this._upScale(bptIn, 18),
@@ -17441,10 +16961,12 @@ class StablePool$1 extends base_1$1.default {
         );
         // In-place balance updates
         if (!this._query) {
-            tokenOut.balance = (0, big_number_1$2.bn)(tokenOut.balance)
+            tokenOut.balance = big_number_1$2
+                .bn(tokenOut.balance)
                 .minus(amountOut)
                 .toString();
-            this._bptTotalSupply = (0, big_number_1$2.bn)(this._bptTotalSupply)
+            this._bptTotalSupply = big_number_1$2
+                .bn(this._bptTotalSupply)
                 .minus(bptIn)
                 .toString();
         }
@@ -17452,7 +16974,7 @@ class StablePool$1 extends base_1$1.default {
     }
     exitExactBptInForTokensOut(bptIn) {
         // Exactly match the EVM version
-        if ((0, big_number_1$2.bn)(bptIn).gt(this._bptTotalSupply)) {
+        if (big_number_1$2.bn(bptIn).gt(this._bptTotalSupply)) {
             throw new Error('BPT in exceeds total supply');
         }
         const scaledAmountsOut = math$2._calcTokensOutGivenExactBptIn(
@@ -17467,11 +16989,13 @@ class StablePool$1 extends base_1$1.default {
         if (!this._query) {
             for (let i = 0; i < this._tokens.length; i++) {
                 const token = this._tokens[i];
-                token.balance = (0, big_number_1$2.bn)(token.balance)
+                token.balance = big_number_1$2
+                    .bn(token.balance)
                     .minus(amountsOut[i])
                     .toString();
             }
-            this._bptTotalSupply = (0, big_number_1$2.bn)(this._bptTotalSupply)
+            this._bptTotalSupply = big_number_1$2
+                .bn(this._bptTotalSupply)
                 .minus(bptIn)
                 .toString();
         }
@@ -17482,7 +17006,7 @@ class StablePool$1 extends base_1$1.default {
             throw new Error('Invalid input');
         }
         const scaledBptIn = math$2._calcBptInGivenExactTokensOut(
-            (0, big_number_1$2.bn)(this._amplificationParameter),
+            big_number_1$2.bn(this._amplificationParameter),
             this._tokens.map((t) => this._upScale(t.balance, t.decimals)),
             this._tokens.map((t) =>
                 this._upScale(amountsOut[t.symbol], t.decimals)
@@ -17495,11 +17019,13 @@ class StablePool$1 extends base_1$1.default {
         if (!this._query) {
             for (let i = 0; i < this._tokens.length; i++) {
                 const token = this._tokens[i];
-                token.balance = (0, big_number_1$2.bn)(token.balance)
+                token.balance = big_number_1$2
+                    .bn(token.balance)
                     .minus(amountsOut[token.symbol])
                     .toString();
             }
-            this._bptTotalSupply = (0, big_number_1$2.bn)(this._bptTotalSupply)
+            this._bptTotalSupply = big_number_1$2
+                .bn(this._bptTotalSupply)
                 .minus(bptIn)
                 .toString();
         }
@@ -17530,12 +17056,12 @@ math$1._calcBptInGivenExactTokenOut =
 const big_number_1$1 = bigNumber;
 const fp = fixedPoint;
 // Swap limits: amounts swapped may not be larger than this percentage of total balance
-const MAX_IN_RATIO = (0, big_number_1$1.bn)('300000000000000000'); // 0.3e18
-const MAX_OUT_RATIO = (0, big_number_1$1.bn)('300000000000000000'); // 0.3e18
+const MAX_IN_RATIO = big_number_1$1.bn('300000000000000000'); // 0.3e18
+const MAX_OUT_RATIO = big_number_1$1.bn('300000000000000000'); // 0.3e18
 // Invariant growth limit: non-proportional joins cannot cause the invariant to increase by more than this ratio
-const MAX_INVARIANT_RATIO = (0, big_number_1$1.bn)('3000000000000000000'); // 3e18
+const MAX_INVARIANT_RATIO = big_number_1$1.bn('3000000000000000000'); // 3e18
 // Invariant shrink limit: non-proportional exits cannot cause the invariant to decrease by less than this ratio
-const MIN_INVARIANT_RATIO = (0, big_number_1$1.bn)('700000000000000000'); // 0.7e18
+const MIN_INVARIANT_RATIO = big_number_1$1.bn('700000000000000000'); // 0.7e18
 const _calculateInvariant = (normalizedWeights, balances) => {
     /*****************************************************************************************
     // invariant               _____                                                        //
@@ -17981,21 +17507,17 @@ class WeightedPool$1 extends base_1.default {
         this.MAX_TOKENS = 8;
         // A minimum normalized weight imposes a maximum weight ratio
         // We need this due to limitations in the implementation of the power function, as these ratios are often exponents
-        this.MIN_WEIGHT = (0, big_number_1.bn)('0.01'); // 0.01e18
+        this.MIN_WEIGHT = big_number_1.bn('0.01'); // 0.01e18
         if (params.tokens.length < this.MIN_TOKENS) {
             throw new Error('MIN_TOKENS');
         }
         if (params.tokens.length > this.MAX_TOKENS) {
             throw new Error('MAX_TOKENS');
         }
-        this._tokens = (0, common_1.shallowCopyAll)(params.tokens);
-        let normalizedSum = (0, big_number_1.bn)(0);
+        this._tokens = common_1.shallowCopyAll(params.tokens);
+        let normalizedSum = big_number_1.bn(0);
         for (let i = 0; i < params.tokens.length; i++) {
-            if (
-                (0, big_number_1.bn)(params.tokens[i].weight).lt(
-                    this.MIN_WEIGHT
-                )
-            ) {
+            if (big_number_1.bn(params.tokens[i].weight).lt(this.MIN_WEIGHT)) {
                 throw new Error('MIN_WEIGHT');
             }
             normalizedSum = normalizedSum.plus(params.tokens[i].weight);
@@ -18007,11 +17529,11 @@ class WeightedPool$1 extends base_1.default {
     // ---------------------- Getters ----------------------
     get tokens() {
         // Shallow-copy to disallow direct changes
-        return (0, common_1.shallowCopyAll)(this._tokens);
+        return common_1.shallowCopyAll(this._tokens);
     }
     // ---------------------- Subgraph initializer ----------------------
     static async initFromRealPool(poolId, query = false, blockNumber, testnet) {
-        const pool = await (0, index_1.getPool)(poolId, blockNumber, testnet);
+        const pool = await index_1.getPool(poolId, blockNumber, testnet);
         if (!pool) {
             throw new Error('Could not fetch pool data');
         }
@@ -18067,10 +17589,12 @@ class WeightedPool$1 extends base_1.default {
         );
         // In-place balance updates
         if (!this._query) {
-            tokenIn.balance = (0, big_number_1.bn)(tokenIn.balance)
+            tokenIn.balance = big_number_1
+                .bn(tokenIn.balance)
                 .plus(amountIn)
                 .toString();
-            tokenOut.balance = (0, big_number_1.bn)(tokenOut.balance)
+            tokenOut.balance = big_number_1
+                .bn(tokenOut.balance)
                 .minus(amountOut)
                 .toString();
         }
@@ -18090,10 +17614,12 @@ class WeightedPool$1 extends base_1.default {
         const amountIn = this._downScaleUp(scaledAmountIn, tokenIn.decimals);
         // In-place balance updates
         if (!this._query) {
-            tokenIn.balance = (0, big_number_1.bn)(tokenIn.balance)
+            tokenIn.balance = big_number_1
+                .bn(tokenIn.balance)
                 .plus(amountIn)
                 .toString();
-            tokenOut.balance = (0, big_number_1.bn)(tokenOut.balance)
+            tokenOut.balance = big_number_1
+                .bn(tokenOut.balance)
                 .minus(amountOut)
                 .toString();
         }
@@ -18118,11 +17644,13 @@ class WeightedPool$1 extends base_1.default {
         if (!this._query) {
             for (let i = 0; i < this._tokens.length; i++) {
                 const token = this._tokens[i];
-                token.balance = (0, big_number_1.bn)(token.balance)
+                token.balance = big_number_1
+                    .bn(token.balance)
                     .plus(amountsIn[token.symbol])
                     .toString();
             }
-            this._bptTotalSupply = (0, big_number_1.bn)(this._bptTotalSupply)
+            this._bptTotalSupply = big_number_1
+                .bn(this._bptTotalSupply)
                 .plus(bptOut)
                 .toString();
         }
@@ -18143,10 +17671,12 @@ class WeightedPool$1 extends base_1.default {
         const amountIn = this._downScaleUp(scaledAmountIn, tokenIn.decimals);
         // In-place balance updates
         if (!this._query) {
-            tokenIn.balance = (0, big_number_1.bn)(tokenIn.balance)
+            tokenIn.balance = big_number_1
+                .bn(tokenIn.balance)
                 .plus(amountIn)
                 .toString();
-            this._bptTotalSupply = (0, big_number_1.bn)(this._bptTotalSupply)
+            this._bptTotalSupply = big_number_1
+                .bn(this._bptTotalSupply)
                 .plus(bptOut)
                 .toString();
         }
@@ -18170,10 +17700,12 @@ class WeightedPool$1 extends base_1.default {
         );
         // In-place balance updates
         if (!this._query) {
-            tokenOut.balance = (0, big_number_1.bn)(tokenOut.balance)
+            tokenOut.balance = big_number_1
+                .bn(tokenOut.balance)
                 .minus(amountOut)
                 .toString();
-            this._bptTotalSupply = (0, big_number_1.bn)(this._bptTotalSupply)
+            this._bptTotalSupply = big_number_1
+                .bn(this._bptTotalSupply)
                 .minus(bptIn)
                 .toString();
         }
@@ -18181,7 +17713,7 @@ class WeightedPool$1 extends base_1.default {
     }
     exitExactBptInForTokensOut(bptIn) {
         // Exactly match the EVM version
-        if ((0, big_number_1.bn)(bptIn).gt(this._bptTotalSupply)) {
+        if (big_number_1.bn(bptIn).gt(this._bptTotalSupply)) {
             throw new Error('BPT in exceeds total supply');
         }
         const scaledAmountsOut = math._calcTokensOutGivenExactBptIn(
@@ -18196,11 +17728,13 @@ class WeightedPool$1 extends base_1.default {
         if (!this._query) {
             for (let i = 0; i < this._tokens.length; i++) {
                 const token = this._tokens[i];
-                token.balance = (0, big_number_1.bn)(token.balance)
+                token.balance = big_number_1
+                    .bn(token.balance)
                     .minus(amountsOut[i])
                     .toString();
             }
-            this._bptTotalSupply = (0, big_number_1.bn)(this._bptTotalSupply)
+            this._bptTotalSupply = big_number_1
+                .bn(this._bptTotalSupply)
                 .minus(bptIn)
                 .toString();
         }
@@ -18224,11 +17758,13 @@ class WeightedPool$1 extends base_1.default {
         if (!this._query) {
             for (let i = 0; i < this._tokens.length; i++) {
                 const token = this._tokens[i];
-                token.balance = (0, big_number_1.bn)(token.balance)
+                token.balance = big_number_1
+                    .bn(token.balance)
                     .minus(amountsOut[token.symbol])
                     .toString();
             }
-            this._bptTotalSupply = (0, big_number_1.bn)(this._bptTotalSupply)
+            this._bptTotalSupply = big_number_1
+                .bn(this._bptTotalSupply)
                 .minus(bptIn)
                 .toString();
         }
@@ -18244,13 +17780,7 @@ var WeightedMath_1 =
     StableMath_1 =
     src.StableMath =
     src.StablePool =
-    src.LinearMath =
-    src.LinearPool =
         void 0);
-const linear_1 = linear;
-src.LinearPool = linear_1.default;
-const LinearMath = math$6;
-src.LinearMath = LinearMath;
 const stable_1 = stable;
 src.StablePool = stable_1.default;
 const StableMath = math$3;
@@ -27670,13 +27200,13 @@ var elementPoolAbi = [
 ];
 
 function getOnChainBalances(
-    subgraphPools,
+    subgraphPoolsOriginal,
     multiAddress,
     vaultAddress,
     provider
 ) {
     return __awaiter(this, void 0, void 0, function* () {
-        if (subgraphPools.length === 0) return subgraphPools;
+        if (subgraphPoolsOriginal.length === 0) return subgraphPoolsOriginal;
         const abis = Object.values(
             // Remove duplicate entries using their names
             Object.fromEntries(
@@ -27689,7 +27219,14 @@ function getOnChainBalances(
             )
         );
         const multiPool = new Multicaller(multiAddress, provider, abis);
-        subgraphPools.forEach((pool, i) => {
+        const supportedPoolTypes = Object.values(exports.PoolFilter);
+        const subgraphPools = [];
+        subgraphPoolsOriginal.forEach((pool, i) => {
+            if (!supportedPoolTypes.includes(pool.poolType)) {
+                console.error(`Unknown pool type: ${pool.poolType} ${pool.id}`);
+                return;
+            }
+            subgraphPools.push(pool);
             multiPool.call(
                 `${pool.id}.poolTokens`,
                 vaultAddress,
