@@ -2,7 +2,7 @@ import { BigNumber, parseFixed } from '@ethersproject/bignumber';
 import { Zero } from '@ethersproject/constants';
 import { SwapTypes, NewPath } from '../types';
 import { getOutputAmountSwap } from '../pools';
-import { bnum, ZERO } from '../utils/bignumber';
+import { bnum, ZERO, BigNumber as OldBigNumber } from '../utils/bignumber';
 
 export function calculatePathLimits(
     paths: NewPath[],
@@ -13,7 +13,6 @@ export function calculatePathLimits(
         // Original parsedPoolPairForPath here but this has already been done.
         path.limitAmount = getLimitAmountSwapForPath(path, swapType);
         // if (path.limitAmount.isNaN()) throw 'path.limitAmount.isNaN';
-        // console.log(path.limitAmount.toNumber())
         maxLiquidityAvailable = maxLiquidityAvailable.add(path.limitAmount);
     });
     const sortedPaths = paths.sort((a, b) => {
@@ -26,62 +25,66 @@ export function getLimitAmountSwapForPath(
     path: NewPath,
     swapType: SwapTypes
 ): BigNumber {
-    console.log('inside getLimitAmountSwapForPath');
-    console.log('swapType: ', swapType.toString());
-    console.log('path length', path.swaps.length);
     const poolPairData = path.poolPairData;
-    let limit = ZERO;
+    let limit: OldBigNumber;
     if (swapType === SwapTypes.SwapExactIn) {
         limit = path.pools[poolPairData.length - 1].getLimitAmountSwap(
             poolPairData[poolPairData.length - 1],
             SwapTypes.SwapExactIn
         );
+
         for (let i = poolPairData.length - 2; i >= 0; i--) {
-            const poolLimit = path.pools[i].getLimitAmountSwap(
+            const poolLimitExactIn = path.pools[i].getLimitAmountSwap(
                 poolPairData[i],
                 SwapTypes.SwapExactIn
             );
-            // suggested: check that "limit" is below pool limit
-            const pulledLimit = getOutputAmountSwap(
-                path.pools[i],
-                path.poolPairData[i],
-                SwapTypes.SwapExactOut,
-                limit
+            const poolLimitExactOut = path.pools[i].getLimitAmountSwap(
+                poolPairData[i],
+                SwapTypes.SwapExactOut
             );
-            limit =
-                poolLimit.lt(pulledLimit) || pulledLimit == ZERO
-                    ? poolLimit
-                    : pulledLimit;
+            if (poolLimitExactOut.lte(limit)) {
+                limit = poolLimitExactIn;
+            } else {
+                const pulledLimit = getOutputAmountSwap(
+                    path.pools[i],
+                    path.poolPairData[i],
+                    SwapTypes.SwapExactOut,
+                    limit
+                );
+                limit = OldBigNumber.min(pulledLimit, poolLimitExactIn);
+            }
         }
-        if (limit.isZero()) console.log('limit is zero');
         if (limit.isZero()) return Zero;
-        return parseFixed(
+        const result = parseFixed(
             limit.dp(poolPairData[0].decimalsIn).toString(),
             poolPairData[0].decimalsIn
         );
+        return result;
     } else {
         limit = path.pools[0].getLimitAmountSwap(
             poolPairData[0],
             SwapTypes.SwapExactOut
         );
         for (let i = 1; i < poolPairData.length; i++) {
-            const poolLimit = path.pools[i].getLimitAmountSwap(
+            const poolLimitExactIn = path.pools[i].getLimitAmountSwap(
+                poolPairData[i],
+                SwapTypes.SwapExactIn
+            );
+            const poolLimitExactOut = path.pools[i].getLimitAmountSwap(
                 poolPairData[i],
                 SwapTypes.SwapExactOut
             );
-            const pushedLimit = getOutputAmountSwap(
-                path.pools[i],
-                path.poolPairData[i],
-                SwapTypes.SwapExactIn,
-                limit
-            );
-            limit =
-                poolLimit.lte(pushedLimit) || pushedLimit == ZERO
-                    ? poolLimit
-                    : pushedLimit;
-        }
-        if (limit.isZero()) {
-            console.log('limit is zero');
+            if (poolLimitExactIn.lte(limit)) {
+                limit = poolLimitExactOut;
+            } else {
+                const pushedLimit = getOutputAmountSwap(
+                    path.pools[i],
+                    path.poolPairData[i],
+                    SwapTypes.SwapExactIn,
+                    limit
+                );
+                limit = OldBigNumber.min(pushedLimit, poolLimitExactOut);
+            }
         }
         if (limit.isZero()) return Zero;
         return parseFixed(
