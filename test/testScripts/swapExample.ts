@@ -372,19 +372,19 @@ async function makeTrade(
         overRides['value'] = swapInfo.swapAmount.toString();
     }
 
-    const tx = await vaultContract
-        .connect(wallet)
-        .batchSwap(
-            swapType,
-            swapInfo.swaps,
-            swapInfo.tokenAddresses,
-            funds,
-            limits,
-            deadline,
-            overRides
-        );
+    // const tx = await vaultContract
+    //     .connect(wallet)
+    //     .batchSwap(
+    //         swapType,
+    //         swapInfo.swaps,
+    //         swapInfo.tokenAddresses,
+    //         funds,
+    //         limits,
+    //         deadline,
+    //         overRides
+    //     );
 
-    console.log(`tx: ${tx.hash}`);
+    // console.log(`tx: ${tx.hash}`);
 }
 
 async function makeRelayerTrade(
@@ -532,13 +532,13 @@ async function makeRelayerTrade(
         if (swapType === SwapTypes.SwapExactIn)
             limit = swapInfo.returnAmountFromSwaps.times(0.99).dp(0).toString(); // Min return
 
-        const tx = await relayerContract
-            .connect(wallet)
-            .callStatic.swap(single, funds, limit, deadline, overRides);
-        console.log(tx.toString());
-        console.log(
-            swapInfo.returnAmountFromSwaps.times(1.01).dp(0).toString()
-        );
+        // const tx = await relayerContract
+        //     .connect(wallet)
+        //     .callStatic.swap(single, funds, limit, deadline, overRides);
+        // console.log(tx.toString());
+        // console.log(
+        //     swapInfo.returnAmountFromSwaps.times(1.01).dp(0).toString()
+        // );
     } else {
         const tx = await relayerContract
             .connect(wallet)
