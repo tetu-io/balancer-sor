@@ -168,6 +168,11 @@ export const ADDRESSES = {
             decimals: 18,
             symbol: 'DAI',
         },
+        STETH: {
+            address: '0xae7ab96520de3a18e5e111b5eaab095312d7fe84',
+            decimals: 18,
+            symbol: 'STETH',
+        },
     },
     [Network.ARBITRUM]: {
         WETH: {
@@ -557,7 +562,7 @@ async function makeRelayerTrade(
 }
 
 async function simpleSwap() {
-    const networkId = Network.MAINNET;
+    const networkId = Network.POLYGON;
     // const networkId = Network.KOVAN;
     // Pools source can be Subgraph URL or pools data set passed directly
     const poolsSource = SUBGRAPH_URLS[networkId];
