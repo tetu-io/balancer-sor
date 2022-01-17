@@ -206,6 +206,11 @@ export const ADDRESSES = {
             decimals: 18,
             symbol: 'DAI',
         },
+        STETH: {
+            address: '0xae7ab96520de3a18e5e111b5eaab095312d7fe84',
+            decimals: 18,
+            symbol: 'STETH',
+        },
     },
     [Network.ARBITRUM]: {
         WETH: {
@@ -593,14 +598,14 @@ async function makeRelayerTrade(
 }
 
 async function simpleSwap() {
-    const networkId = Network.KOVAN;
+    const networkId = Network.POLYGON;
     // Pools source can be Subgraph URL or pools data set passed directly
     const poolsSource = SUBGRAPH_URLS[networkId];
     // const poolsSource = require('../testData/testPools/gusdBug.json');
     // Update pools list with most recent onchain balances
     const queryOnChain = true;
-    const tokenIn = ADDRESSES[networkId].DAI_from_AAVE;
-    const tokenOut = ADDRESSES[networkId].USDC_from_AAVE;
+    const tokenIn = ADDRESSES[networkId].DAI;
+    const tokenOut = ADDRESSES[networkId].USDC;
     const swapType = SwapTypes.SwapExactIn;
     const swapAmount = parseFixed('100', 18);
     const executeTrade = true;

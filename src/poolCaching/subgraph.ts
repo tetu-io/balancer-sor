@@ -5,6 +5,7 @@ const queryWithLinear = `
       {
         pools: pools(
           first: 1000,
+          subgraphError: allow,
           where: { swapEnabled: true },
           orderBy: totalLiquidity,
           orderDirection: desc
@@ -41,6 +42,7 @@ const queryWithOutLinear = `
       {
         pools: pools(
           first: 1000,
+          subgraphError: allow,
           where: { swapEnabled: true },
           orderBy: totalLiquidity,
           orderDirection: desc
