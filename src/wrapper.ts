@@ -251,7 +251,7 @@ export class SOR {
         const [swaps, total, marketSp, totalConsideringFees] = getBestPaths(
             paths,
             swapType,
-            swapAmount,
+            swapAmount.mul(10 ** (18 - inputDecimals)),
             inputDecimals,
             outputDecimals,
             maxPools,
@@ -260,17 +260,14 @@ export class SOR {
 
         return [
             swaps,
+            total.div(10 ** (18 - outputDecimals)),
+            /*
             parseFixed(
                 total.dp(outputDecimals, OldBigNumber.ROUND_FLOOR).toString(),
                 outputDecimals
-            ),
+            ),*/
             marketSp.toString(),
-            parseFixed(
-                totalConsideringFees
-                    .dp(outputDecimals, OldBigNumber.ROUND_FLOOR)
-                    .toString(),
-                outputDecimals
-            ),
+            totalConsideringFees.div(10 ** (18 - outputDecimals)),
         ];
     }
 }

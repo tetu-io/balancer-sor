@@ -6,7 +6,6 @@ import {
     bnum,
 } from '../utils/bignumber';
 import { getOutputAmountSwap } from '../pools';
-import { INFINITESIMAL } from '../config';
 import {
     NewPath,
     SwapTypes,
@@ -14,7 +13,8 @@ import {
     PoolPairBase,
     PoolTypes,
 } from '../types';
-import { BigNumber, formatFixed, parseFixed } from '@ethersproject/bignumber';
+import { BigNumber, formatFixed } from '@ethersproject/bignumber';
+import { Zero } from '@ethersproject/constants';
 
 export function getHighestLimitAmountsForPaths(
     paths: NewPath[],
@@ -34,25 +34,36 @@ export function getHighestLimitAmountsForPaths(
 export function getEffectivePriceSwapForPath(
     path: NewPath,
     swapType: SwapTypes,
-    amount: OldBigNumber,
+    amount: BigNumber,
     inputDecimals: number
-): OldBigNumber {
-    if (amount.lt(INFINITESIMAL)) {
+): BigNumber {
+    const bnumAmount = deConvert(amount, 18);
+    if (amount.lt(10)) {
+        // 10? this is replacing previous INFINITESIMAL
         // Return spot price as code below would be 0/0 = undefined
         // or small_amount/0 or 0/small_amount which would cause bugs
-        return getSpotPriceAfterSwapForPath(path, swapType, amount);
+
+        const unscaledResult = getSpotPriceAfterSwapForPath(
+            path,
+            swapType,
+            bnumAmount
+        );
+        return convert(unscaledResult, 18);
     }
+
     const outputAmountSwap = getOutputAmountSwapForPath(
         path,
         swapType,
-        amount,
+        bnumAmount,
         inputDecimals
     );
+    let unscaledResult: OldBigNumber;
     if (swapType === SwapTypes.SwapExactIn) {
-        return amount.div(outputAmountSwap); // amountIn/AmountOut
+        unscaledResult = bnumAmount.div(outputAmountSwap); // amountIn/AmountOut
     } else {
-        return outputAmountSwap.div(amount); // amountIn/AmountOut
+        unscaledResult = outputAmountSwap.div(bnumAmount); // amountIn/AmountOut
     }
+    return convert(unscaledResult, 18);
 }
 
 export function getOutputAmountSwapForPath(
@@ -301,8 +312,9 @@ export function EVMgetOutputAmountSwap(
     pool: PoolBase,
     poolPairData: PoolPairBase,
     swapType: SwapTypes,
-    amount: OldBigNumber
-): OldBigNumber {
+    amount: BigNumber
+): BigNumber {
+    const bnumAmount = deConvert(amount, 18);
     const { balanceIn, balanceOut, tokenIn, tokenOut } = poolPairData;
 
     let returnAmount: OldBigNumber;
@@ -312,18 +324,15 @@ export function EVMgetOutputAmountSwap(
             poolPairData.poolType !== PoolTypes.Linear &&
             poolPairData.balanceIn.isZero()
         ) {
-            return ZERO;
+            return Zero;
         }
     } else {
         if (poolPairData.balanceOut.isZero()) {
-            return ZERO;
+            return Zero;
         }
-        if (
-            scale(amount, poolPairData.decimalsOut).gte(
-                poolPairData.balanceOut.toString()
-            )
-        )
-            return INFINITY;
+        if (amount.gte(poolPairData.balanceOut.mul(10 ** 18)))
+            throw Error('insufficient pool balance');
+        // return an error? no infinity at BigNumber
     }
     if (swapType === SwapTypes.SwapExactIn) {
         // TODO we will be able to remove pooltype check once Element EVM maths is available
@@ -334,14 +343,17 @@ export function EVMgetOutputAmountSwap(
             pool.poolType === PoolTypes.Linear
         ) {
             // Will accept/return normalised values
-            returnAmount = pool._exactTokenInForTokenOut(poolPairData, amount);
+            returnAmount = pool._exactTokenInForTokenOut(
+                poolPairData,
+                bnumAmount
+            );
         } else if (pool.poolType === PoolTypes.Element) {
             // TODO this will just be part of above once maths available
             returnAmount = getOutputAmountSwap(
                 pool,
                 poolPairData,
                 swapType,
-                amount
+                bnumAmount
             );
         } else {
             throw Error('Unsupported swap');
@@ -354,38 +366,44 @@ export function EVMgetOutputAmountSwap(
             pool.poolType === PoolTypes.MetaStable ||
             pool.poolType === PoolTypes.Linear
         ) {
-            returnAmount = pool._tokenInForExactTokenOut(poolPairData, amount);
+            returnAmount = pool._tokenInForExactTokenOut(
+                poolPairData,
+                bnumAmount
+            );
         } else if (pool.poolType === PoolTypes.Element) {
             // TODO this will just be part of above once maths available
             returnAmount = getOutputAmountSwap(
                 pool,
                 poolPairData,
                 swapType,
-                amount
+                bnumAmount
             );
         } else {
             throw Error('Unsupported swap');
         }
     }
+    const result = convert(returnAmount, 18);
     // Update balances of tokenIn and tokenOut
     pool.updateTokenBalanceForPool(
         tokenIn,
-        balanceIn.add(
-            parseFixed(
-                returnAmount.dp(poolPairData.decimalsIn).toString(),
-                poolPairData.decimalsIn
-            )
-        )
+        balanceIn.add(convert(returnAmount, 18))
     );
-    pool.updateTokenBalanceForPool(
-        tokenOut,
-        balanceOut.sub(
-            parseFixed(
-                amount.dp(poolPairData.decimalsOut).toString(),
-                poolPairData.decimalsOut
-            )
-        )
-    );
+    pool.updateTokenBalanceForPool(tokenOut, balanceOut.sub(amount));
+    return result;
+}
 
-    return returnAmount;
+export function convert(amount: OldBigNumber, decimals: number): BigNumber {
+    if (amount.isFinite()) {
+        const result = BigNumber.from(scale(amount, decimals).dp(0).toString());
+        return result;
+    } else {
+        const result = BigNumber.from(
+            '57896044618658097711785492504343953926634992332820282019728792003956564819968'
+        );
+        return result;
+    }
+}
+
+export function deConvert(amount: BigNumber, decimals: number): OldBigNumber {
+    return bnum(amount.toString()).div(10 ** decimals);
 }

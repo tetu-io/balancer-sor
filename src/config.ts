@@ -1,12 +1,12 @@
+import { BigNumber } from '@ethersproject/bignumber';
 import { BigNumber as OldBigNumber } from './utils/bignumber';
 
 // priceErrorTolerance is how close we expect prices after swap to be in SOR
 // suggested paths
 const priceErrorTolerance: string =
-    process.env.PRICE_ERROR_TOLERANCE || '0.00001';
-export const PRICE_ERROR_TOLERANCE: OldBigNumber = new OldBigNumber(
-    priceErrorTolerance
-);
+    process.env.PRICE_ERROR_TOLERANCE || '10000000000000'; //'0.00001';
+export const PRICE_ERROR_TOLERANCE: BigNumber =
+    BigNumber.from(priceErrorTolerance);
 // infinitesimal is an amount that's used to initialize swap amounts so they are
 // not zero or the path's limit.
 // It's also used in the calculation of derivatives in pool maths

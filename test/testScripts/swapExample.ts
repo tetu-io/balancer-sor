@@ -679,9 +679,9 @@ export async function simpleSwap() {
     // Update pools list with most recent onchain balances
     const tokenIn = ADDRESSES[networkId].bbausdc;
     const tokenOut = ADDRESSES[networkId].waUSDC;
-    const swapType = SwapTypes.SwapExactOut;
-    const swapAmount = parseFixed('10', 6);
-    const executeTrade = true;
+    const swapType = SwapTypes.SwapExactIn;
+    const swapAmount = parseFixed('1', 18);
+    const executeTrade = false;
 
     const provider = new JsonRpcProvider(PROVIDER_URLS[networkId]);
 

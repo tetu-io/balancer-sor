@@ -518,7 +518,7 @@ describe('Tests pools filtering and path processing', () => {
         assert.equal(noHopOut, 1);
     });
 
-    it('Test pool class that has two multihop paths, swapExactIn', async () => {
+    it('debug Test pool class that has two multihop paths, swapExactIn', async () => {
         const maxPools = 4;
         const tokenIn = USDC.address;
         const tokenOut = DAI.address;
@@ -570,28 +570,34 @@ describe('Tests pools filtering and path processing', () => {
             tokenIn,
             tokenOut
         );
-        assert.equal(maxAmt.toString(), '600000000');
+        assert.equal(maxAmt.toString(), '600000000000000000000');
         assert.equal(pathsSorted.length, 2);
-        assert.equal(pathsSorted[0].limitAmount.toString(), '300000000');
-        assert.equal(pathsSorted[1].limitAmount.toString(), '300000000');
+        assert.equal(
+            pathsSorted[0].limitAmount.toString(),
+            '300000000000000000000'
+        );
+        assert.equal(
+            pathsSorted[1].limitAmount.toString(),
+            '300000000000000000000'
+        );
 
         const [swaps, total] = getBestPaths(
             pathsSorted,
             SwapTypes.SwapExactIn,
-            parseFixed('1', 6),
+            parseFixed('1', 18),
             6,
             18,
             4,
             Zero
         );
-
-        assert.equal(total.toString(), '0.979134514480936');
+        assert.equal(total.toString(), '979134514480936000');
         assert.equal(swaps.length, 2);
         assert.equal(
             swaps[0][0].pool,
             '0x0481d726c3d25250a8963221945ed93b8a5315a9'
         );
-        assert.equal(swaps[0][0].swapAmount, '0.500000000000016951');
+
+        assert.equal(swaps[0][0].swapAmount, '500000000000016951');
         assert.equal(swaps[0][0].tokenIn, tokenIn);
         assert.equal(
             swaps[0][0].tokenOut,
@@ -601,7 +607,7 @@ describe('Tests pools filtering and path processing', () => {
             swaps[0][1].pool,
             '0x07d13ed39ee291c1506675ff42f9b2b6b50e2d3e'
         );
-        assert.equal(swaps[0][1].swapAmount, '0.49475509621737');
+        assert.equal(swaps[0][1].swapAmount, '494755096217370000');
         assert.equal(
             swaps[0][1].tokenIn,
             '0x0000000000085d4780b73119b644ae5ecd22b376'
@@ -611,7 +617,7 @@ describe('Tests pools filtering and path processing', () => {
             swaps[1][0].pool,
             '0x0481d726c3d25250a8963221945ed93b8a5315a9'
         );
-        assert.equal(swaps[1][0].swapAmount, '0.499999999999983049');
+        assert.equal(swaps[1][0].swapAmount, '499999999999983049');
         assert.equal(swaps[1][0].tokenIn, tokenIn);
         assert.equal(
             swaps[1][0].tokenOut,
@@ -621,7 +627,7 @@ describe('Tests pools filtering and path processing', () => {
             swaps[1][1].pool,
             '0x07d13ed39ee291c1506675ff42f9b2b6b50e2d3e'
         );
-        assert.equal(swaps[1][1].swapAmount, '0.494754097206633');
+        assert.equal(swaps[1][1].swapAmount, '494754097206633000');
         assert.equal(
             swaps[1][1].tokenIn,
             '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'

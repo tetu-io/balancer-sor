@@ -1,4 +1,4 @@
-import { BigNumber as OldBigNumber, bnum, ZERO } from '../utils/bignumber';
+// import { BigNumber as OldBigNumber, bnum, ZERO } from '../utils/bignumber';
 import { getHighestLimitAmountsForPaths } from './helpersClass';
 import { formatSwaps, optimizeSwapAmounts } from './sorClass';
 import { NewPath, Swap, SwapTypes } from '../types';
@@ -13,14 +13,16 @@ export const getBestPaths = (
     outputDecimals: number,
     maxPools: number,
     costReturnToken: BigNumber
-): [Swap[][], OldBigNumber, OldBigNumber, OldBigNumber] => {
+): [Swap[][], BigNumber, BigNumber, BigNumber] => {
     // No paths available or totalSwapAmount == 0, return empty solution
     if (paths.length == 0 || totalSwapAmount.isZero()) {
-        return [[], ZERO, ZERO, ZERO];
+        return [[], Zero, Zero, Zero];
     }
 
     // Before we start the main loop, we first check if there is enough liquidity for this totalSwapAmount
     const highestLimitAmounts = getHighestLimitAmountsForPaths(paths, maxPools);
+    // pathLimits.ts modified so that limits are set to precision 18.
+
     const sumLimitAmounts = highestLimitAmounts.reduce(
         (r: BigNumber[], pathLimit: BigNumber) => {
             r.push(pathLimit.add(r[r.length - 1] || Zero));
@@ -31,7 +33,7 @@ export const getBestPaths = (
 
     // If the cumulative limit across all paths is lower than totalSwapAmount then no solution is possible
     if (totalSwapAmount.gt(sumLimitAmounts[sumLimitAmounts.length - 1])) {
-        return [[], ZERO, ZERO, ZERO]; // Not enough liquidity, return empty
+        return [[], Zero, Zero, Zero]; // Not enough liquidity, return empty
     }
 
     // We use the highest limits to define the initial number of pools considered and the initial guess for swapAmounts.
@@ -67,11 +69,10 @@ export const getBestPaths = (
     const [swaps, bestTotalReturn, marketSp] = formatSwaps(
         bestPaths,
         swapType,
-        bnum(formatFixed(totalSwapAmount, inputDecimals)),
+        totalSwapAmount,
         bestSwapAmounts
     );
 
-    if (bestTotalReturn.eq(0)) return [[], ZERO, ZERO, ZERO];
-
+    if (bestTotalReturn.eq(0)) return [[], Zero, Zero, Zero];
     return [swaps, bestTotalReturn, marketSp, bestTotalReturnConsideringFees];
 };

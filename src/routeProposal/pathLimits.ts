@@ -57,7 +57,7 @@ export function getLimitAmountSwapForPath(
         if (limit.isZero()) return Zero;
         const result = parseFixed(
             limit.dp(poolPairData[0].decimalsIn).toString(),
-            poolPairData[0].decimalsIn
+            18
         );
         return result;
     } else {
@@ -91,7 +91,7 @@ export function getLimitAmountSwapForPath(
             limit
                 .dp(poolPairData[poolPairData.length - 1].decimalsOut)
                 .toString(),
-            poolPairData[poolPairData.length - 1].decimalsOut
+            18
         );
     }
 }

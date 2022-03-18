@@ -4,12 +4,8 @@ import { MetaStablePool } from './metaStablePool/metaStablePool';
 import { LinearPool } from './linearPool/linearPool';
 import { ElementPool } from './elementPool/elementPool';
 import { PhantomStablePool } from './phantomStablePool/phantomStablePool';
-import {
-    BigNumber as OldBigNumber,
-    INFINITY,
-    scale,
-    ZERO,
-} from '../utils/bignumber';
+import { BigNumber } from '@ethersproject/bignumber';
+import { BigNumber as OldBigNumber, ZERO } from '../utils/bignumber';
 import {
     SubgraphPoolBase,
     PoolBase,
@@ -17,6 +13,8 @@ import {
     PoolPairBase,
     PoolTypes,
 } from '../types';
+import { Zero } from '@ethersproject/constants';
+import { convert } from '../router/helpersClass';
 
 export function parseNewPool(
     pool: SubgraphPoolBase,
@@ -89,12 +87,8 @@ export function getOutputAmountSwap(
     } else {
         if (poolPairData.balanceOut.isZero()) {
             return ZERO;
-        } else if (
-            scale(amount, poolPairData.decimalsOut).gte(
-                poolPairData.balanceOut.toString()
-            )
-        ) {
-            return INFINITY;
+        } else if (convert(amount, 18).gte(poolPairData.balanceOut)) {
+            throw Error('insufficient pool balance');
         } else {
             return pool._tokenInForExactTokenOut(poolPairData, amount);
         }
