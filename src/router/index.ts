@@ -1,8 +1,8 @@
 import { BigNumber as OldBigNumber, bnum, ZERO } from '../utils/bignumber';
-import { getHighestLimitAmountsForPaths } from './helpersClass';
+import { convert, getHighestLimitAmountsForPaths } from './helpersClass';
 import { formatSwaps, optimizeSwapAmounts } from './sorClass';
 import { NewPath, Swap, SwapTypes } from '../types';
-import { BigNumber, formatFixed } from '@ethersproject/bignumber';
+import { BigNumber, formatFixed, parseFixed } from '@ethersproject/bignumber';
 import { Zero } from '@ethersproject/constants';
 
 export const getBestPaths = (
@@ -13,10 +13,10 @@ export const getBestPaths = (
     outputDecimals: number,
     maxPools: number,
     costReturnToken: BigNumber
-): [Swap[][], OldBigNumber, OldBigNumber, OldBigNumber] => {
+): [Swap[][], BigNumber, BigNumber, BigNumber] => {
     // No paths available or totalSwapAmount == 0, return empty solution
     if (paths.length == 0 || totalSwapAmount.isZero()) {
-        return [[], ZERO, ZERO, ZERO];
+        return [[], Zero, Zero, Zero];
     }
 
     // Before we start the main loop, we first check if there is enough liquidity for this totalSwapAmount
@@ -31,7 +31,7 @@ export const getBestPaths = (
 
     // If the cumulative limit across all paths is lower than totalSwapAmount then no solution is possible
     if (totalSwapAmount.gt(sumLimitAmounts[sumLimitAmounts.length - 1])) {
-        return [[], ZERO, ZERO, ZERO]; // Not enough liquidity, return empty
+        return [[], Zero, Zero, Zero]; // Not enough liquidity, return empty
     }
 
     // We use the highest limits to define the initial number of pools considered and the initial guess for swapAmounts.
@@ -64,14 +64,25 @@ export const getBestPaths = (
             costReturnToken
         );
 
+    const bnBestSwapAmounts = bestSwapAmounts.map((amount) =>
+        convert(amount, 18)
+    );
+
     const [swaps, bestTotalReturn, marketSp] = formatSwaps(
         bestPaths,
         swapType,
-        bnum(formatFixed(totalSwapAmount, inputDecimals)),
-        bestSwapAmounts
+        totalSwapAmount,
+        bnBestSwapAmounts,
+        inputDecimals,
+        outputDecimals
     );
 
-    if (bestTotalReturn.eq(0)) return [[], ZERO, ZERO, ZERO];
+    if (bestTotalReturn.eq(0)) return [[], Zero, Zero, Zero];
 
-    return [swaps, bestTotalReturn, marketSp, bestTotalReturnConsideringFees];
+    const bnBestTotalReturnConsideringFees = convert(
+        bestTotalReturnConsideringFees,
+        outputDecimals
+    );
+
+    return [swaps, bestTotalReturn, marketSp, bnBestTotalReturnConsideringFees];
 };

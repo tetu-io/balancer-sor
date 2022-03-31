@@ -389,3 +389,46 @@ export function EVMgetOutputAmountSwap(
 
     return returnAmount;
 }
+
+export function convert(amount: OldBigNumber, decimals: number): BigNumber {
+    return parseFixed(
+        amount.dp(decimals, OldBigNumber.ROUND_FLOOR).toString(),
+        decimals
+    );
+}
+
+/*
+This code might be useful at a later stage
+
+export function alternativeConvert(amount: OldBigNumber, decimals: number): BigNumber {
+    if (amount.isFinite()) {
+        const result = BigNumber.from(scale(amount, decimals).dp(0).toString());
+        return result;
+    } else {
+        return HUGEVALUE;
+    }
+
+export function alternativeDeconvert(amount: BigNumber, decimals: number): OldBigNumber {
+    return bnum(amount.toString()).div(10 ** decimals);
+}
+
+export function takeToPrecision18(
+    amount: BigNumber,
+    decimals: number
+): BigNumber {
+    for (let i = 0; i < 18 - decimals; i++) {
+        amount = amount.mul(10);
+    }
+    return amount;
+}
+
+export function restorePrecision(
+    amount: BigNumber,
+    decimals: number
+): BigNumber {
+    for (let i = 0; i < 18 - decimals; i++) {
+        amount = amount.div(10);
+    }
+    return amount;
+}
+}*/

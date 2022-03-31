@@ -14,8 +14,10 @@ import {
     getDerivativeSpotPriceAfterSwapForPath,
     getOutputAmountSwapForPath,
     EVMgetOutputAmountSwap,
+    convert,
 } from './helpersClass';
-import { BigNumber, formatFixed } from '@ethersproject/bignumber';
+import { BigNumber, formatFixed, parseFixed } from '@ethersproject/bignumber';
+import { Zero } from '@ethersproject/constants';
 
 export const optimizeSwapAmounts = (
     paths: NewPath[],
@@ -210,9 +212,15 @@ const optimizePathDistribution = (
 export const formatSwaps = (
     bestPaths: NewPath[],
     swapType: SwapTypes,
-    totalSwapAmount: OldBigNumber,
-    bestSwapAmounts: OldBigNumber[]
-): [Swap[][], OldBigNumber, OldBigNumber] => {
+    bnTotalSwapAmount: BigNumber,
+    bnBestSwapAmounts: BigNumber[],
+    inputDecimals: number,
+    outputDecimals: number
+): [Swap[][], BigNumber, BigNumber] => {
+    const totalSwapAmount = bnum(formatFixed(bnTotalSwapAmount, inputDecimals));
+    const bestSwapAmounts = bnBestSwapAmounts.map((amount) =>
+        bnum(formatFixed(amount, 18))
+    );
     //// Prepare swap data from paths
     const swaps: Swap[][] = [];
     let highestSwapAmt = bestSwapAmounts[0];
@@ -316,7 +324,7 @@ export const formatSwaps = (
         }
     }
 
-    if (bestTotalReturn.eq(0)) return [[], ZERO, ZERO];
+    if (bestTotalReturn.eq(0)) return [[], Zero, Zero];
 
     const marketSp = getSpotPriceAfterSwapForPath(
         largestSwapPath,
@@ -324,7 +332,10 @@ export const formatSwaps = (
         ZERO
     );
 
-    return [swaps, bestTotalReturn, marketSp];
+    const bnBestTotalReturn = convert(bestTotalReturn, outputDecimals);
+    const bnMarketSp = convert(marketSp, outputDecimals);
+
+    return [swaps, bnBestTotalReturn, bnMarketSp];
 };
 
 //  For a given list of swapAmounts, gets list of pools with best effective price for these amounts

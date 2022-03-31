@@ -258,19 +258,6 @@ export class SOR {
             costOutputToken
         );
 
-        return [
-            swaps,
-            parseFixed(
-                total.dp(outputDecimals, OldBigNumber.ROUND_FLOOR).toString(),
-                outputDecimals
-            ),
-            marketSp.toString(),
-            parseFixed(
-                totalConsideringFees
-                    .dp(outputDecimals, OldBigNumber.ROUND_FLOOR)
-                    .toString(),
-                outputDecimals
-            ),
-        ];
+        return [swaps, total, marketSp.toString(), totalConsideringFees];
     }
 }
