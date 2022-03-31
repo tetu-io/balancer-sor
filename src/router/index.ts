@@ -1,8 +1,12 @@
-import { BigNumber as OldBigNumber, bnum, ZERO } from '../utils/bignumber';
-import { convert, getHighestLimitAmountsForPaths } from './helpersClass';
+import { BigNumber as OldBigNumber } from '../utils/bignumber';
+import {
+    convert,
+    getHighestLimitAmountsForPaths,
+    takeToPrecision18,
+} from './helpersClass';
 import { formatSwaps, optimizeSwapAmounts } from './sorClass';
 import { NewPath, Swap, SwapTypes } from '../types';
-import { BigNumber, formatFixed, parseFixed } from '@ethersproject/bignumber';
+import { BigNumber } from '@ethersproject/bignumber';
 import { Zero } from '@ethersproject/constants';
 
 export const getBestPaths = (
@@ -64,25 +68,18 @@ export const getBestPaths = (
             costReturnToken
         );
 
-    const bnBestSwapAmounts = bestSwapAmounts.map((amount) =>
-        convert(amount, 18)
-    );
+    totalSwapAmount = takeToPrecision18(totalSwapAmount, inputDecimals);
 
     const [swaps, bestTotalReturn, marketSp] = formatSwaps(
         bestPaths,
         swapType,
         totalSwapAmount,
-        bnBestSwapAmounts,
+        bestSwapAmounts,
         inputDecimals,
         outputDecimals
     );
 
     if (bestTotalReturn.eq(0)) return [[], Zero, Zero, Zero];
 
-    const bnBestTotalReturnConsideringFees = convert(
-        bestTotalReturnConsideringFees,
-        outputDecimals
-    );
-
-    return [swaps, bestTotalReturn, marketSp, bnBestTotalReturnConsideringFees];
+    return [swaps, bestTotalReturn, marketSp, bestTotalReturnConsideringFees];
 };

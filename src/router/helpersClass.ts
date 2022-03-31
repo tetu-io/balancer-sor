@@ -15,6 +15,8 @@ import {
     PoolTypes,
 } from '../types';
 import { BigNumber, formatFixed, parseFixed } from '@ethersproject/bignumber';
+import { HUGEVALUE } from '../constants';
+import { Zero } from '@ethersproject/constants';
 
 export function getHighestLimitAmountsForPaths(
     paths: NewPath[],
@@ -391,10 +393,14 @@ export function EVMgetOutputAmountSwap(
 }
 
 export function convert(amount: OldBigNumber, decimals: number): BigNumber {
-    return parseFixed(
-        amount.dp(decimals, OldBigNumber.ROUND_FLOOR).toString(),
-        decimals
-    );
+    if (amount.isFinite()) {
+        const result = BigNumber.from(scale(amount, decimals).dp(0).toString());
+        return result;
+    } else {
+        // The following commented line might be useful to detect infinity related problems
+        // throw Error('infinity not supported yet');
+        return HUGEVALUE;
+    }
 }
 
 /*
@@ -411,6 +417,7 @@ export function alternativeConvert(amount: OldBigNumber, decimals: number): BigN
 export function alternativeDeconvert(amount: BigNumber, decimals: number): OldBigNumber {
     return bnum(amount.toString()).div(10 ** decimals);
 }
+*/
 
 export function takeToPrecision18(
     amount: BigNumber,
@@ -431,4 +438,3 @@ export function restorePrecision(
     }
     return amount;
 }
-}*/

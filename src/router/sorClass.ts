@@ -30,7 +30,7 @@ export const optimizeSwapAmounts = (
     initialNumPaths: number,
     maxPools: number,
     costReturnToken: BigNumber
-): [NewPath[], OldBigNumber[], OldBigNumber] => {
+): [NewPath[], BigNumber[], BigNumber] => {
     // First get the optimal totalReturn to trade 'totalSwapAmount' with
     // one path only (b=1). Then increase the number of pools as long as
     // improvementCondition is true (see more information below)
@@ -134,7 +134,15 @@ export const optimizeSwapAmounts = (
         (swapAmount) => !swapAmount.isZero()
     );
 
-    return [bestPaths, bestSwapAmounts, bestTotalReturnConsideringFees];
+    const bnBestSwapAmounts = bestSwapAmounts.map((amount) =>
+        convert(amount, 18)
+    );
+    const bnBestTotalReturnConsideringFees = convert(
+        bestTotalReturnConsideringFees,
+        outputDecimals
+    );
+
+    return [bestPaths, bnBestSwapAmounts, bnBestTotalReturnConsideringFees];
 };
 
 /**
@@ -212,15 +220,11 @@ const optimizePathDistribution = (
 export const formatSwaps = (
     bestPaths: NewPath[],
     swapType: SwapTypes,
-    bnTotalSwapAmount: BigNumber,
-    bnBestSwapAmounts: BigNumber[],
+    totalSwapAmount: BigNumber,
+    bestSwapAmounts: BigNumber[],
     inputDecimals: number,
     outputDecimals: number
 ): [Swap[][], BigNumber, BigNumber] => {
-    const totalSwapAmount = bnum(formatFixed(bnTotalSwapAmount, inputDecimals));
-    const bestSwapAmounts = bnBestSwapAmounts.map((amount) =>
-        bnum(formatFixed(amount, 18))
-    );
     //// Prepare swap data from paths
     const swaps: Swap[][] = [];
     let highestSwapAmt = bestSwapAmounts[0];
@@ -251,7 +255,7 @@ export const formatSwaps = (
         const amounts: OldBigNumber[] = [];
         let returnAmount: OldBigNumber;
         const n = poolPairData.length;
-        amounts.push(swapAmount);
+        amounts.push(bnum(formatFixed(swapAmount, 18)));
         if (swapType === SwapTypes.SwapExactIn) {
             for (let i = 0; i < n; i++) {
                 amounts.push(
@@ -304,14 +308,15 @@ export const formatSwaps = (
     // and we do that by adding the rounding error to the first path.
     if (swaps.length > 0) {
         const totalSwapAmountWithRoundingErrors = bestSwapAmounts.reduce(
-            (a, b) => a.plus(b),
-            ZERO
+            (a, b) => a.add(b),
+            Zero
         );
-        const dust = totalSwapAmount.minus(totalSwapAmountWithRoundingErrors);
+        const dust = totalSwapAmount.sub(totalSwapAmountWithRoundingErrors);
+        const bnumDust = bnum(formatFixed(dust, inputDecimals));
         if (swapType === SwapTypes.SwapExactIn) {
             // As swap is ExactIn, add dust to input pool
             swaps[0][0].swapAmount = bnum(swaps[0][0].swapAmount as string)
-                .plus(dust)
+                .plus(bnumDust)
                 .toString();
         } else {
             // As swap is ExactOut, add dust to output pool
@@ -319,7 +324,7 @@ export const formatSwaps = (
             swaps[0][firstPathLastPoolIndex].swapAmount = bnum(
                 swaps[0][firstPathLastPoolIndex].swapAmount as string
             )
-                .plus(dust)
+                .plus(bnumDust)
                 .toString();
         }
     }
