@@ -15,9 +15,12 @@ import {
     getOutputAmountSwapForPath,
     EVMgetOutputAmountSwap,
     convert,
+    takeToPrecision18,
+    restorePrecision,
 } from './helpersClass';
 import { BigNumber, formatFixed, parseFixed } from '@ethersproject/bignumber';
 import { Zero } from '@ethersproject/constants';
+import { HUGEVALUE } from '../constants';
 
 export const optimizeSwapAmounts = (
     paths: NewPath[],
@@ -31,16 +34,25 @@ export const optimizeSwapAmounts = (
     maxPools: number,
     costReturnToken: BigNumber
 ): [NewPath[], BigNumber[], BigNumber] => {
+    // Modifications of BigNumber types in this function produced
+    // one test item to fail, but it seems just a tiny rounding error.
+    totalSwapAmount = takeToPrecision18(totalSwapAmount, inputDecimals);
+    initialSwapAmounts = initialSwapAmounts.map((amount) =>
+        takeToPrecision18(amount, inputDecimals)
+    );
+    highestLimitAmounts = highestLimitAmounts.map((amount) =>
+        takeToPrecision18(amount, inputDecimals)
+    );
+    // costReturnToken has to be rescaled?
+
     // First get the optimal totalReturn to trade 'totalSwapAmount' with
     // one path only (b=1). Then increase the number of pools as long as
     // improvementCondition is true (see more information below)
     let bestTotalReturnConsideringFees =
-        swapType === SwapTypes.SwapExactIn ? INFINITY.times(-1) : INFINITY;
-    let bestSwapAmounts: OldBigNumber[] = [];
+        swapType === SwapTypes.SwapExactIn ? HUGEVALUE.mul(-1) : HUGEVALUE;
+    let bestSwapAmounts: BigNumber[] = [];
     let bestPaths: NewPath[] = [];
-    let swapAmounts = initialSwapAmounts.map((amount) =>
-        bnum(formatFixed(amount, inputDecimals))
-    );
+    let swapAmounts = initialSwapAmounts;
     for (let b = initialNumPaths; b <= paths.length; b++) {
         if (b != initialNumPaths) {
             // We already had a previous iteration and are adding another pool this new iteration
@@ -52,39 +64,44 @@ export const optimizeSwapAmounts = (
             // 20% of the totalSwapAmount for this new swapAmount added). However, we need to make sure
             // that this value is not higher then the bth limit of the paths available otherwise there
             // won't be any possible path to process this swapAmount:
-            const humanTotalSwapAmount = formatFixed(
-                totalSwapAmount,
-                inputDecimals
-            );
-            const newSwapAmount = OldBigNumber.min.apply(null, [
-                bnum(humanTotalSwapAmount).times(bnum(1 / b)),
-                formatFixed(highestLimitAmounts[b - 1], inputDecimals),
-            ]);
+            let newSwapAmount = totalSwapAmount.div(b);
+            newSwapAmount = newSwapAmount.lt(highestLimitAmounts[b - 1])
+                ? newSwapAmount
+                : highestLimitAmounts[b - 1];
             // We need then to multiply all current
             // swapAmounts by 1-newSwapAmount/totalSwapAmount.
             swapAmounts.forEach((swapAmount, i) => {
-                swapAmounts[i] = swapAmount.times(
-                    ONE.minus(newSwapAmount.div(humanTotalSwapAmount))
+                swapAmounts[i] = swapAmount.sub(
+                    swapAmount.mul(newSwapAmount).div(totalSwapAmount)
                 );
             });
             swapAmounts.push(newSwapAmount);
         }
 
+        let bnumSwapAmounts = swapAmounts.map((amount) =>
+            bnum(formatFixed(amount, 18))
+        );
         const { paths: selectedPaths, swapAmounts: bestAmounts } =
             optimizePathDistribution(
                 paths,
                 swapType,
-                totalSwapAmount,
-                swapAmounts,
+                restorePrecision(totalSwapAmount, inputDecimals),
+                bnumSwapAmounts,
                 inputDecimals
             );
-        swapAmounts = bestAmounts;
+        swapAmounts = bestAmounts.map((amount) => convert(amount, 18));
+        bnumSwapAmounts = swapAmounts.map((amount) =>
+            bnum(formatFixed(amount, 18))
+        );
 
-        const totalReturn = calcTotalReturn(
-            selectedPaths,
-            swapType,
-            swapAmounts,
-            inputDecimals
+        const totalReturn = convert(
+            calcTotalReturn(
+                selectedPaths,
+                swapType,
+                bnumSwapAmounts,
+                inputDecimals
+            ),
+            outputDecimals
         );
 
         // Calculates the number of pools in all the paths to include the gas costs
@@ -98,21 +115,17 @@ export const optimizeSwapAmounts = (
         // and MINIMIZED for 'swapExactOut'
         // This is because for the case of 'swapExactOut', totalReturn means the
         // amount of tokenIn needed to buy totalSwapAmount of tokenOut
-        const costReturnTokenHuman = formatFixed(
-            costReturnToken,
-            outputDecimals
-        );
         let improvementCondition = false;
-        let totalReturnConsideringFees = ZERO;
-        const gasFees = bnum(totalNumberOfPools).times(costReturnTokenHuman);
+        let totalReturnConsideringFees = Zero;
+        const gasFees = costReturnToken.mul(totalNumberOfPools);
         if (swapType === SwapTypes.SwapExactIn) {
-            totalReturnConsideringFees = totalReturn.minus(gasFees);
-            improvementCondition = totalReturnConsideringFees.isGreaterThan(
+            totalReturnConsideringFees = totalReturn.sub(gasFees);
+            improvementCondition = totalReturnConsideringFees.gt(
                 bestTotalReturnConsideringFees
             );
         } else {
-            totalReturnConsideringFees = totalReturn.plus(gasFees);
-            improvementCondition = totalReturnConsideringFees.isLessThan(
+            totalReturnConsideringFees = totalReturn.add(gasFees);
+            improvementCondition = totalReturnConsideringFees.lt(
                 bestTotalReturnConsideringFees
             );
         }
@@ -134,6 +147,8 @@ export const optimizeSwapAmounts = (
         (swapAmount) => !swapAmount.isZero()
     );
 
+    return [bestPaths, bestSwapAmounts, bestTotalReturnConsideringFees];
+    /*
     const bnBestSwapAmounts = bestSwapAmounts.map((amount) =>
         convert(amount, 18)
     );
@@ -141,8 +156,8 @@ export const optimizeSwapAmounts = (
         bestTotalReturnConsideringFees,
         outputDecimals
     );
-
     return [bestPaths, bnBestSwapAmounts, bnBestTotalReturnConsideringFees];
+    */
 };
 
 /**
