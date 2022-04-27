@@ -4,8 +4,15 @@ import { PoolDataService, SubgraphPoolBase } from './types';
 export class PoolCacher {
     private pools: SubgraphPoolBase[] = [];
     private _finishedFetching = false;
+    private readonly poolDataServices: PoolDataService[];
 
-    constructor(private readonly poolDataService: PoolDataService) {}
+    constructor(
+        poolDataServiceOrServices: PoolDataService | PoolDataService[]
+    ) {
+        this.poolDataServices = Array.isArray(poolDataServiceOrServices)
+            ? poolDataServiceOrServices
+            : [poolDataServiceOrServices];
+    }
 
     public get finishedFetching(): boolean {
         return this._finishedFetching;
@@ -20,9 +27,13 @@ export class PoolCacher {
      */
     public async fetchPools(): Promise<boolean> {
         try {
-            this.pools = await this.poolDataService.getPools();
+            // fetch pools from all data services
+            const poolsGetPoolsPromises = this.poolDataServices.map(
+                (poolDataService) => poolDataService.getPools()
+            );
+            const poolsArrays = await Promise.all(poolsGetPoolsPromises);
+            this.pools = poolsArrays.flat();
             this._finishedFetching = true;
-
             return true;
         } catch (err) {
             // On error clear all caches and return false so user knows to try again.

@@ -105,6 +105,11 @@ export const SUBGRAPH_URLS = {
     [Network.ARBITRUM]: `https://api.thegraph.com/subgraphs/name/balancer-labs/balancer-arbitrum-v2`,
 };
 
+export const UNISWAP_SUBGRAPH_URLS = {
+    [Network.POLYGON]:
+        'https://api.thegraph.com/subgraphs/name/sushiswap/matic-exchange',
+};
+
 export const ADDRESSES = {
     [Network.MAINNET]: {
         BatchRelayer: {
