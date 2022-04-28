@@ -696,8 +696,9 @@ export async function simpleSwap() {
     const tokenIn = ADDRESSES[networkId].bstUSD_PLUS;
     const tokenOut = ADDRESSES[networkId].BAL;
     const swapType = SwapTypes.SwapExactIn;
-    const swapAmount = parseFixed('0.1', 18);
-    const executeTrade = true;
+    const swapAmount = parseFixed('1.0', 18);
+    // const executeTrade = true;
+    const executeTrade = false;
 
     const provider = new JsonRpcProvider(PROVIDER_URLS[networkId]);
 

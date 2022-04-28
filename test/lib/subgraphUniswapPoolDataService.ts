@@ -2,11 +2,11 @@ import fetch from 'isomorphic-fetch';
 import { PoolDataService, SubgraphPoolBase, SubgraphToken } from '../../src';
 import { getOnChainBalances } from './onchainData';
 import { Provider } from '@ethersproject/providers';
-
+// TODO first: 1000,
 const queryWithLinear = `
 {
-  factory:pairs(
-    first: 1000,
+  pairs: pairs(
+    first: 100,
     orderBy:reserveETH,
     orderDirection: desc
   ) {
@@ -49,6 +49,7 @@ export class SubgraphUniswapPoolDataService implements PoolDataService {
             subgraphUrl: string;
             provider: Provider;
             onchain: boolean;
+            swapFee: string;
         }
     ) {}
 
@@ -65,12 +66,12 @@ export class SubgraphUniswapPoolDataService implements PoolDataService {
         const { data } = await response.json();
 
         // transform uniswap subgraph data to SubgraphPoolBase
-        const pools: SubgraphPoolBase[] = data.pools.map((p) => {
+        const pools: SubgraphPoolBase[] = data.pairs.map((p) => {
             return {
                 id: p.id + this.poolIdPostfix,
                 address: p.id,
                 poolType: 'UniswapV2',
-                swapFee: '0.03',
+                swapFee: this.config.swapFee ?? '0.03', // TODO fetch for tetuswap onchain
                 swapEnabled: true,
                 totalShares: p.totalSupply,
                 tokens: [
@@ -93,7 +94,7 @@ export class SubgraphUniswapPoolDataService implements PoolDataService {
                 totalWeight: '1',
             };
         });
-
+        console.log('pools[0]', pools[0]); // TODO remove
         // TODO getOnChainBalances Uniswap V2
         // if (this.config.onchain) {
         //     return getOnChainBalances(

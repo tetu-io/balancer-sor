@@ -49,10 +49,10 @@ export class SOR {
     constructor(
         public provider: Provider,
         private readonly config: SorConfig,
-        poolDataService: PoolDataService,
+        poolDataServiceOrServices: PoolDataService | PoolDataService[],
         tokenPriceService: TokenPriceService
     ) {
-        this.poolCacher = new PoolCacher(poolDataService);
+        this.poolCacher = new PoolCacher(poolDataServiceOrServices);
         this.routeProposer = new RouteProposer(config);
         this.swapCostCalculator = new SwapCostCalculator(
             config,

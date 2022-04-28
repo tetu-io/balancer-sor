@@ -2,11 +2,11 @@ import fetch from 'isomorphic-fetch';
 import { PoolDataService, SubgraphPoolBase } from '../../src';
 import { getOnChainBalances } from './onchainData';
 import { Provider } from '@ethersproject/providers';
-
+// TODO first: 1000,
 const queryWithLinear = `
       {
         pools: pools(
-          first: 1000,
+          first: 200,
           where: { swapEnabled: true },
           orderBy: totalLiquidity,
           orderDirection: desc
