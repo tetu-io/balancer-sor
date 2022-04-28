@@ -40,7 +40,7 @@ export const Query: { [chainId: number]: string } = {
 export class SubgraphUniswapPoolDataService implements PoolDataService {
     // This constant is added to pool address to generate bytes32 balancer-like pool id
     // so Swapper contract can detect what it is Uniswap V2 pool and call its swap function
-    protected readonly poolIdPostfix = 'fffffffffffffffffffffff2';
+    protected readonly poolIdSuffix = 'fffffffffffffffffffffff';
     constructor(
         private readonly config: {
             chainId: number;
@@ -49,9 +49,16 @@ export class SubgraphUniswapPoolDataService implements PoolDataService {
             subgraphUrl: string;
             provider: Provider;
             onchain: boolean;
-            swapFee: string;
+            dexId?: number;
+            swapFee?: string;
         }
-    ) {}
+    ) {
+        if (
+            this.config.dexId &&
+            (this.config.dexId < 0 || this.config.dexId > 15)
+        )
+            throw new Error('dexId out of bounds');
+    }
 
     public async getPools(): Promise<SubgraphPoolBase[]> {
         const response = await fetch(this.config.subgraphUrl, {
@@ -68,7 +75,10 @@ export class SubgraphUniswapPoolDataService implements PoolDataService {
         // transform uniswap subgraph data to SubgraphPoolBase
         const pools: SubgraphPoolBase[] = data.pairs.map((p) => {
             return {
-                id: p.id + this.poolIdPostfix,
+                id:
+                    p.id +
+                    this.poolIdSuffix +
+                    (this.config.dexId ? this.config.dexId.toString(16) : '0'),
                 address: p.id,
                 poolType: 'UniswapV2',
                 swapFee: this.config.swapFee ?? '0.03', // TODO fetch for tetuswap onchain

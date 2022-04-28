@@ -54,14 +54,22 @@ export const BALANCER_SUBGRAPH_URLS = {
         'https://api.thegraph.com/subgraphs/name/balancer-labs/balancer-polygon-v2',
 };
 
+// id (range 0-15) is used to show swap dex on UI
 export const UNISWAP_SUBGRAPHS = {
     [Network.POLYGON]: [
         {
+            dexId: 0,
             url: 'https://api.thegraph.com/subgraphs/name/tetu-io/tetu-swap',
             swapFee: '0.01',
         },
-        // {url:'https://api.thegraph.com/subgraphs/name/sushiswap/matic-exchange'},
-        // {url:'https://api.thegraph.com/subgraphs/name/sameepsi/quickswap06'}, // TODO find official subgraph
+        {
+            dexId: 1,
+            url: 'https://api.thegraph.com/subgraphs/name/sushiswap/matic-exchange',
+        },
+        {
+            dexId: 2,
+            url: 'https://api.thegraph.com/subgraphs/name/sameepsi/quickswap06',
+        }, // TODO find official subgraph
     ],
 };
 
@@ -560,7 +568,7 @@ export async function simpleSwap() {
         swapType,
         swapAmount
     );
-    console.log('swapInfo', swapInfo);
+    // console.log('swapInfo', swapInfo);
 
     if (executeTrade) {
         if ([tokenIn, tokenOut].includes(ADDRESSES[networkId].STETH)) {
