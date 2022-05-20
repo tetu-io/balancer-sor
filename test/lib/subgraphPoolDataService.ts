@@ -94,6 +94,8 @@ export class SubgraphPoolDataService implements PoolDataService {
     ) {}
 
     public async getPools(): Promise<SubgraphPoolBase[]> {
+        const timeIdSubgraph = 'getPools subgraph (balancer)';
+        console.time(timeIdSubgraph);
         const response = await fetch(this.config.subgraphUrl, {
             method: 'POST',
             headers: {
@@ -102,18 +104,20 @@ export class SubgraphPoolDataService implements PoolDataService {
             },
             body: JSON.stringify({ query: Query[this.config.chainId] }),
         });
-
         const { data } = await response.json();
+        console.timeEnd(timeIdSubgraph);
 
         if (this.config.onchain) {
-            return getOnChainBalances(
+            const timeIdOnchain = 'getPools onchain (balancer)';
+            console.time(timeIdOnchain);
+            const onChainBalances = getOnChainBalances(
                 data.pools ?? [],
                 this.config.multiAddress,
                 this.config.vaultAddress,
                 this.config.provider
             );
-        }
-
-        return data.pools ?? [];
+            console.timeEnd(timeIdOnchain);
+            return onChainBalances;
+        } else return data.pools ?? [];
     }
 }

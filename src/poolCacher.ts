@@ -26,24 +26,23 @@ export class PoolCacher {
      * Saves updated pools data to internal cache.
      */
     public async fetchPools(): Promise<boolean> {
-        // try { // TODO remove comment
-        console.log('this.poolDataServices', this.poolDataServices.length);
-        // fetch pools from all data services
-        const poolsGetPoolsPromises = this.poolDataServices.map(
-            (poolDataService) => poolDataService.getPools()
-        );
-        const poolsArrays = await Promise.all(poolsGetPoolsPromises);
-        this.pools = poolsArrays.flat();
-        this._finishedFetching = true;
-        return true;
-        // } catch (err) {
-        //     // On error clear all caches and return false so user knows to try again.
-        //     this._finishedFetching = false;
-        //     this.pools = [];
-        //     console.error(`Error: fetchPools(): ${err.message}`);
-        //     // TODO I guess better throw an exception, than return 'false'
-        //     throw new Error(`Error: fetchPools(): ${err.message}`);
-        //     return false;
-        // }
+        try {
+            // fetch pools from all data services
+            const poolsGetPoolsPromises = this.poolDataServices.map(
+                (poolDataService) => poolDataService.getPools()
+            );
+            const poolsArrays = await Promise.all(poolsGetPoolsPromises);
+            this.pools = poolsArrays.flat();
+            this._finishedFetching = true;
+            return true;
+        } catch (err) {
+            // On error clear all caches
+            // TODO may be just inore errorus pools and build route with successful data
+            this._finishedFetching = false;
+            this.pools = [];
+            // TODO I guess better throw an exception, than return 'false'
+            throw new Error(`Error: fetchPools(): ${err.message}`);
+            // return false;
+        }
     }
 }

@@ -2,11 +2,10 @@ import fetch from 'isomorphic-fetch';
 import { PoolDataService, SubgraphPoolBase, SubgraphToken } from '../../src';
 import { getOnChainBalances } from './onchainData';
 import { Provider } from '@ethersproject/providers';
-// TODO first: 1000,
 const queryWithLinear = `
 {
   pairs: pairs(
-    first: 100,
+    first: 1000,
     orderBy:reserveETH,
     orderDirection: desc
   ) {
@@ -61,6 +60,9 @@ export class SubgraphUniswapPoolDataService implements PoolDataService {
     }
 
     public async getPools(): Promise<SubgraphPoolBase[]> {
+        const timeIdSubgraph =
+            'getPools subgraph (uniswap) #' + this.config.dexId;
+        console.time(timeIdSubgraph);
         const response = await fetch(this.config.subgraphUrl, {
             method: 'POST',
             headers: {
@@ -69,9 +71,7 @@ export class SubgraphUniswapPoolDataService implements PoolDataService {
             },
             body: JSON.stringify({ query: Query[this.config.chainId] }),
         });
-
         const { data } = await response.json();
-
         // transform uniswap subgraph data to SubgraphPoolBase
         const pools: SubgraphPoolBase[] = data.pairs.map((p) => {
             return {
@@ -104,8 +104,12 @@ export class SubgraphUniswapPoolDataService implements PoolDataService {
                 totalWeight: '1',
             };
         });
-        console.log('pools[0]', pools[0]); // TODO remove
-        // TODO getOnChainBalances Uniswap V2
+        console.timeEnd(timeIdSubgraph);
+
+        const timeIdOnchain =
+            'getPools onchain (uniswap) #' + this.config.dexId;
+        console.time(timeIdOnchain);
+        // TODO !!! getOnChainBalances Uniswap V2
         // if (this.config.onchain) {
         //     return getOnChainBalances(
         //         data.pools ?? [],
@@ -114,6 +118,7 @@ export class SubgraphUniswapPoolDataService implements PoolDataService {
         //         this.config.provider
         //     );
         // }
+        console.timeEnd(timeIdOnchain);
 
         return pools ?? [];
     }

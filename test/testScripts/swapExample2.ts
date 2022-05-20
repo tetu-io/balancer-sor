@@ -1,8 +1,6 @@
 // Example showing SOR with Vault batchSwap and Subgraph pool data, run using: $ TS_NODE_PROJECT='tsconfig.testing.json' ts-node ./test/testScripts/swapExample.ts
 
 import * as dotenv from 'dotenv';
-dotenv.config();
-
 import {
     BigNumber,
     BigNumberish,
@@ -12,7 +10,7 @@ import {
 import { JsonRpcProvider } from '@ethersproject/providers';
 import { Wallet } from '@ethersproject/wallet';
 import { Contract } from '@ethersproject/contracts';
-import { AddressZero, MaxUint256 } from '@ethersproject/constants';
+import { AddressZero } from '@ethersproject/constants';
 import {
     PoolDataService,
     SOR,
@@ -22,12 +20,12 @@ import {
     TokenPriceService,
 } from '../../src';
 import vaultArtifact from '../../src/abi/Vault.json';
-import relayerAbi from '../abi/BatchRelayer.json';
-import erc20abi from '../abi/ERC20.json';
 import { CoingeckoTokenPriceService } from '../lib/coingeckoTokenPriceService';
 import { SubgraphPoolDataService } from '../lib/subgraphPoolDataService';
 import { SubgraphUniswapPoolDataService } from '../lib/subgraphUniswapPoolDataService';
-import { mockPoolDataService } from '../lib/mockPoolDataService';
+import { mockTokenPriceService } from '../lib/mockTokenPriceService';
+
+dotenv.config();
 
 export enum Network {
     POLYGON = 137,
@@ -54,7 +52,7 @@ export const BALANCER_SUBGRAPH_URLS = {
         'https://api.thegraph.com/subgraphs/name/balancer-labs/balancer-polygon-v2',
 };
 
-// id (range 0-15) is used to show swap dex on UI
+// dexId (range 0-15) is used to show swap dex name on UI
 export const UNISWAP_SUBGRAPHS = {
     [Network.POLYGON]: [
         {
@@ -69,7 +67,7 @@ export const UNISWAP_SUBGRAPHS = {
         {
             dexId: 2,
             url: 'https://api.thegraph.com/subgraphs/name/sameepsi/quickswap06',
-        }, // TODO find official subgraph
+        }, // TODO find official subgraphs
     ],
 };
 
@@ -129,22 +127,30 @@ export const ADDRESSES = {
 };
 
 // This is the same across networks
-const vaultAddr = '0xBA12222222228d8Ba445958a75a0704d566BF2C8';
+const balancerVaultAddress = '0xBA12222222228d8Ba445958a75a0704d566BF2C8';
 
-async function getSwap(
+// Init Smart Order Router and fetch pairs
+async function initSOR(
     provider: JsonRpcProvider,
     config: SorConfig,
     poolDataServices: PoolDataService[],
-    tokenPriceService: TokenPriceService,
+    tokenPriceService: TokenPriceService
+) {
+    const sor = new SOR(provider, config, poolDataServices, tokenPriceService);
+    console.log('Fetching pools...');
+    console.time('fetchPools');
+    await sor.fetchPools(); // TODO call fetchPools() every minute on background at the server to cache it and quickly do getSwap
+    console.timeEnd('fetchPools');
+    return sor;
+}
+
+// Make API endpoint for this function (use server's SOR, but tokenIn, tokenOut and swapAmount - from client)
+async function getSwap(
+    sor: SOR,
     tokenIn: { symbol: string; address: string; decimals: number },
     tokenOut: { symbol: string; address: string; decimals: number },
-    swapType: SwapTypes,
     swapAmount: BigNumberish
 ): Promise<SwapInfo> {
-    const sor = new SOR(provider, config, poolDataServices, tokenPriceService);
-
-    await sor.fetchPools();
-
     // gasPrice is used by SOR as a factor to determine how many pools to swap against.
     // i.e. higher cost means more costly to trade against lots of different pools.
     const gasPrice = BigNumber.from('40000000000');
@@ -153,35 +159,28 @@ async function getSwap(
 
     // This calculates the cost to make a swap which is used as an input to sor to allow it to make gas efficient recommendations.
     // Note - tokenOut for SwapExactIn, tokenIn for SwapExactOut
-    const outputToken =
-        swapType === SwapTypes.SwapExactOut ? tokenIn : tokenOut;
+    console.time('getCostOfSwapInToken');
     const cost = await sor.getCostOfSwapInToken(
-        outputToken.address,
-        outputToken.decimals,
+        tokenOut.address,
+        tokenOut.decimals,
         gasPrice,
         BigNumber.from('35000')
     );
+    console.timeEnd('getCostOfSwapInToken');
+
+    console.time('getSwaps');
     const swapInfo: SwapInfo = await sor.getSwaps(
         tokenIn.address,
         tokenOut.address,
-        swapType,
+        SwapTypes.SwapExactIn,
         swapAmount,
         { gasPrice, maxPools }
     );
+    console.timeEnd('getSwaps');
 
-    const amtInScaled =
-        swapType === SwapTypes.SwapExactIn
-            ? formatFixed(swapAmount, tokenIn.decimals)
-            : formatFixed(swapInfo.returnAmount, tokenIn.decimals);
-    const amtOutScaled =
-        swapType === SwapTypes.SwapExactIn
-            ? formatFixed(swapInfo.returnAmount, tokenOut.decimals)
-            : formatFixed(swapAmount, tokenOut.decimals);
-
-    const returnDecimals =
-        swapType === SwapTypes.SwapExactIn
-            ? tokenOut.decimals
-            : tokenIn.decimals;
+    const amtInScaled = formatFixed(swapAmount, tokenIn.decimals);
+    const amtOutScaled = formatFixed(swapInfo.returnAmount, tokenOut.decimals);
+    const returnDecimals = tokenOut.decimals;
 
     const returnWithFeesScaled = formatFixed(
         swapInfo.returnAmountConsideringFees,
@@ -190,9 +189,6 @@ async function getSwap(
 
     const costToSwapScaled = formatFixed(cost, returnDecimals);
 
-    const swapTypeStr =
-        swapType === SwapTypes.SwapExactIn ? 'SwapExactIn' : 'SwapExactOut';
-    console.log(swapTypeStr);
     console.log(`Token In: ${tokenIn.symbol}, Amt: ${amtInScaled.toString()}`);
     console.log(
         `Token Out: ${tokenOut.symbol}, Amt: ${amtOutScaled.toString()}`
@@ -201,16 +197,15 @@ async function getSwap(
     console.log(`Return Considering Fees: ${returnWithFeesScaled.toString()}`);
     console.log(`Swaps:`);
     console.log(swapInfo.swaps);
+    console.log('tokenAddresses:');
     console.log(swapInfo.tokenAddresses);
+    console.log('swapInfo', swapInfo);
 
     return swapInfo;
 }
 
-async function makeTrade(
-    provider: JsonRpcProvider,
-    swapInfo: SwapInfo,
-    swapType: SwapTypes
-) {
+// Call this function from client
+async function makeTrade(provider: JsonRpcProvider, swapInfo: SwapInfo) {
     if (!swapInfo.returnAmount.gt(0)) {
         console.log(`Return Amount is 0. No swaps to exectute.`);
         return;
@@ -230,7 +225,7 @@ async function makeTrade(
 
     //     let allowance = await tokenInContract.allowance(
     //         wallet.address,
-    //         vaultAddr
+    //         balancerVaultAddress
     //     );
 
     //     if (allowance.lt(swapInfo.swapAmount)) {
@@ -239,19 +234,23 @@ async function makeTrade(
     //         );
     //         const txApprove = await tokenInContract
     //             .connect(wallet)
-    //             .approve(vaultAddr, MaxUint256);
+    //             .approve(balancerVaultAddress, MaxUint256);
     //         await txApprove.wait();
     //         console.log(`Allowance updated: ${txApprove.hash}`);
     //         allowance = await tokenInContract.allowance(
     //             wallet.address,
-    //             vaultAddr
+    //             balancerVaultAddress
     //         );
     //     }
 
     //     console.log(`Allowance: ${allowance.toString()}`);
     // }
 
-    const vaultContract = new Contract(vaultAddr, vaultArtifact, provider);
+    const vaultContract = new Contract(
+        balancerVaultAddress,
+        vaultArtifact,
+        provider
+    );
     vaultContract.connect(wallet);
 
     type FundManagement = {
@@ -268,19 +267,8 @@ async function makeTrade(
         toInternalBalance: false,
     };
 
-    const limits: string[] = getLimits(
-        swapInfo.tokenIn,
-        swapInfo.tokenOut,
-        swapType,
-        swapInfo.swapAmount,
-        swapInfo.returnAmount,
-        swapInfo.tokenAddresses
-    );
-    // const deadline = MaxUint256;
-
     console.log(funds);
     console.log(swapInfo.tokenAddresses);
-    console.log(limits);
     console.log('Swapping...');
 
     const overRides = {};
@@ -292,13 +280,14 @@ async function makeTrade(
     }
 
     const deltas = await vaultContract.queryBatchSwap(
-        swapType, // SwapType 0=SwapExactIn, 1=SwapExactOut
+        0, // SwapType 0=SwapExactIn, 1=SwapExactOut (not supported)
         swapInfo.swaps,
         swapInfo.tokenAddresses,
         funds
     );
     console.log(deltas.toString());
 
+    // TODO call Tetu Multiswap2 contract
     // const tx = await vaultContract
     //     .connect(wallet)
     //     .batchSwap(
@@ -314,189 +303,10 @@ async function makeTrade(
     // console.log(`tx: ${tx.hash}`);
 }
 
-function getLimits(
-    tokenIn: string,
-    tokenOut: string,
-    swapType: SwapTypes,
-    swapAmount: BigNumber,
-    returnAmount: BigNumber,
-    tokenAddresses: string[]
-): string[] {
-    // Limits:
-    // +ve means max to send
-    // -ve mean min to receive
-    // For a multihop the intermediate tokens should be 0
-    // This is where slippage tolerance would be added
-    const limits: string[] = [];
-    const amountIn =
-        swapType === SwapTypes.SwapExactIn ? swapAmount : returnAmount;
-    const amountOut =
-        swapType === SwapTypes.SwapExactIn ? returnAmount : swapAmount;
-
-    tokenAddresses.forEach((token, i) => {
-        if (token.toLowerCase() === tokenIn.toLowerCase())
-            limits[i] = amountIn.toString();
-        else if (token.toLowerCase() === tokenOut.toLowerCase()) {
-            limits[i] = amountOut
-                .mul('990000000000000000') // 0.99
-                .div('1000000000000000000')
-                .mul(-1)
-                .toString()
-                .split('.')[0];
-        } else {
-            limits[i] = '0';
-        }
-    });
-
-    return limits;
-}
-
-async function makeRelayerTrade(
-    provider: JsonRpcProvider,
-    swapInfo: SwapInfo,
-    swapType: SwapTypes,
-    chainId: number
-) {
-    if (!swapInfo.returnAmount.gt(0)) {
-        console.log(`Return Amount is 0. No swaps to exectute.`);
-        return;
-    }
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const key: any = process.env.TRADER_KEY;
-    const wallet = new Wallet(key, provider);
-
-    if (swapInfo.tokenIn !== AddressZero) {
-        // Vault needs approval for swapping non ETH
-        console.log('Checking vault allowance...');
-        const tokenInContract = new Contract(
-            swapInfo.tokenIn,
-            erc20abi,
-            provider
-        );
-
-        let allowance = await tokenInContract.allowance(
-            wallet.address,
-            vaultAddr
-        );
-        if (allowance.lt(swapInfo.swapAmount)) {
-            console.log(
-                `Not Enough Allowance: ${allowance.toString()}. Approving vault now...`
-            );
-            const txApprove = await tokenInContract
-                .connect(wallet)
-                .approve(vaultAddr, MaxUint256);
-            await txApprove.wait();
-            console.log(`Allowance updated: ${txApprove.hash}`);
-            allowance = await tokenInContract.allowance(
-                wallet.address,
-                vaultAddr
-            );
-        }
-
-        console.log(`Allowance: ${allowance.toString()}`);
-    }
-
-    const relayerContract = new Contract(
-        ADDRESSES[chainId].BatchRelayer.address,
-        relayerAbi,
-        provider
-    );
-    relayerContract.connect(wallet);
-
-    type FundManagement = {
-        sender: string;
-        recipient: string;
-        fromInternalBalance: boolean;
-        toInternalBalance: boolean;
-    };
-
-    const funds: FundManagement = {
-        sender: wallet.address,
-        recipient: wallet.address,
-        fromInternalBalance: false,
-        toInternalBalance: false,
-    };
-
-    let tokenIn = swapInfo.tokenIn;
-    let tokenOut = swapInfo.tokenOut;
-    if (swapInfo.tokenIn === ADDRESSES[chainId].STETH.address) {
-        tokenIn = ADDRESSES[chainId].wSTETH.address;
-    }
-    if (swapInfo.tokenOut === ADDRESSES[chainId].STETH.address) {
-        tokenOut = ADDRESSES[chainId].wSTETH.address;
-    }
-
-    const limits: string[] = getLimits(
-        swapInfo.tokenIn,
-        swapInfo.tokenOut,
-        swapType,
-        swapInfo.swapAmount,
-        swapInfo.returnAmount,
-        swapInfo.tokenAddresses
-    );
-
-    const deadline = MaxUint256;
-
-    console.log(funds);
-    console.log(swapInfo.tokenAddresses);
-    console.log(limits);
-
-    console.log('Swapping...');
-
-    const overRides = {};
-    overRides['gasLimit'] = '450000';
-    overRides['gasPrice'] = '20000000000';
-    // ETH in swaps must send ETH value
-    if (swapInfo.tokenIn === AddressZero) {
-        overRides['value'] = swapInfo.swapAmountForSwaps?.toString();
-    }
-
-    // TODO do trough relayed Swapper contract only (no single swap)
-    if (swapInfo.swaps.length === 1) {
-        console.log('SINGLE SWAP');
-        const single = {
-            poolId: swapInfo.swaps[0].poolId,
-            kind: swapType,
-            assetIn: swapInfo.tokenAddresses[swapInfo.swaps[0].assetInIndex],
-            assetOut: swapInfo.tokenAddresses[swapInfo.swaps[0].assetOutIndex],
-            amount: swapInfo.swaps[0].amount,
-            userData: swapInfo.swaps[0].userData,
-        };
-
-        if (!swapInfo.returnAmountFromSwaps) return;
-
-        let limit = swapInfo.returnAmountFromSwaps.mul(1.01).toString(); // Max In
-        if (swapType === SwapTypes.SwapExactIn)
-            limit = swapInfo.returnAmountFromSwaps.mul(0.99).toString(); // Min return
-
-        const tx = await relayerContract
-            .connect(wallet)
-            .callStatic.swap(single, funds, limit, deadline, overRides);
-        console.log(tx.toString());
-        console.log(swapInfo.returnAmountFromSwaps.mul(1.01).toString());
-    } else {
-        const tx = await relayerContract
-            .connect(wallet)
-            .batchSwap(
-                swapType,
-                swapInfo.swaps,
-                swapInfo.tokenAddresses,
-                funds,
-                limits,
-                deadline,
-                overRides
-            );
-        console.log(`tx:`);
-        console.log(tx);
-    }
-}
-
-export async function simpleSwap() {
+export async function swapExample() {
     const networkId = Network.POLYGON;
     // Pools source can be Subgraph URL or pools data set passed directly
     // Update pools list with most recent onchain balances
-
-    const swapType = SwapTypes.SwapExactIn;
 
     // const tokenIn = ADDRESSES[networkId].bstUSD_PLUS;
     // const tokenOut = ADDRESSES[networkId].BAL;
@@ -520,7 +330,7 @@ export async function simpleSwap() {
 
     const subgraphBalancerPoolDataService = new SubgraphPoolDataService({
         chainId: networkId,
-        vaultAddress: vaultAddr,
+        vaultAddress: balancerVaultAddress,
         multiAddress: MULTIADDR[networkId],
         provider,
         subgraphUrl: BALANCER_SUBGRAPH_URLS[networkId],
@@ -531,55 +341,49 @@ export async function simpleSwap() {
         (graph) =>
             new SubgraphUniswapPoolDataService({
                 chainId: networkId,
-                vaultAddress: vaultAddr,
+                vaultAddress: balancerVaultAddress,
                 multiAddress: MULTIADDR[networkId],
                 provider,
                 subgraphUrl: graph.url,
                 onchain: true,
                 swapFee: graph.swapFee,
+                dexId: graph.dexId,
             })
     );
     const subgraphPoolDataServices: PoolDataService[] = [
         subgraphBalancerPoolDataService,
         ...subgraphUniswapPoolDataServices,
     ];
-    // const subgraphPoolDataServices: PoolDataService[] = [subgraphBalancerPoolDataService]; // TODO remove
 
-    // Use the mock pool data service if you want to use pool data from a file.
+    // Use the mock pool data service if you want to use pool data from a file. (for testing purposes etc.)
     // const poolsSource = require('../testData/testPools/gusdBug.json');
     // mockPoolDataService.setPools(poolsSource);
 
+    /// CoinGecko does not work for TETU end some rare tokens // TODO may be add another price source?
     const coingeckoTokenPriceService = new CoingeckoTokenPriceService(
         networkId
     );
 
     // Use the mock token price service if you want to manually set the token price in native asset
-    //  mockTokenPriceService.setTokenPrice('0.001');
+    mockTokenPriceService.setTokenPrice('0.0162'); // Output token price
 
-    const swapInfo = await getSwap(
+    const sor = await initSOR(
         provider,
         SOR_CONFIG[networkId],
         subgraphPoolDataServices,
         // mockPoolDataService,
-        coingeckoTokenPriceService,
+        coingeckoTokenPriceService
         // mockTokenPriceService,
-        tokenIn,
-        tokenOut,
-        swapType,
-        swapAmount
     );
+
+    const swapInfo = await getSwap(sor, tokenIn, tokenOut, swapAmount);
     // console.log('swapInfo', swapInfo);
 
     if (executeTrade) {
-        if ([tokenIn, tokenOut].includes(ADDRESSES[networkId].STETH)) {
-            console.log('RELAYER SWAP');
-            await makeRelayerTrade(provider, swapInfo, swapType, networkId);
-        } else {
-            console.log('VAULT SWAP');
-            await makeTrade(provider, swapInfo, swapType);
-        }
+        console.log('VAULT SWAP');
+        await makeTrade(provider, swapInfo);
     }
 }
 
 // $ TS_NODE_PROJECT='tsconfig.testing.json' ts-node ./test/testScripts/swapExample.ts
-simpleSwap();
+swapExample();
