@@ -39,6 +39,7 @@ export const Query: { [chainId: number]: string } = {
 export class SubgraphUniswapPoolDataService implements PoolDataService {
     // This constant is added to pool address to generate bytes32 balancer-like pool id
     // so Swapper contract can detect what it is Uniswap V2 pool and call its swap function
+    // format: [pool address][poolIdSuffix][dexId:4bit]
     protected readonly poolIdSuffix = 'fffffffffffffffffffffff';
     constructor(
         private readonly config: {
@@ -73,34 +74,34 @@ export class SubgraphUniswapPoolDataService implements PoolDataService {
         });
         const { data } = await response.json();
         // transform uniswap subgraph data to SubgraphPoolBase
-        const pools: SubgraphPoolBase[] = data.pairs.map((p) => {
+        const pools: SubgraphPoolBase[] = data.pairs.map((pool) => {
             return {
                 id:
-                    p.id +
+                    pool.id +
                     this.poolIdSuffix +
                     (this.config.dexId ? this.config.dexId.toString(16) : '0'),
-                address: p.id,
+                address: pool.id,
                 poolType: 'UniswapV2',
                 swapFee: this.config.swapFee ?? '0.03', // TODO fetch for tetuswap onchain
                 swapEnabled: true,
-                totalShares: p.totalSupply,
+                totalShares: pool.totalSupply,
                 tokens: [
                     {
-                        address: p.token0.id,
-                        balance: p.reserve0,
-                        decimals: p.token0.decimals,
+                        address: pool.token0.id,
+                        balance: pool.reserve0,
+                        decimals: pool.token0.decimals,
                         // priceRate: string, // TODO ? looks like it is not used for weighted pools
                         weight: '0.5',
                     },
                     {
-                        address: p.token1.id,
-                        balance: p.reserve1,
-                        decimals: p.token1.decimals,
+                        address: pool.token1.id,
+                        balance: pool.reserve1,
+                        decimals: pool.token1.decimals,
                         // priceRate: string, // TODO ?
                         weight: '0.5',
                     },
                 ],
-                tokensList: [p.token0.id, p.token1.id],
+                tokensList: [pool.token0.id, pool.token1.id],
                 totalWeight: '1',
             };
         });

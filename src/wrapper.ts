@@ -48,7 +48,7 @@ export class SOR {
      */
     constructor(
         public provider: Provider,
-        private readonly config: SorConfig,
+        public readonly config: SorConfig,
         poolDataServiceOrServices: PoolDataService | PoolDataService[],
         tokenPriceService: TokenPriceService
     ) {
@@ -129,6 +129,14 @@ export class SOR {
                 options
             );
         }
+
+        // prepare data for multiswap2 call
+        swapInfo.swapData = {
+            tokenIn: swapInfo.tokenIn,
+            tokenOut: swapInfo.tokenOut,
+            swapAmount: swapInfo.swapAmount,
+            returnAmount: swapInfo.returnAmount,
+        };
 
         if (swapInfo.returnAmount.isZero()) return swapInfo;
 

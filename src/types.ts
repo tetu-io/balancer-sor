@@ -118,6 +118,7 @@ export interface SwapV2 {
 }
 
 export interface SwapInfo {
+    swapData?: SwapData;
     tokenAddresses: string[];
     swaps: SwapV2[];
     swapAmount: BigNumber;
@@ -128,6 +129,13 @@ export interface SwapInfo {
     tokenIn: string;
     tokenOut: string;
     marketSp: string;
+}
+
+export interface SwapData {
+    tokenIn: string;
+    tokenOut: string;
+    swapAmount: BigNumber;
+    returnAmount: BigNumber;
 }
 
 export interface PoolDictionary {

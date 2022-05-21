@@ -10,7 +10,7 @@ import {
 import { JsonRpcProvider } from '@ethersproject/providers';
 import { Wallet } from '@ethersproject/wallet';
 import { Contract } from '@ethersproject/contracts';
-import { AddressZero } from '@ethersproject/constants';
+import { AddressZero, MaxUint256 } from '@ethersproject/constants';
 import {
     PoolDataService,
     SOR,
@@ -20,16 +20,20 @@ import {
     TokenPriceService,
 } from '../../src';
 import vaultArtifact from '../../src/abi/Vault.json';
+import erc20abi from '../abi/ERC20.json';
 import { CoingeckoTokenPriceService } from '../lib/coingeckoTokenPriceService';
 import { SubgraphPoolDataService } from '../lib/subgraphPoolDataService';
 import { SubgraphUniswapPoolDataService } from '../lib/subgraphUniswapPoolDataService';
 import { mockTokenPriceService } from '../lib/mockTokenPriceService';
+import * as fs from 'fs';
 
 dotenv.config();
 
 export enum Network {
     POLYGON = 137,
 }
+
+const _SLIPPAGE_DENOMINATOR = 10000;
 
 export const SOR_CONFIG: Record<Network, SorConfig> = {
     [Network.POLYGON]: {
@@ -123,6 +127,21 @@ export const ADDRESSES = {
             decimals: 18,
             symbol: 'TETU',
         },
+        WMATIC: {
+            address: '0x0d500B1d8E8eF31E21C99d1Db9A6444d3ADf1270'.toLowerCase(),
+            decimals: 18,
+            symbol: 'WMATIC',
+        },
+        QUICK: {
+            address: '0x831753DD7087CaC61aB5644b308642cc1c33Dc13'.toLowerCase(),
+            decimals: 18,
+            symbol: 'QUICK',
+        },
+        SUSHI: {
+            address: '0x0b3F868E0BE5597D5DB7fEB59E1CADBb0fdDa50a'.toLowerCase(),
+            decimals: 18,
+            symbol: 'SUSHI',
+        },
     },
 };
 
@@ -195,11 +214,7 @@ async function getSwap(
     );
     console.log(`Cost to swap: ${costToSwapScaled.toString()}`);
     console.log(`Return Considering Fees: ${returnWithFeesScaled.toString()}`);
-    console.log(`Swaps:`);
-    console.log(swapInfo.swaps);
-    console.log('tokenAddresses:');
-    console.log(swapInfo.tokenAddresses);
-    console.log('swapInfo', swapInfo);
+    // console.log('swapInfo', swapInfo);
 
     return swapInfo;
 }
@@ -214,37 +229,37 @@ async function makeTrade(provider: JsonRpcProvider, swapInfo: SwapInfo) {
     const key: any = process.env.TRADER_KEY;
     const wallet = new Wallet(key, provider);
 
-    // if (swapInfo.tokenIn !== AddressZero) {
-    //     // Vault needs approval for swapping non ETH
-    //     console.log('Checking vault allowance...');
-    //     const tokenInContract = new Contract(
-    //         swapInfo.tokenIn,
-    //         erc20abi,
-    //         provider
-    //     );
+    if (swapInfo.tokenIn !== AddressZero) {
+        // Vault needs approval for swapping non ETH
+        console.log('Checking vault allowance...');
+        const tokenInContract = new Contract(
+            swapInfo.tokenIn,
+            erc20abi,
+            provider
+        );
 
-    //     let allowance = await tokenInContract.allowance(
-    //         wallet.address,
-    //         balancerVaultAddress
-    //     );
+        let allowance = await tokenInContract.allowance(
+            wallet.address,
+            balancerVaultAddress
+        );
 
-    //     if (allowance.lt(swapInfo.swapAmount)) {
-    //         console.log(
-    //             `Not Enough Allowance: ${allowance.toString()}. Approving vault now...`
-    //         );
-    //         const txApprove = await tokenInContract
-    //             .connect(wallet)
-    //             .approve(balancerVaultAddress, MaxUint256);
-    //         await txApprove.wait();
-    //         console.log(`Allowance updated: ${txApprove.hash}`);
-    //         allowance = await tokenInContract.allowance(
-    //             wallet.address,
-    //             balancerVaultAddress
-    //         );
-    //     }
+        if (allowance.lt(swapInfo.swapAmount)) {
+            console.log(
+                `Not Enough Allowance: ${allowance.toString()}. Approving vault now...`
+            );
+            const txApprove = await tokenInContract
+                .connect(wallet)
+                .approve(balancerVaultAddress, MaxUint256);
+            await txApprove.wait();
+            console.log(`Allowance updated: ${txApprove.hash}`);
+            allowance = await tokenInContract.allowance(
+                wallet.address,
+                balancerVaultAddress
+            );
+        }
 
-    //     console.log(`Allowance: ${allowance.toString()}`);
-    // }
+        console.log(`Allowance: ${allowance.toString()}`);
+    }
 
     const vaultContract = new Contract(
         balancerVaultAddress,
@@ -253,53 +268,31 @@ async function makeTrade(provider: JsonRpcProvider, swapInfo: SwapInfo) {
     );
     vaultContract.connect(wallet);
 
-    type FundManagement = {
-        sender: string;
-        recipient: string;
-        fromInternalBalance: boolean;
-        toInternalBalance: boolean;
-    };
-
-    const funds: FundManagement = {
-        sender: wallet.address,
-        recipient: wallet.address,
-        fromInternalBalance: false,
-        toInternalBalance: false,
-    };
-
-    console.log(funds);
     console.log(swapInfo.tokenAddresses);
     console.log('Swapping...');
 
-    const overRides = {};
-    // overRides['gasLimit'] = '200000';
-    // overRides['gasPrice'] = '20000000000';
+    const overrides = {};
+    // overrides['gasLimit'] = '200000';
+    // overrides['gasPrice'] = '20000000000';
     // ETH in swaps must send ETH value
     if (swapInfo.tokenIn === AddressZero) {
-        overRides['value'] = swapInfo.swapAmount.toString();
+        overrides['value'] = swapInfo.swapAmount.toString();
     }
 
-    const deltas = await vaultContract.queryBatchSwap(
-        0, // SwapType 0=SwapExactIn, 1=SwapExactOut (not supported)
-        swapInfo.swaps,
-        swapInfo.tokenAddresses,
-        funds
-    );
-    console.log(deltas.toString());
+    // const slippage = _SLIPPAGE_DENOMINATOR * 2 / 100; // 2%
+    // const deadline = MaxUint256;
 
     // TODO call Tetu Multiswap2 contract
-    // const tx = await vaultContract
+    // const tx = await Multiswap2Contract
     //     .connect(wallet)
-    //     .batchSwap(
-    //         swapType,
+    //     .multiswap(
+    //         swapInfo.swapData,
     //         swapInfo.swaps,
     //         swapInfo.tokenAddresses,
-    //         funds,
-    //         limits,
+    //         slippage,
     //         deadline,
-    //         overRides
+    //         overrides
     //     );
-
     // console.log(`tx: ${tx.hash}`);
 }
 
@@ -360,23 +353,31 @@ export async function swapExample() {
     // mockPoolDataService.setPools(poolsSource);
 
     /// CoinGecko does not work for TETU end some rare tokens // TODO may be add another price source?
-    const coingeckoTokenPriceService = new CoingeckoTokenPriceService(
-        networkId
-    );
+    // Also it slow downs route building. Prefer do not use it!
+    // const coingeckoTokenPriceService = new CoingeckoTokenPriceService(
+    //     networkId
+    // );
 
     // Use the mock token price service if you want to manually set the token price in native asset
     mockTokenPriceService.setTokenPrice('0.0162'); // Output token price
 
+    console.time('initSOR');
     const sor = await initSOR(
         provider,
         SOR_CONFIG[networkId],
         subgraphPoolDataServices,
         // mockPoolDataService,
-        coingeckoTokenPriceService
-        // mockTokenPriceService,
+        // coingeckoTokenPriceService
+        mockTokenPriceService
     );
+    console.timeEnd('initSOR');
 
+    // Generate test data for multiswap2 contract
+    await generateTestData(sor);
+
+    console.time('getSwap');
     const swapInfo = await getSwap(sor, tokenIn, tokenOut, swapAmount);
+    console.timeEnd('getSwap');
     // console.log('swapInfo', swapInfo);
 
     if (executeTrade) {
@@ -385,5 +386,52 @@ export async function swapExample() {
     }
 }
 
+async function generateTestData(sor: SOR) {
+    const a = ADDRESSES[Network.POLYGON];
+
+    const testSwaps = [
+        { tokenIn: a.BAL, tokenOut: a.TETU, amount: 1000 },
+        { tokenIn: a.TETU, tokenOut: a.BAL, amount: 1000 },
+        { tokenIn: a.BAL, tokenOut: a.QUICK, amount: 1000 },
+        { tokenIn: a.QUICK, tokenOut: a.BAL, amount: 1000 },
+        { tokenIn: a.BAL, tokenOut: a.SUSHI, amount: 1000 },
+        { tokenIn: a.SUSHI, tokenOut: a.BAL, amount: 1000 },
+        { tokenIn: a.TETU, tokenOut: a.SUSHI, amount: 1000 },
+        { tokenIn: a.SUSHI, tokenOut: a.TETU, amount: 1000 },
+        { tokenIn: a.TETU, tokenOut: a.QUICK, amount: 1000 },
+        { tokenIn: a.QUICK, tokenOut: a.TETU, amount: 1000 },
+        // TODO WMATIC, MATIC
+    ];
+
+    const testData: { [key: string]: SwapInfo } = {};
+    for (const swap of testSwaps) {
+        const key =
+            swap.amount.toString() +
+            ' ' +
+            swap.tokenIn.symbol +
+            '->' +
+            swap.tokenOut.symbol;
+        console.log(key);
+        const amount = parseFixed(
+            swap.amount.toString(),
+            swap.tokenIn.decimals
+        );
+        testData[key] = await getSwap(sor, swap.tokenIn, swap.tokenOut, amount);
+    }
+
+    const latestBlock = await sor.provider.getBlock('latest');
+    console.log('!Routes data calculated for block:', latestBlock.number);
+
+    const testObject = { blockNumber: latestBlock.number, testData };
+
+    const testDataFilename =
+        '../tetu-contracts-io/test/infrastructure/json/MultiSwap2TestData.json';
+    const jsonText = JSON.stringify(testObject, undefined, '\t');
+    fs.writeFile(testDataFilename, jsonText, function (err) {
+        if (err) return console.error('Error:', err);
+        else console.log('testData saved to:', testDataFilename);
+    });
+}
+
 // $ TS_NODE_PROJECT='tsconfig.testing.json' ts-node ./test/testScripts/swapExample.ts
-swapExample();
+swapExample().then();
