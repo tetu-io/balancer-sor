@@ -145,6 +145,11 @@ export const ADDRESSES = {
             decimals: 18,
             symbol: 'SUSHI',
         },
+        SAND: {
+            address: '0xBbba073C31bF03b8ACf7c28EF0738DeCF3695683'.toLowerCase(),
+            decimals: 18,
+            symbol: 'SAND',
+        },
     },
 };
 
@@ -393,16 +398,20 @@ async function generateTestData(sor: SOR) {
     const a = ADDRESSES[Network.POLYGON];
 
     const testSwaps = [
+        { tokenIn: a.USDC, tokenOut: a.WMATIC, amount: 100000 },
+        { tokenIn: a.WMATIC, tokenOut: a.USDC, amount: 100000 },
+        { tokenIn: a.BAL, tokenOut: a.SAND, amount: 1000 },
+        { tokenIn: a.SAND, tokenOut: a.BAL, amount: 1000 },
         { tokenIn: a.BAL, tokenOut: a.TETU, amount: 1000 },
         // { tokenIn: a.TETU, tokenOut: a.BAL, amount: 1000 },
         { tokenIn: a.BAL, tokenOut: a.cxETH, amount: 100 },
-        { tokenIn: a.cxETH, tokenOut: a.BAL, amount: 1 },
+        { tokenIn: a.cxETH, tokenOut: a.BAL, amount: 10 },
         { tokenIn: a.BAL, tokenOut: a.SUSHI, amount: 1000 },
         { tokenIn: a.SUSHI, tokenOut: a.BAL, amount: 1000 },
         // { tokenIn: a.TETU, tokenOut: a.SUSHI, amount: 1000 },
         { tokenIn: a.SUSHI, tokenOut: a.TETU, amount: 1000 },
         // { tokenIn: a.TETU, tokenOut: a.cxETH, amount: 1000 },
-        { tokenIn: a.cxETH, tokenOut: a.TETU, amount: 1 },
+        { tokenIn: a.cxETH, tokenOut: a.TETU, amount: 10 },
         // TODO WMATIC, MATIC
     ];
 
@@ -424,7 +433,7 @@ async function generateTestData(sor: SOR) {
             swap.amount.toString(),
             swap.tokenIn.decimals
         );
-        await sor.fetchPools();
+        // await sor.fetchPools();
         testData[key] = await getSwap(sor, swap.tokenIn, swap.tokenOut, amount);
     }
 

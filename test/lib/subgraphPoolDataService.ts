@@ -171,12 +171,16 @@ export class SubgraphPoolDataService implements PoolDataService {
         const pools = [...data.pool0, ...data.pool1000];
 
         if (this.config.onchain) {
-            return getOnChainBalances(
+            const timeIdOnchain = 'getPools onchain (balancer)';
+            console.time(timeIdOnchain);
+            const balances = await getOnChainBalances(
                 pools ?? [],
                 this.config.multiAddress,
                 this.config.vaultAddress,
                 this.config.provider
             );
+            console.timeEnd(timeIdOnchain);
+            return balances;
         }
 
         return data.pools ?? [];
