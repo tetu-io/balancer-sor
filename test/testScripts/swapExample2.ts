@@ -60,15 +60,18 @@ export const BALANCER_SUBGRAPH_URLS = {
 export const UNISWAP_SUBGRAPHS = {
     [Network.POLYGON]: [
         {
+            name: 'TetuSwap',
             dexId: 0,
             url: 'https://api.thegraph.com/subgraphs/name/tetu-io/tetu-swap',
             swapFee: '0.01',
         },
         {
+            name: 'SushiSwap',
             dexId: 1,
             url: 'https://api.thegraph.com/subgraphs/name/sushiswap/matic-exchange',
         },
         {
+            name: 'QuickSwap',
             dexId: 2,
             url: 'https://api.thegraph.com/subgraphs/name/sameepsi/quickswap06',
         }, // TODO find official subgraphs
@@ -132,10 +135,10 @@ export const ADDRESSES = {
             decimals: 18,
             symbol: 'WMATIC',
         },
-        QUICK: {
-            address: '0x831753DD7087CaC61aB5644b308642cc1c33Dc13'.toLowerCase(),
+        cxETH: {
+            address: '0xfe4546feFe124F30788c4Cc1BB9AA6907A7987F9'.toLowerCase(),
             decimals: 18,
-            symbol: 'QUICK',
+            symbol: 'cxETH',
         },
         SUSHI: {
             address: '0x0b3F868E0BE5597D5DB7fEB59E1CADBb0fdDa50a'.toLowerCase(),
@@ -359,7 +362,7 @@ export async function swapExample() {
     // );
 
     // Use the mock token price service if you want to manually set the token price in native asset
-    mockTokenPriceService.setTokenPrice('0.0162'); // Output token price
+    mockTokenPriceService.setTokenPrice('0'); // Output token price
 
     console.time('initSOR');
     const sor = await initSOR(
@@ -391,19 +394,22 @@ async function generateTestData(sor: SOR) {
 
     const testSwaps = [
         { tokenIn: a.BAL, tokenOut: a.TETU, amount: 1000 },
-        { tokenIn: a.TETU, tokenOut: a.BAL, amount: 1000 },
-        { tokenIn: a.BAL, tokenOut: a.QUICK, amount: 1000 },
-        { tokenIn: a.QUICK, tokenOut: a.BAL, amount: 1000 },
+        // { tokenIn: a.TETU, tokenOut: a.BAL, amount: 1000 },
+        { tokenIn: a.BAL, tokenOut: a.cxETH, amount: 100 },
+        { tokenIn: a.cxETH, tokenOut: a.BAL, amount: 1 },
         { tokenIn: a.BAL, tokenOut: a.SUSHI, amount: 1000 },
         { tokenIn: a.SUSHI, tokenOut: a.BAL, amount: 1000 },
-        { tokenIn: a.TETU, tokenOut: a.SUSHI, amount: 1000 },
+        // { tokenIn: a.TETU, tokenOut: a.SUSHI, amount: 1000 },
         { tokenIn: a.SUSHI, tokenOut: a.TETU, amount: 1000 },
-        { tokenIn: a.TETU, tokenOut: a.QUICK, amount: 1000 },
-        { tokenIn: a.QUICK, tokenOut: a.TETU, amount: 1000 },
+        // { tokenIn: a.TETU, tokenOut: a.cxETH, amount: 1000 },
+        { tokenIn: a.cxETH, tokenOut: a.TETU, amount: 1 },
         // TODO WMATIC, MATIC
     ];
 
-    const testData: { [key: string]: SwapInfo } = {};
+    interface ITestData {
+        [key: string]: SwapInfo;
+    }
+    const testData: ITestData = {};
     for (const swap of testSwaps) {
         const key =
             swap.amount.toString() +
@@ -411,11 +417,14 @@ async function generateTestData(sor: SOR) {
             swap.tokenIn.symbol +
             '->' +
             swap.tokenOut.symbol;
+        console.log('\n-----------------------');
         console.log(key);
+        console.log('-----------------------');
         const amount = parseFixed(
             swap.amount.toString(),
             swap.tokenIn.decimals
         );
+        await sor.fetchPools();
         testData[key] = await getSwap(sor, swap.tokenIn, swap.tokenOut, amount);
     }
 
@@ -426,6 +435,16 @@ async function generateTestData(sor: SOR) {
 
     const testDataFilename =
         '../tetu-contracts-io/test/infrastructure/json/MultiSwap2TestData.json';
+
+    // serialize BigNumbers as strings
+    Object.defineProperties(BigNumber.prototype, {
+        toJSON: {
+            value: function (this: BigNumber) {
+                return this.toString();
+            },
+        },
+    });
+
     const jsonText = JSON.stringify(testObject, undefined, '\t');
     fs.writeFile(testDataFilename, jsonText, function (err) {
         if (err) return console.error('Error:', err);
