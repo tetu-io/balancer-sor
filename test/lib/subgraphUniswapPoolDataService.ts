@@ -42,7 +42,7 @@ export class SubgraphUniswapPoolDataService implements PoolDataService {
     // format: [pool address][poolIdSuffix][dexId:4bit]
     protected readonly poolIdSuffix = 'fffffffffffffffffffffff';
     constructor(
-        private readonly config: {
+        public readonly config: {
             chainId: number;
             multiAddress: string;
             vaultAddress: string;
@@ -51,7 +51,8 @@ export class SubgraphUniswapPoolDataService implements PoolDataService {
             onchain: boolean;
             dexId?: number;
             swapFee?: string;
-        }
+        },
+        public readonly name: string
     ) {
         if (
             this.config.dexId &&
@@ -61,8 +62,8 @@ export class SubgraphUniswapPoolDataService implements PoolDataService {
     }
 
     public async getPools(): Promise<SubgraphPoolBase[]> {
-        const timeIdSubgraph =
-            'getPools subgraph (uniswap) #' + this.config.dexId;
+        const timeId = `getPools (uniswap) #${this.config.dexId} ${this.name}`;
+        const timeIdSubgraph = 'Subgraph ' + timeId;
         console.time(timeIdSubgraph);
         const response = await fetch(this.config.subgraphUrl, {
             method: 'POST',
@@ -107,8 +108,7 @@ export class SubgraphUniswapPoolDataService implements PoolDataService {
         });
         console.timeEnd(timeIdSubgraph);
 
-        const timeIdOnchain =
-            'getPools onchain (uniswap) #' + this.config.dexId;
+        const timeIdOnchain = 'On chain ' + timeId;
         console.time(timeIdOnchain);
         // TODO !!! getOnChainBalances Uniswap V2
         // if (this.config.onchain) {

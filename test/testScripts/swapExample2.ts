@@ -57,24 +57,65 @@ export const BALANCER_SUBGRAPH_URLS = {
 };
 
 // dexId (range 0-15) is used to show swap dex name on UI
+let dexId = 0;
 export const UNISWAP_SUBGRAPHS = {
     [Network.POLYGON]: [
         {
             name: 'TetuSwap',
-            dexId: 0,
+            dexId: dexId++,
             url: 'https://api.thegraph.com/subgraphs/name/tetu-io/tetu-swap',
             swapFee: '0.01',
         },
         {
             name: 'SushiSwap',
-            dexId: 1,
+            dexId: dexId++,
             url: 'https://api.thegraph.com/subgraphs/name/sushiswap/matic-exchange',
+            swapFee: '0.03',
         },
         {
             name: 'QuickSwap',
-            dexId: 2,
+            dexId: dexId++,
             url: 'https://api.thegraph.com/subgraphs/name/sameepsi/quickswap06',
-        }, // TODO find official subgraphs
+            swapFee: '0.03',
+        },
+        /*        {
+            name: 'ApeSwap',
+            dexId: dexId++,
+            url: 'https://api.thegraph.com/subgraphs/name/apeswapfinance/dex-polygon',
+            swapFee: '0.02',
+
+        },
+        {
+            name: 'JetSwap',
+            dexId: dexId++,
+            url: 'https://api.thegraph.com/subgraphs/name/smartcookie0501/jetswap-subgraph-polygon',
+            swapFee: '0.01',
+
+        },
+        {
+            name: 'Polycat',
+            dexId: dexId++,
+            url: 'https://api.thegraph.com/subgraphs/name/polycatfi/polycat-finance-amm',
+            swapFee: '0.24',
+        },
+        {
+            name: 'RadioShack',
+            dexId: dexId++,
+            url: 'https://api.thegraph.com/subgraphs/name/radioshackcreator/radioshack-polygon',
+            swapFee: '0.01',
+        },
+        {
+            name: 'SafeSwap',
+            dexId: dexId++,
+            url: 'https://api.thegraph.com/subgraphs/name/yfdaifinance/safeswapmatic',
+            swapFee: '0.03',
+        },
+        {
+            name: 'WaultFinance',
+            dexId: dexId++,
+            url: 'https://api.thegraph.com/subgraphs/name/waultfinance/waultswap-polygon',
+            swapFee: '0.02',
+        },*/
     ],
 };
 
@@ -329,27 +370,33 @@ export async function swapExample(): Promise<void> {
     // console.log(JSON.stringify(subgraphPools));
     // console.log(`-------`);
 
-    const subgraphBalancerPoolDataService = new SubgraphPoolDataService({
-        chainId: networkId,
-        vaultAddress: balancerVaultAddress,
-        multiAddress: MULTIADDR[networkId],
-        provider,
-        subgraphUrl: BALANCER_SUBGRAPH_URLS[networkId],
-        onchain: true,
-    });
+    const subgraphBalancerPoolDataService = new SubgraphPoolDataService(
+        {
+            chainId: networkId,
+            vaultAddress: balancerVaultAddress,
+            multiAddress: MULTIADDR[networkId],
+            provider,
+            subgraphUrl: BALANCER_SUBGRAPH_URLS[networkId],
+            onchain: true,
+        },
+        'Balancer'
+    );
 
     const subgraphUniswapPoolDataServices = UNISWAP_SUBGRAPHS[networkId].map(
         (graph) =>
-            new SubgraphUniswapPoolDataService({
-                chainId: networkId,
-                vaultAddress: balancerVaultAddress,
-                multiAddress: MULTIADDR[networkId],
-                provider,
-                subgraphUrl: graph.url,
-                onchain: true,
-                swapFee: graph.swapFee,
-                dexId: graph.dexId,
-            })
+            new SubgraphUniswapPoolDataService(
+                {
+                    chainId: networkId,
+                    vaultAddress: balancerVaultAddress,
+                    multiAddress: MULTIADDR[networkId],
+                    provider,
+                    subgraphUrl: graph.url,
+                    onchain: true,
+                    swapFee: graph.swapFee,
+                    dexId: graph.dexId,
+                },
+                graph.name
+            )
     );
     const subgraphPoolDataServices: PoolDataService[] = [
         subgraphBalancerPoolDataService,
@@ -399,6 +446,9 @@ async function generateTestData(sor: SOR) {
 
     const testSwaps = [
         { tokenIn: a.USDC, tokenOut: a.WMATIC, amount: 100000 },
+        { tokenIn: a.USDC, tokenOut: a.WMATIC, amount: 10000 },
+        { tokenIn: a.USDC, tokenOut: a.WMATIC, amount: 1000 },
+        { tokenIn: a.USDC, tokenOut: a.WMATIC, amount: 100 },
         { tokenIn: a.WMATIC, tokenOut: a.USDC, amount: 100000 },
         { tokenIn: a.BAL, tokenOut: a.SAND, amount: 1000 },
         { tokenIn: a.SAND, tokenOut: a.BAL, amount: 1000 },

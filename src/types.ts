@@ -230,6 +230,7 @@ export interface TokenPriceService {
 }
 
 export interface PoolDataService {
+    name: string;
     getPools(): Promise<SubgraphPoolBase[]>;
 }
 
