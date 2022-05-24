@@ -21,7 +21,7 @@ import {
 } from '../../src';
 import vaultArtifact from '../../src/abi/Vault.json';
 import erc20abi from '../abi/ERC20.json';
-import { CoingeckoTokenPriceService } from '../lib/coingeckoTokenPriceService';
+// import { CoingeckoTokenPriceService } from '../lib/coingeckoTokenPriceService';
 import { SubgraphPoolDataService } from '../lib/subgraphPoolDataService';
 import { SubgraphUniswapPoolDataService } from '../lib/subgraphUniswapPoolDataService';
 import { mockTokenPriceService } from '../lib/mockTokenPriceService';
@@ -304,7 +304,7 @@ async function makeTrade(provider: JsonRpcProvider, swapInfo: SwapInfo) {
     // console.log(`tx: ${tx.hash}`);
 }
 
-export async function swapExample() {
+export async function swapExample(): Promise<void> {
     const networkId = Network.POLYGON;
     // Pools source can be Subgraph URL or pools data set passed directly
     // Update pools list with most recent onchain balances
@@ -403,7 +403,7 @@ async function generateTestData(sor: SOR) {
         { tokenIn: a.BAL, tokenOut: a.SAND, amount: 1000 },
         { tokenIn: a.SAND, tokenOut: a.BAL, amount: 1000 },
         { tokenIn: a.BAL, tokenOut: a.TETU, amount: 1000 },
-        // { tokenIn: a.TETU, tokenOut: a.BAL, amount: 1000 },
+        { tokenIn: a.TETU, tokenOut: a.BAL, amount: 100000 },
         { tokenIn: a.BAL, tokenOut: a.cxETH, amount: 100 },
         { tokenIn: a.cxETH, tokenOut: a.BAL, amount: 10 },
         { tokenIn: a.BAL, tokenOut: a.SUSHI, amount: 1000 },
@@ -411,7 +411,7 @@ async function generateTestData(sor: SOR) {
         // { tokenIn: a.TETU, tokenOut: a.SUSHI, amount: 1000 },
         { tokenIn: a.SUSHI, tokenOut: a.TETU, amount: 1000 },
         // { tokenIn: a.TETU, tokenOut: a.cxETH, amount: 1000 },
-        { tokenIn: a.cxETH, tokenOut: a.TETU, amount: 10 },
+        // { tokenIn: a.cxETH, tokenOut: a.TETU, amount: 10 }, // ? Unsupported ENS operation ?
         // TODO WMATIC, MATIC
     ];
 

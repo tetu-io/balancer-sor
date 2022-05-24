@@ -31,11 +31,6 @@ export type WeightedPoolToken = Pick<
     'address' | 'balance' | 'decimals' | 'weight'
 >;
 
-export type WeightedPoolPairData = PoolPairBase & {
-    weightIn: BigNumber;
-    weightOut: BigNumber;
-};
-
 export class UniswapV2Pool implements PoolBase {
     poolType: PoolTypes = PoolTypes.Weighted;
     id: string;
@@ -43,7 +38,6 @@ export class UniswapV2Pool implements PoolBase {
     swapFee: BigNumber;
     totalShares: BigNumber;
     tokens: WeightedPoolToken[];
-    totalWeight: BigNumber;
     tokensList: string[];
     MAX_IN_RATIO = parseFixed('0.3', 18);
     MAX_OUT_RATIO = parseFixed('0.3', 18);
@@ -52,24 +46,22 @@ export class UniswapV2Pool implements PoolBase {
     static fromPool(pool: SubgraphPoolBase, isLBP?: boolean): UniswapV2Pool {
         if (!pool.totalWeight)
             throw new Error('Uniswap2Pool missing totalWeight');
-        const weightedPool = new UniswapV2Pool(
+        const uniswapV2Pool = new UniswapV2Pool(
             pool.id,
             pool.address,
             pool.swapFee,
-            pool.totalWeight,
             pool.totalShares,
             pool.tokens as WeightedPoolToken[],
             pool.tokensList
         );
-        if (isLBP) weightedPool.isLBP = true;
-        return weightedPool;
+        if (isLBP) uniswapV2Pool.isLBP = true;
+        return uniswapV2Pool;
     }
 
     constructor(
         id: string,
         address: string,
         swapFee: string,
-        totalWeight: string,
         totalShares: string,
         tokens: WeightedPoolToken[],
         tokensList: string[]
@@ -80,10 +72,9 @@ export class UniswapV2Pool implements PoolBase {
         this.totalShares = parseFixed(totalShares, 18);
         this.tokens = tokens;
         this.tokensList = tokensList;
-        this.totalWeight = parseFixed(totalWeight, 18);
     }
 
-    parsePoolPairData(tokenIn: string, tokenOut: string): WeightedPoolPairData {
+    parsePoolPairData(tokenIn: string, tokenOut: string): PoolPairBase {
         const tokenIndexIn = this.tokens.findIndex(
             (t) => getAddress(t.address) === getAddress(tokenIn)
         );
@@ -91,9 +82,6 @@ export class UniswapV2Pool implements PoolBase {
         const tI = this.tokens[tokenIndexIn];
         const balanceIn = tI.balance;
         const decimalsIn = tI.decimals;
-        const weightIn = parseFixed(tI.weight, 18)
-            .mul(ONE)
-            .div(this.totalWeight);
 
         const tokenIndexOut = this.tokens.findIndex(
             (t) => getAddress(t.address) === getAddress(tokenOut)
@@ -102,11 +90,9 @@ export class UniswapV2Pool implements PoolBase {
         const tO = this.tokens[tokenIndexOut];
         const balanceOut = tO.balance;
         const decimalsOut = tO.decimals;
-        const weightOut = parseFixed(tO.weight, 18)
-            .mul(ONE)
-            .div(this.totalWeight);
 
-        const poolPairData: WeightedPoolPairData = {
+        // noinspection UnnecessaryLocalVariableJS
+        const poolPairData: PoolPairBase = {
             id: this.id,
             address: this.address,
             poolType: this.poolType,
@@ -116,8 +102,6 @@ export class UniswapV2Pool implements PoolBase {
             decimalsOut: Number(decimalsOut),
             balanceIn: parseFixed(balanceIn, decimalsIn),
             balanceOut: parseFixed(balanceOut, decimalsOut),
-            weightIn: weightIn,
-            weightOut: weightOut,
             swapFee: this.swapFee,
         };
 
@@ -128,14 +112,9 @@ export class UniswapV2Pool implements PoolBase {
     // inverse of the slippage. It is proportional to the token balances in the
     // pool but also depends on the shape of the invariant curve.
     // As a standard, we define normalized liquidity in tokenOut
-    getNormalizedLiquidity(poolPairData: WeightedPoolPairData): OldBigNumber {
+    getNormalizedLiquidity(poolPairData: PoolPairBase): OldBigNumber {
         return bnum(
-            formatFixed(
-                poolPairData.balanceOut
-                    .mul(poolPairData.weightIn)
-                    .div(poolPairData.weightIn.add(poolPairData.weightOut)),
-                poolPairData.decimalsOut
-            )
+            formatFixed(poolPairData.balanceOut, poolPairData.decimalsOut)
         );
     }
 
@@ -178,7 +157,7 @@ export class UniswapV2Pool implements PoolBase {
     // Uses ROUND_DOWN mode (1)
     // calcOutGivenIn
     _exactTokenInForTokenOut(
-        poolPairData: WeightedPoolPairData,
+        poolPairData: PoolPairBase,
         amount: OldBigNumber
     ): OldBigNumber {
         if (amount.isNaN()) return amount;
@@ -186,9 +165,7 @@ export class UniswapV2Pool implements PoolBase {
         try {
             const amt = _calcOutGivenIn(
                 poolPairData.balanceIn.toBigInt(),
-                poolPairData.weightIn.toBigInt(),
                 poolPairData.balanceOut.toBigInt(),
-                poolPairData.weightOut.toBigInt(),
                 parseFixed(
                     amount.dp(poolPairData.decimalsIn, 1).toString(),
                     poolPairData.decimalsIn
@@ -208,7 +185,7 @@ export class UniswapV2Pool implements PoolBase {
     // Uses ROUND_UP mode (0)
     // calcInGivenOut
     _tokenInForExactTokenOut(
-        poolPairData: WeightedPoolPairData,
+        poolPairData: PoolPairBase,
         amount: OldBigNumber
     ): OldBigNumber {
         if (amount.isNaN()) return amount;
@@ -216,9 +193,7 @@ export class UniswapV2Pool implements PoolBase {
         try {
             const amt = _calcInGivenOut(
                 poolPairData.balanceIn.toBigInt(),
-                poolPairData.weightIn.toBigInt(),
                 poolPairData.balanceOut.toBigInt(),
-                poolPairData.weightOut.toBigInt(),
                 parseFixed(
                     amount.dp(poolPairData.decimalsOut, 1).toString(),
                     poolPairData.decimalsOut
@@ -234,21 +209,21 @@ export class UniswapV2Pool implements PoolBase {
     }
 
     _spotPriceAfterSwapExactTokenInForTokenOut(
-        poolPairData: WeightedPoolPairData,
+        poolPairData: PoolPairBase,
         amount: OldBigNumber
     ): OldBigNumber {
         return _spotPriceAfterSwapExactTokenInForTokenOut(amount, poolPairData);
     }
 
     _spotPriceAfterSwapTokenInForExactTokenOut(
-        poolPairData: WeightedPoolPairData,
+        poolPairData: PoolPairBase,
         amount: OldBigNumber
     ): OldBigNumber {
         return _spotPriceAfterSwapTokenInForExactTokenOut(amount, poolPairData);
     }
 
     _derivativeSpotPriceAfterSwapExactTokenInForTokenOut(
-        poolPairData: WeightedPoolPairData,
+        poolPairData: PoolPairBase,
         amount: OldBigNumber
     ): OldBigNumber {
         return _derivativeSpotPriceAfterSwapExactTokenInForTokenOut(
@@ -258,7 +233,7 @@ export class UniswapV2Pool implements PoolBase {
     }
 
     _derivativeSpotPriceAfterSwapTokenInForExactTokenOut(
-        poolPairData: WeightedPoolPairData,
+        poolPairData: PoolPairBase,
         amount: OldBigNumber
     ): OldBigNumber {
         return _derivativeSpotPriceAfterSwapTokenInForExactTokenOut(
