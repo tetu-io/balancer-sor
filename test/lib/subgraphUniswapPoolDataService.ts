@@ -92,14 +92,12 @@ export class SubgraphUniswapPoolDataService implements PoolDataService {
                         balance: pool.reserve0,
                         decimals: pool.token0.decimals,
                         // priceRate: string, // TODO ? looks like it is not used for weighted pools
-                        weight: '0.5',
                     },
                     {
                         address: pool.token1.id,
                         balance: pool.reserve1,
                         decimals: pool.token1.decimals,
                         // priceRate: string, // TODO ?
-                        weight: '0.5',
                     },
                 ],
                 tokensList: [pool.token0.id, pool.token1.id],
@@ -108,18 +106,19 @@ export class SubgraphUniswapPoolDataService implements PoolDataService {
         });
         console.timeEnd(timeIdSubgraph);
 
-        const timeIdOnchain = 'On chain ' + timeId;
-        console.time(timeIdOnchain);
         // TODO !!! getOnChainBalances Uniswap V2
-        // if (this.config.onchain) {
-        //     return getOnChainBalances(
-        //         data.pools ?? [],
-        //         this.config.multiAddress,
-        //         this.config.vaultAddress,
-        //         this.config.provider
-        //     );
-        // }
-        console.timeEnd(timeIdOnchain);
+        if (this.config.onchain) {
+            const timeIdOnchain = 'On chain ' + timeId;
+            console.time(timeIdOnchain);
+            const onchainBalances = await getOnChainBalances(
+                data.pairs ?? [],
+                this.config.multiAddress,
+                this.config.vaultAddress,
+                this.config.provider
+            );
+            console.timeEnd(timeIdOnchain);
+            return onchainBalances;
+        }
 
         return pools ?? [];
     }
