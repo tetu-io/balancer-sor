@@ -1,7 +1,7 @@
 import fetch from 'isomorphic-fetch';
-import { PoolDataService, SubgraphPoolBase, SubgraphToken } from '../../src';
-import { getOnChainBalances } from './onchainData';
 import { Provider } from '@ethersproject/providers';
+import { PoolDataService, SubgraphPoolBase } from '../../src';
+import { getOnChainBalancesUniswap } from './onchainDataUniswap';
 const queryWithLinear = `
 {
   pairs: pairs(
@@ -40,6 +40,7 @@ export class SubgraphUniswapPoolDataService implements PoolDataService {
     // This constant is added to pool address to generate bytes32 balancer-like pool id
     // so Swapper contract can detect what it is Uniswap V2 pool and call its swap function
     // format: [pool address][poolIdSuffix][dexId:4bit]
+    // noinspection JSStringConcatenationToES6Template,SpellCheckingInspection
     protected readonly poolIdSuffix = 'fffffffffffffffffffffff';
     constructor(
         public readonly config: {
@@ -106,14 +107,12 @@ export class SubgraphUniswapPoolDataService implements PoolDataService {
         });
         console.timeEnd(timeIdSubgraph);
 
-        // TODO !!! getOnChainBalances Uniswap V2
         if (this.config.onchain) {
             const timeIdOnchain = 'On chain ' + timeId;
             console.time(timeIdOnchain);
-            const onchainBalances = await getOnChainBalances(
-                data.pairs ?? [],
+            const onchainBalances = await getOnChainBalancesUniswap(
+                pools ?? [],
                 this.config.multiAddress,
-                this.config.vaultAddress,
                 this.config.provider
             );
             console.timeEnd(timeIdOnchain);

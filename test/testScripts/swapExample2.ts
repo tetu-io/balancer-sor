@@ -377,7 +377,8 @@ export async function swapExample(): Promise<void> {
             multiAddress: MULTIADDR[networkId],
             provider,
             subgraphUrl: BALANCER_SUBGRAPH_URLS[networkId],
-            onchain: true,
+            // onchain: true,
+            onchain: false, // TODO true for more precise balancer data (took much more time)
         },
         'Balancer'
     );
@@ -428,7 +429,7 @@ export async function swapExample(): Promise<void> {
     console.timeEnd('initSOR');
 
     // Generate test data for multiswap2 contract
-    await generateTestData(sor);
+    // await generateTestData(sor);
 
     console.time('getSwap');
     const swapInfo = await getSwap(sor, tokenIn, tokenOut, swapAmount);
@@ -455,8 +456,8 @@ async function generateTestData(sor: SOR) {
         { tokenIn: a.cxETH, tokenOut: a.BAL, amount: 10 },
         { tokenIn: a.BAL, tokenOut: a.SUSHI, amount: 1000 },
         { tokenIn: a.SUSHI, tokenOut: a.BAL, amount: 1000 },
-        // { tokenIn: a.TETU, tokenOut: a.SUSHI, amount: 1000 },
         { tokenIn: a.SUSHI, tokenOut: a.TETU, amount: 1000 },
+        { tokenIn: a.TETU, tokenOut: a.SUSHI, amount: 1000 },
         // { tokenIn: a.TETU, tokenOut: a.cxETH, amount: 1000 },
         // { tokenIn: a.cxETH, tokenOut: a.TETU, amount: 10 }, // ? Unsupported ENS operation ?
         // TODO WMATIC, MATIC
