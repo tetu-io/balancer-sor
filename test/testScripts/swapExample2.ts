@@ -1,6 +1,6 @@
 // Example showing SOR with Vault batchSwap and Subgraph pool data, run using: $ TS_NODE_PROJECT='tsconfig.testing.json' ts-node ./test/testScripts/swapExample.ts
 
-import * as dotenv from 'dotenv';
+import 'dotenv/config';
 import {
     BigNumber,
     BigNumberish,
@@ -26,8 +26,6 @@ import { SubgraphPoolDataService } from '../lib/subgraphPoolDataService';
 import { SubgraphUniswapPoolDataService } from '../lib/subgraphUniswapPoolDataService';
 import { mockTokenPriceService } from '../lib/mockTokenPriceService';
 import * as fs from 'fs';
-
-dotenv.config();
 
 export enum Network {
     POLYGON = 137,
@@ -377,8 +375,7 @@ export async function swapExample(): Promise<void> {
             multiAddress: MULTIADDR[networkId],
             provider,
             subgraphUrl: BALANCER_SUBGRAPH_URLS[networkId],
-            // onchain: true,
-            onchain: false, // TODO true for more precise balancer data (took much more time)
+            onchain: true, // do not use 'false' as balancer do not provide right data on subgraph only - without onchain data
         },
         'Balancer'
     );

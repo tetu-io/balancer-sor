@@ -1,6 +1,6 @@
 // Example showing SOR with Vault batchSwap and Subgraph pool data, run using: $ TS_NODE_PROJECT='tsconfig.testing.json' ts-node ./test/testScripts/swapExample.ts
 
-require('dotenv').config();
+import 'dotenv/config';
 import {
     BigNumber,
     BigNumberish,

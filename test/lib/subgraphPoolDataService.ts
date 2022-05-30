@@ -151,7 +151,7 @@ export class SubgraphPoolDataService implements PoolDataService {
             provider: Provider;
             onchain: boolean;
         },
-        public readonly name: string
+        public readonly name?: string
     ) {}
 
     public async getPools(): Promise<SubgraphPoolBase[]> {
