@@ -142,6 +142,8 @@ export const Query: { [chainId: number]: string } = {
 };
 
 export class SubgraphPoolDataService implements PoolDataService {
+    public readonly dexType = 'Balancer';
+
     constructor(
         private readonly config: {
             chainId: number;

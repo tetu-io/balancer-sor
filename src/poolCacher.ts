@@ -36,7 +36,7 @@ export class PoolCacher {
                     } catch (e) {
                         console.warn(
                             `Error ${poolDataService.name}.getPools():`,
-                            e.message
+                            e
                         );
                         pools = [];
                     }

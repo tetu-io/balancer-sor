@@ -49,7 +49,7 @@ export class SOR {
     constructor(
         public provider: Provider,
         public readonly config: SorConfig,
-        poolDataServiceOrServices: PoolDataService | PoolDataService[],
+        public poolDataServiceOrServices: PoolDataService | PoolDataService[],
         tokenPriceService: TokenPriceService
     ) {
         this.poolCacher = new PoolCacher(poolDataServiceOrServices);

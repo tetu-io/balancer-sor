@@ -19,7 +19,7 @@ export async function getOnChainBalancesUniswap(
 ): Promise<SubgraphPoolBase[]> {
     if (subgraphPools.length === 0) return subgraphPools;
 
-    const uniswapPair = new Multicaller(multiAddress, provider, pairAbi);
+    const multicaller = new Multicaller(multiAddress, provider, pairAbi);
 
     subgraphPools.forEach((pool) => {
         if (pool.poolType !== 'UniswapV2')
@@ -27,13 +27,13 @@ export async function getOnChainBalancesUniswap(
                 `Pool type must be UniswapV2: ${pool.poolType} ${pool.id}`
             );
 
-        uniswapPair.call(`${pool.id}.reserves`, pool.address, 'getReserves');
+        multicaller.call(`${pool.id}.reserves`, pool.address, 'getReserves');
     });
 
     let pairs = {} as OnchainRecord;
 
     try {
-        pairs = (await uniswapPair.execute()) as OnchainRecord;
+        pairs = (await multicaller.execute()) as OnchainRecord;
     } catch (err) {
         throw `Issue with multicall execution (uniswap): ` + err.toString();
     }
