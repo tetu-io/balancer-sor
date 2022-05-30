@@ -63,4 +63,13 @@ app.listen(port, async () => {
         BALANCER_SUBGRAPH_URLS[networkId],
         UNISWAP_SUBGRAPHS[networkId]
     );
+
+    setInterval(updatePools, 30 * 1000);
 });
+
+async function updatePools() {
+    console.time('updatePools');
+    console.log(new Date().toLocaleTimeString(), 'fetchPools...');
+    if (sor) await sor.fetchPools();
+    console.timeEnd('updatePools');
+}
