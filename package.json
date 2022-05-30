@@ -12,7 +12,8 @@
         "coverage": "nyc report --reporter=text-lcov | coveralls",
         "lint": "eslint ./src ./test --ext .ts --max-warnings 0",
         "example": "set TS_NODE_PROJECT=tsconfig.testing.json&&ts-node ./test/testScripts/swapExample.ts",
-        "example2": "set TS_NODE_PROJECT=tsconfig.testing.json&&ts-node ./test/testScripts/swapExample2.ts"
+        "example2": "set TS_NODE_PROJECT=tsconfig.testing.json&&ts-node ./test/testScripts/swapExample2.ts",
+        "start": "node src/rest/app.ts"
     },
     "husky": {
         "hooks": {
@@ -66,6 +67,7 @@
         "typescript": "^4.3.5"
     },
     "dependencies": {
+        "express": "^4.18.1",
         "isomorphic-fetch": "^2.2.1"
     },
     "peerDependencies": {
