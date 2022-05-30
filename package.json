@@ -12,8 +12,9 @@
         "coverage": "nyc report --reporter=text-lcov | coveralls",
         "lint": "eslint ./src ./test --ext .ts --max-warnings 0",
         "example": "set TS_NODE_PROJECT=tsconfig.testing.json&&ts-node ./test/testScripts/swapExample.ts",
-        "example2": "set TS_NODE_PROJECT=tsconfig.testing.json&&ts-node ./test/testScripts/swapExample2.ts",
-        "start": "node src/rest/app.ts"
+        "example-tetu": "set TS_NODE_PROJECT=tsconfig.testing.json&&ts-node ./test/testScripts/swapExampleTetu.ts",
+        "start": "set TS_NODE_PROJECT=tsconfig.testing.json&&ts-node src/rest/app.ts",
+        "dev": "set TS_NODE_PROJECT=tsconfig.testing.json&&nodemon src/rest/app.ts"
     },
     "husky": {
         "hooks": {
@@ -57,13 +58,14 @@
         "lodash.clonedeep": "^4.5.0",
         "lodash.set": "^4.3.2",
         "mocha": "8.2.1",
+        "nodemon": "^2.0.16",
         "nyc": "^15.0.0",
         "perf_hooks": "^0.0.1",
         "prettier": "^2.3.2",
         "pretty-quick": "^2.0.1",
         "rollup": "^2.56.3",
         "rollup-plugin-dts": "^4.0.0",
-        "ts-node": "^10.0.0",
+        "ts-node": "^10.8.0",
         "typescript": "^4.3.5"
     },
     "dependencies": {

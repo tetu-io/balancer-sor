@@ -42,6 +42,9 @@ export class SubgraphUniswapPoolDataService implements PoolDataService {
     // format: [pool address][poolIdSuffix][dexId:4bit]
     // noinspection JSStringConcatenationToES6Template,SpellCheckingInspection
     protected readonly poolIdSuffix = 'fffffffffffffffffffffff';
+    public readonly poolIdMask =
+        '0x0000000000000000000000000000000000000000fffffffffffffffffffffff0'; // last half-byte - index of uniswap dex
+    public readonly dexType = 'UniswapV2';
     constructor(
         public readonly config: {
             chainId: number;
@@ -50,20 +53,17 @@ export class SubgraphUniswapPoolDataService implements PoolDataService {
             subgraphUrl: string;
             provider: Provider;
             onchain: boolean;
-            dexId?: number;
             swapFee?: string;
         },
-        public readonly name: string
+        public readonly name: string,
+        public readonly dexId: number
     ) {
-        if (
-            this.config.dexId &&
-            (this.config.dexId < 0 || this.config.dexId > 15)
-        )
+        if (this.dexId && (this.dexId < 0 || this.dexId > 15))
             throw new Error('dexId out of bounds');
     }
 
     public async getPools(): Promise<SubgraphPoolBase[]> {
-        const timeId = `getPools (uniswap) #${this.config.dexId} ${this.name}`;
+        const timeId = `getPools (uniswap) #${this.dexId} ${this.name}`;
         const timeIdSubgraph = 'Subgraph ' + timeId;
         console.time(timeIdSubgraph);
         const response = await fetch(this.config.subgraphUrl, {
@@ -74,6 +74,7 @@ export class SubgraphUniswapPoolDataService implements PoolDataService {
             },
             body: JSON.stringify({ query: Query[this.config.chainId] }),
         });
+
         const { data } = await response.json();
         // transform uniswap subgraph data to SubgraphPoolBase
         const pools: SubgraphPoolBase[] = data.pairs.map((pool) => {
@@ -81,7 +82,7 @@ export class SubgraphUniswapPoolDataService implements PoolDataService {
                 id:
                     pool.id +
                     this.poolIdSuffix +
-                    (this.config.dexId ? this.config.dexId.toString(16) : '0'),
+                    (this.dexId ? this.dexId.toString(16) : '0'),
                 address: pool.id,
                 poolType: 'UniswapV2',
                 swapFee: this.config.swapFee ?? '0.03',
