@@ -64,7 +64,7 @@ export const UNISWAP_SUBGRAPHS = {
             name: 'TetuSwap',
             dexId: dexId++,
             url: 'https://api.thegraph.com/subgraphs/name/tetu-io/tetu-swap',
-            swapFee: '0.01',
+            swapFee: '0.01', // TODO fetch for tetuswap onchain
         },
         {
             name: 'SushiSwap',

@@ -84,7 +84,7 @@ export class SubgraphUniswapPoolDataService implements PoolDataService {
                     (this.config.dexId ? this.config.dexId.toString(16) : '0'),
                 address: pool.id,
                 poolType: 'UniswapV2',
-                swapFee: this.config.swapFee ?? '0.03', // TODO fetch for tetuswap onchain
+                swapFee: this.config.swapFee ?? '0.03',
                 swapEnabled: true,
                 totalShares: pool.totalSupply,
                 tokens: [
@@ -92,13 +92,11 @@ export class SubgraphUniswapPoolDataService implements PoolDataService {
                         address: pool.token0.id,
                         balance: pool.reserve0,
                         decimals: pool.token0.decimals,
-                        // priceRate: string, // TODO ? looks like it is not used for weighted pools
                     },
                     {
                         address: pool.token1.id,
                         balance: pool.reserve1,
                         decimals: pool.token1.decimals,
-                        // priceRate: string, // TODO ?
                     },
                 ],
                 tokensList: [pool.token0.id, pool.token1.id],
