@@ -1,9 +1,9 @@
 {
     "compilerOptions": {
-        "module": "esnext",
-        "target": "es2016",
+        "module": "commonjs",
+        "target": "es2018",
         "declaration": true,
-        "lib": ["es2019", "es2018.promise"],
+        "lib": ["es2018"],
         "outDir": "./dist/",
         "baseUrl": "src",
         "esModuleInterop": true,
@@ -15,6 +15,7 @@
         "strictFunctionTypes": false
     },
     "include": [
+        "src/**/*.ts",
         "src",
         "src/abi/*.json",
         "src/pools/stablePool/stablePoolAbi.json",
