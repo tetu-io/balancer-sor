@@ -50,7 +50,8 @@ export class SOR {
         public provider: Provider,
         public readonly config: SorConfig,
         public poolDataServiceOrServices: PoolDataService | PoolDataService[],
-        tokenPriceService: TokenPriceService
+        tokenPriceService: TokenPriceService,
+        public multiAddress: string
     ) {
         this.poolCacher = new PoolCacher(poolDataServiceOrServices);
         this.routeProposer = new RouteProposer(config);

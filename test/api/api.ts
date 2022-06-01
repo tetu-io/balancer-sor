@@ -25,6 +25,8 @@ import { SubgraphUniswapPoolDataService } from '../lib/subgraphUniswapPoolDataSe
 import { mockTokenPriceService } from '../lib/mockTokenPriceService';
 import * as fs from 'fs';
 import { balancerVaultAddress, MULTIADDR } from './config';
+import { Multicaller } from '../lib/multicaller';
+import pairAbi from '../../src/pools/uniswapV2Pool/uniswapV2PoolAbi.json';
 // import { CoingeckoTokenPriceService } from '../lib/coingeckoTokenPriceService';
 
 export interface UniswapSubgraphData {
@@ -35,6 +37,32 @@ export interface UniswapSubgraphData {
 }
 
 export const _SLIPPAGE_DENOMINATOR = 10000;
+
+export async function getTokens(sor: SOR) {
+    const pools = sor.getPools();
+    const tokens: { [address: string]: ITokenData } = {};
+    for (const pool of pools) {
+        for (const token of pool.tokens) {
+            tokens[token.address] = {
+                address: token.address,
+                decimals: token.decimals,
+                symbol: '', // let fill it later
+            };
+        }
+    }
+    const addresses = Object.keys(tokens);
+    console.log('Tokens length', addresses.length);
+    // TODO get token symbols - for now it fails on tokens with no symbol() function
+    // Develop and deploy non-reverted version on multicall contract
+    /* const multicaller = new Multicaller(sor.multiAddress, sor.provider, pairAbi);
+    addresses.forEach((token) => {
+        console.log('token', token);
+        multicaller.call(`${token}`, token, 'symbol')
+    });
+    const symbols = await multicaller.execute();
+    console.log('symbols', symbols);*/
+    return tokens;
+}
 
 // Init Smart Order Router and SubgraphPoolDataServices for it
 export async function init(
@@ -103,8 +131,9 @@ export async function init(
         sorConfig,
         subgraphPoolDataServices,
         // mockPoolDataService,
-        mockTokenPriceService
+        mockTokenPriceService,
         // coingeckoTokenPriceService,
+        multiAddress
     );
 }
 
@@ -114,9 +143,16 @@ export async function initSOR(
     provider: JsonRpcProvider,
     config: SorConfig,
     poolDataServices: PoolDataService[],
-    tokenPriceService: TokenPriceService
+    tokenPriceService: TokenPriceService,
+    multiAddress: string
 ) {
-    const sor = new SOR(provider, config, poolDataServices, tokenPriceService);
+    const sor = new SOR(
+        provider,
+        config,
+        poolDataServices,
+        tokenPriceService,
+        multiAddress
+    );
     console.log('Fetching pools...');
     console.time('fetchPools');
     await sor.fetchPools(); // TODO call fetchPools() every minute on background at the server to cache it and quickly do getSwap
