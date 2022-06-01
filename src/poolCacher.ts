@@ -29,7 +29,19 @@ export class PoolCacher {
         try {
             // fetch pools from all data services
             const poolsGetPoolsPromises = this.poolDataServices.map(
-                (poolDataService) => poolDataService.getPools()
+                async (poolDataService) => {
+                    let pools;
+                    try {
+                        pools = await poolDataService.getPools();
+                    } catch (e) {
+                        console.warn(
+                            `Error ${poolDataService.name}.getPools():`,
+                            e
+                        );
+                        pools = [];
+                    }
+                    return pools;
+                }
             );
             const poolsArrays = await Promise.all(poolsGetPoolsPromises);
             this.pools = poolsArrays.flat();
@@ -37,12 +49,12 @@ export class PoolCacher {
             return true;
         } catch (err) {
             // On error clear all caches
-            // TODO may be just inore errorus pools and build route with successful data
+            // TODO may be just ignore errorous pools and build route with successful data
             this._finishedFetching = false;
             this.pools = [];
-            // TODO I guess better throw an exception, than return 'false'
-            throw new Error(`Error: fetchPools(): ${err.message}`);
-            // return false;
+            //  throw an exception, or return 'false' ?
+            // throw new Error(`Error: fetchPools(): ${err.message}`);
+            return false;
         }
     }
 }

@@ -1,7 +1,7 @@
 import fetch from 'isomorphic-fetch';
-import { PoolDataService, SubgraphPoolBase, SubgraphToken } from '../../src';
-import { getOnChainBalances } from './onchainData';
 import { Provider } from '@ethersproject/providers';
+import { PoolDataService, SubgraphPoolBase } from '../../src';
+import { getOnChainBalancesUniswap } from './onchainDataUniswap';
 const queryWithLinear = `
 {
   pairs: pairs(
@@ -40,29 +40,31 @@ export class SubgraphUniswapPoolDataService implements PoolDataService {
     // This constant is added to pool address to generate bytes32 balancer-like pool id
     // so Swapper contract can detect what it is Uniswap V2 pool and call its swap function
     // format: [pool address][poolIdSuffix][dexId:4bit]
+    // noinspection JSStringConcatenationToES6Template,SpellCheckingInspection
     protected readonly poolIdSuffix = 'fffffffffffffffffffffff';
+    public readonly poolIdMask =
+        '0x0000000000000000000000000000000000000000fffffffffffffffffffffff0'; // last half-byte - index of uniswap dex
+    public readonly dexType = 'UniswapV2';
     constructor(
-        private readonly config: {
+        public readonly config: {
             chainId: number;
             multiAddress: string;
             vaultAddress: string;
             subgraphUrl: string;
             provider: Provider;
             onchain: boolean;
-            dexId?: number;
             swapFee?: string;
-        }
+        },
+        public readonly name: string,
+        public readonly dexId: number
     ) {
-        if (
-            this.config.dexId &&
-            (this.config.dexId < 0 || this.config.dexId > 15)
-        )
+        if (this.dexId && (this.dexId < 0 || this.dexId > 15))
             throw new Error('dexId out of bounds');
     }
 
     public async getPools(): Promise<SubgraphPoolBase[]> {
-        const timeIdSubgraph =
-            'getPools subgraph (uniswap) #' + this.config.dexId;
+        const timeId = `getPools (uniswap) #${this.dexId} ${this.name}`;
+        const timeIdSubgraph = 'Subgraph ' + timeId;
         console.time(timeIdSubgraph);
         const response = await fetch(this.config.subgraphUrl, {
             method: 'POST',
@@ -72,6 +74,7 @@ export class SubgraphUniswapPoolDataService implements PoolDataService {
             },
             body: JSON.stringify({ query: Query[this.config.chainId] }),
         });
+
         const { data } = await response.json();
         // transform uniswap subgraph data to SubgraphPoolBase
         const pools: SubgraphPoolBase[] = data.pairs.map((pool) => {
@@ -79,10 +82,10 @@ export class SubgraphUniswapPoolDataService implements PoolDataService {
                 id:
                     pool.id +
                     this.poolIdSuffix +
-                    (this.config.dexId ? this.config.dexId.toString(16) : '0'),
+                    (this.dexId ? this.dexId.toString(16) : '0'),
                 address: pool.id,
                 poolType: 'UniswapV2',
-                swapFee: this.config.swapFee ?? '0.03', // TODO fetch for tetuswap onchain
+                swapFee: this.config.swapFee ?? '0.03',
                 swapEnabled: true,
                 totalShares: pool.totalSupply,
                 tokens: [
@@ -90,15 +93,11 @@ export class SubgraphUniswapPoolDataService implements PoolDataService {
                         address: pool.token0.id,
                         balance: pool.reserve0,
                         decimals: pool.token0.decimals,
-                        // priceRate: string, // TODO ? looks like it is not used for weighted pools
-                        weight: '0.5',
                     },
                     {
                         address: pool.token1.id,
                         balance: pool.reserve1,
                         decimals: pool.token1.decimals,
-                        // priceRate: string, // TODO ?
-                        weight: '0.5',
                     },
                 ],
                 tokensList: [pool.token0.id, pool.token1.id],
@@ -107,19 +106,17 @@ export class SubgraphUniswapPoolDataService implements PoolDataService {
         });
         console.timeEnd(timeIdSubgraph);
 
-        const timeIdOnchain =
-            'getPools onchain (uniswap) #' + this.config.dexId;
-        console.time(timeIdOnchain);
-        // TODO !!! getOnChainBalances Uniswap V2
-        // if (this.config.onchain) {
-        //     return getOnChainBalances(
-        //         data.pools ?? [],
-        //         this.config.multiAddress,
-        //         this.config.vaultAddress,
-        //         this.config.provider
-        //     );
-        // }
-        console.timeEnd(timeIdOnchain);
+        if (this.config.onchain) {
+            const timeIdOnchain = 'On chain ' + timeId;
+            console.time(timeIdOnchain);
+            const onchainBalances = await getOnChainBalancesUniswap(
+                pools ?? [],
+                this.config.multiAddress,
+                this.config.provider
+            );
+            console.timeEnd(timeIdOnchain);
+            return onchainBalances;
+        }
 
         return pools ?? [];
     }

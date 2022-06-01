@@ -2,11 +2,43 @@ import fetch from 'isomorphic-fetch';
 import { PoolDataService, SubgraphPoolBase } from '../../src';
 import { getOnChainBalances } from './onchainData';
 import { Provider } from '@ethersproject/providers';
-// TODO first: 1000,
+
 const queryWithLinear = `
       {
-        pools: pools(
-          first: 200,
+        pool0: pools(
+          first: 1000,
+          where: { swapEnabled: true },
+          orderBy: totalLiquidity,
+          orderDirection: desc
+        ) {
+          id
+          address
+          poolType
+          swapFee
+          totalShares
+          tokens {
+            address
+            balance
+            decimals
+            weight
+            priceRate
+          }
+          tokensList
+          totalWeight
+          amp
+          expiryTime
+          unitSeconds
+          principalToken
+          baseToken
+          swapEnabled
+          wrappedIndex
+          mainIndex
+          lowerTarget
+          upperTarget
+        }
+        pool1000: pools(
+          first: 1000,
+          skip: 1000,
           where: { swapEnabled: true },
           orderBy: totalLiquidity,
           orderDirection: desc
@@ -41,8 +73,36 @@ const queryWithLinear = `
 
 const queryWithOutLinear = `
       {
-        pools: pools(
+        pool0: pools(
           first: 1000,
+          where: { swapEnabled: true },
+          orderBy: totalLiquidity,
+          orderDirection: desc
+        ) {
+          id
+          address
+          poolType
+          swapFee
+          totalShares
+          tokens {
+            address
+            balance
+            decimals
+            weight
+            priceRate
+          }
+          tokensList
+          totalWeight
+          amp
+          expiryTime
+          unitSeconds
+          principalToken
+          baseToken
+          swapEnabled
+        }
+        pool1000: pools(
+          first: 1000,
+          skip: 1000,
           where: { swapEnabled: true },
           orderBy: totalLiquidity,
           orderDirection: desc
@@ -82,6 +142,8 @@ export const Query: { [chainId: number]: string } = {
 };
 
 export class SubgraphPoolDataService implements PoolDataService {
+    public readonly dexType = 'Balancer';
+
     constructor(
         private readonly config: {
             chainId: number;
@@ -90,11 +152,12 @@ export class SubgraphPoolDataService implements PoolDataService {
             subgraphUrl: string;
             provider: Provider;
             onchain: boolean;
-        }
+        },
+        public readonly name?: string
     ) {}
 
     public async getPools(): Promise<SubgraphPoolBase[]> {
-        const timeIdSubgraph = 'getPools subgraph (balancer)';
+        const timeIdSubgraph = 'Subgraph getPools (balancer)';
         console.time(timeIdSubgraph);
         const response = await fetch(this.config.subgraphUrl, {
             method: 'POST',
@@ -104,20 +167,25 @@ export class SubgraphPoolDataService implements PoolDataService {
             },
             body: JSON.stringify({ query: Query[this.config.chainId] }),
         });
+
         const { data } = await response.json();
         console.timeEnd(timeIdSubgraph);
 
+        const pools = [...data.pool0, ...data.pool1000];
+
         if (this.config.onchain) {
-            const timeIdOnchain = 'getPools onchain (balancer)';
+            const timeIdOnchain = 'On chain getPools (balancer)';
             console.time(timeIdOnchain);
-            const onChainBalances = getOnChainBalances(
-                data.pools ?? [],
+            const balances = await getOnChainBalances(
+                pools ?? [],
                 this.config.multiAddress,
                 this.config.vaultAddress,
                 this.config.provider
             );
             console.timeEnd(timeIdOnchain);
-            return onChainBalances;
-        } else return data.pools ?? [];
+            return balances;
+        }
+
+        return data.pools ?? [];
     }
 }
