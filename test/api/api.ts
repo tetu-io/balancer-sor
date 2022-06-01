@@ -1,15 +1,8 @@
 // Example showing SOR with Vault batchSwap and Subgraph pool data, run using: $ TS_NODE_PROJECT='tsconfig.testing.json' ts-node ./test/testScripts/swapExample.ts
 
-import {
-    BigNumber,
-    BigNumberish,
-    formatFixed,
-    parseFixed,
-} from '@ethersproject/bignumber';
+import { BigNumber, BigNumberish, formatFixed } from '@ethersproject/bignumber';
 import { JsonRpcProvider } from '@ethersproject/providers';
-import { Wallet } from '@ethersproject/wallet';
 import { Contract } from '@ethersproject/contracts';
-import { AddressZero, MaxUint256 } from '@ethersproject/constants';
 import {
     PoolDataService,
     SOR,
@@ -18,15 +11,12 @@ import {
     SwapTypes,
     TokenPriceService,
 } from '../../src';
-import vaultArtifact from '../../src/abi/Vault.json';
-import erc20abi from '../abi/ERC20.json';
+import ContractUtilsAbi from '../abi/ContractUtils.json';
 import { SubgraphPoolDataService } from '../lib/subgraphPoolDataService';
 import { SubgraphUniswapPoolDataService } from '../lib/subgraphUniswapPoolDataService';
 import { mockTokenPriceService } from '../lib/mockTokenPriceService';
 import * as fs from 'fs';
 import { balancerVaultAddress, MULTIADDR } from './config';
-import { Multicaller } from '../lib/multicaller';
-import pairAbi from '../../src/pools/uniswapV2Pool/uniswapV2PoolAbi.json';
 // import { CoingeckoTokenPriceService } from '../lib/coingeckoTokenPriceService';
 
 export interface UniswapSubgraphData {
@@ -38,7 +28,7 @@ export interface UniswapSubgraphData {
 
 export const _SLIPPAGE_DENOMINATOR = 10000;
 
-export async function getTokens(sor: SOR) {
+export async function getTokens(sor: SOR, contractUtilsAddress: string) {
     const pools = sor.getPools();
     const tokens: { [address: string]: ITokenData } = {};
     for (const pool of pools) {
@@ -51,16 +41,13 @@ export async function getTokens(sor: SOR) {
         }
     }
     const addresses = Object.keys(tokens);
-    console.log('Tokens length', addresses.length);
-    // TODO get token symbols - for now it fails on tokens with no symbol() function
-    // Develop and deploy non-reverted version on multicall contract
-    /* const multicaller = new Multicaller(sor.multiAddress, sor.provider, pairAbi);
-    addresses.forEach((token) => {
-        console.log('token', token);
-        multicaller.call(`${token}`, token, 'symbol')
-    });
-    const symbols = await multicaller.execute();
-    console.log('symbols', symbols);*/
+    const contractUtils = new Contract(
+        contractUtilsAddress,
+        ContractUtilsAbi,
+        sor.provider
+    );
+    const symbols = await contractUtils.erc20SymbolsSafe(addresses);
+    for (const i in addresses) tokens[addresses[i]].symbol = symbols[i];
     return tokens;
 }
 
@@ -146,13 +133,7 @@ export async function initSOR(
     tokenPriceService: TokenPriceService,
     multiAddress: string
 ) {
-    const sor = new SOR(
-        provider,
-        config,
-        poolDataServices,
-        tokenPriceService,
-        multiAddress
-    );
+    const sor = new SOR(provider, config, poolDataServices, tokenPriceService);
     console.log('Fetching pools...');
     console.time('fetchPools');
     await sor.fetchPools(); // TODO call fetchPools() every minute on background at the server to cache it and quickly do getSwap

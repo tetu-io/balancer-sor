@@ -31,6 +31,10 @@ export const MULTIADDR = {
     [Network.POLYGON]: '0xa1B2b503959aedD81512C37e9dce48164ec6a94d',
 };
 
+export const CONTRACT_UTILS = {
+    [Network.POLYGON]: '0xd933B5943B82806C638df8c0C88dC0930Dd13bE4',
+};
+
 export const BALANCER_SUBGRAPH_URLS = {
     [Network.POLYGON]:
         'https://api.thegraph.com/subgraphs/name/balancer-labs/balancer-polygon-v2',

@@ -7,6 +7,7 @@ import { AddressZero, MaxUint256 } from '@ethersproject/constants';
 import {
     BALANCER_SUBGRAPH_URLS,
     balancerVaultAddress,
+    CONTRACT_UTILS,
     MULTIADDR,
     Network,
     PROVIDER_URLS,
@@ -99,6 +100,7 @@ export async function swapExample(
     networkId: Network,
     providerUrl: string,
     multiAddress: string,
+    contractUtilsAddress: string,
     sorConfig: SorConfig,
     balancerSubgraphUrl: string,
     uniswapSubgraphs: UniswapSubgraphData[],
@@ -124,7 +126,8 @@ export async function swapExample(
     console.log('dexes', dexes);
 
     // Generate test data for multiswap2 contract
-    await generateTestData(sor);
+    // await generateTestData(sor);
+    await api.getTokens(sor, contractUtilsAddress);
 
     console.time('getSwap');
     const swapInfo = await api.getSwap(sor, tokenIn, tokenOut, swapAmount);
@@ -294,6 +297,7 @@ swapExample(
     Network.POLYGON,
     PROVIDER_URLS[networkId],
     MULTIADDR[networkId],
+    CONTRACT_UTILS[networkId],
     SOR_CONFIG[networkId],
     BALANCER_SUBGRAPH_URLS[networkId],
     UNISWAP_SUBGRAPHS[networkId],
