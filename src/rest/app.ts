@@ -1,5 +1,7 @@
 import compression from 'compression';
 import express from 'express';
+import * as Sentry from '@sentry/node';
+import * as Tracing from '@sentry/tracing';
 import {
     BALANCER_SUBGRAPH_URLS,
     CONTRACT_UTILS,
@@ -16,7 +18,26 @@ import { ITokenData } from '../../test/api/api';
 import { JsonRpcProvider } from '@ethersproject/providers';
 import * as api from '../../test/api/api';
 const app = express();
+
+Sentry.init({
+    dsn: 'https://2874e5f5af684388851e388268273345@o1270885.ingest.sentry.io/6462171',
+    integrations: [
+        // enable HTTP calls tracing
+        new Sentry.Integrations.Http({ tracing: true }),
+        // enable Express.js middleware tracing
+        new Tracing.Integrations.Express({ app }),
+    ],
+
+    // Set tracesSampleRate to 1.0 to capture 100%
+    // of transactions for performance monitoring.
+    // We recommend adjusting this value in production
+    tracesSampleRate: 1.0,
+});
+
 app.use(compression());
+app.use(Sentry.Handlers.requestHandler());
+app.use(Sentry.Handlers.tracingHandler());
+
 const port = process.env.SOR_PORT || 8080;
 const VERSION = '1.0.0';
 
@@ -27,7 +48,6 @@ let tokens;
 let dexes;
 
 app.all('/', (req, res) => {
-    console.log('/');
     res.json({
         title: 'SOR (Smart Order Router)',
         version: VERSION,
@@ -35,19 +55,14 @@ app.all('/', (req, res) => {
 });
 
 app.all('/dexes', (req, res) => {
-    console.log('/dexes');
-    // TODO sentry
     res.json(dexes);
 });
 
 app.all('/tokens', (req, res) => {
-    // TODO sentry
-    console.log('/tokens');
     res.json(tokens);
 });
 
 app.all('/swap', async (req, res) => {
-    // TODO sentry
     const query = req.query;
     console.log('/swap', query);
 
@@ -72,10 +87,13 @@ app.all('/swap', async (req, res) => {
 });
 
 app.listen(port, async () => {
-    // TODO sentry
+    console.log(`Listening on port ${port}`);
+});
 
+app.use(Sentry.Handlers.errorHandler());
+
+async function initialize() {
     console.log(`SOR (Smart Order Router) v${VERSION}`);
-
     provider = new JsonRpcProvider(PROVIDER_URLS[networkId]);
 
     sor = await api.init(
@@ -93,8 +111,9 @@ app.listen(port, async () => {
     setInterval(updatePools, 30 * 1000);
     setInterval(updateTokens, 10 * 60 * 1000);
 
-    console.log(`\nReady.\nListening on port ${port}`);
-});
+    console.log(`\nReady.`);
+}
+initialize().then();
 
 async function updatePools() {
     console.time('fetchPools');
