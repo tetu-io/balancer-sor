@@ -1,5 +1,6 @@
 import compression from 'compression';
 import express from 'express';
+import cors from 'cors';
 import * as Sentry from '@sentry/node';
 import * as Tracing from '@sentry/tracing';
 import {
@@ -30,6 +31,7 @@ Sentry.init({
     tracesSampleRate: 1.0,
 });
 
+app.use(cors());
 app.use(compression());
 app.use(Sentry.Handlers.requestHandler());
 app.use(Sentry.Handlers.tracingHandler());
