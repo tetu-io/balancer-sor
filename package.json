@@ -14,7 +14,8 @@
         "example": "set TS_NODE_PROJECT=tsconfig.testing.json&&ts-node ./test/testScripts/swapExample.ts",
         "example-tetu": "set TS_NODE_PROJECT=tsconfig.testing.json&&ts-node ./test/testScripts/swapExampleTetu.ts",
         "start": "set TS_NODE_PROJECT=tsconfig.testing.json&&ts-node src/rest/app.ts",
-        "dev": "set TS_NODE_PROJECT=tsconfig.testing.json&&nodemon src/rest/app.ts"
+        "dev": "set TS_NODE_PROJECT=tsconfig.testing.json&&nodemon src/rest/app.ts",
+        "run": "TS_NODE_PROJECT='tsconfig.testing.json' ts-node src/rest/app.ts"
     },
     "husky": {
         "hooks": {
@@ -69,6 +70,7 @@
         "typescript": "^4.3.5"
     },
     "dependencies": {
+        "compression": "^1.7.4",
         "express": "^4.18.1",
         "isomorphic-fetch": "^2.2.1"
     },

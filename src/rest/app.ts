@@ -11,7 +11,7 @@ import {
 } from '../../test/api/config';
 import { BigNumber, parseFixed } from '@ethersproject/bignumber';
 import { swapExample } from '../../test/testScripts/swapExampleTetu';
-import { SorConfig } from '../../dist';
+// import { SorConfig } from '../../dist';
 import { ITokenData } from '../../test/api/api';
 import { JsonRpcProvider } from '@ethersproject/providers';
 import * as api from '../../test/api/api';
