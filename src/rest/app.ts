@@ -11,10 +11,6 @@ import {
     SOR_CONFIG,
     UNISWAP_SUBGRAPHS,
 } from '../../test/api/config';
-import { BigNumber, parseFixed } from '@ethersproject/bignumber';
-import { swapExample } from '../../test/testScripts/swapExampleTetu';
-import { SorConfig } from '../../dist';
-import { ITokenData } from '../../test/api/api';
 import { JsonRpcProvider } from '@ethersproject/providers';
 import * as api from '../../test/api/api';
 const app = express();
@@ -47,6 +43,7 @@ let provider;
 let tokens;
 let dexes;
 
+// ------------ VERSION --------------
 app.all('/', (req, res) => {
     res.json({
         title: 'SOR (Smart Order Router)',
@@ -54,14 +51,17 @@ app.all('/', (req, res) => {
     });
 });
 
+// ------------ DEXES --------------
 app.all('/dexes', (req, res) => {
     res.json(dexes);
 });
 
+// ------------ TOKENS --------------
 app.all('/tokens', (req, res) => {
     res.json(tokens);
 });
 
+// ------------ SWAP --------------
 app.all('/swap', async (req, res) => {
     const query = req.query;
     console.log('/swap', query);

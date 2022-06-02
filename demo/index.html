@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <title>MultiSwap Demo</title>
+        <!-- CSS only -->
+        <link
+            href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/css/bootstrap.min.css"
+            rel="stylesheet"
+            integrity="sha384-0evHe/X+R7YkIZDRvuzKMRqM+OrBnVFBL6DOitfPri4tjfHxaWutUpFmBp4vmVor"
+            crossorigin="anonymous"
+        />
+        <style>
+            body {
+                text-align: center;
+            }
+
+            .card {
+                top: 100px;
+                margin: 0 auto; /* Added */
+                float: none; /* Added */
+                margin-bottom: 10px; /* Added */
+            }
+
+            .input-group-text {
+                width: 30%;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="card" style="width: 28rem">
+            <div class="card-body">
+                <h1>MultiSwap</h1>
+                <hr />
+
+                <div class="input-group mb-3">
+                    <span class="input-group-text">Sell</span>
+                    <select
+                        id="tokenIn"
+                        class="form-select"
+                        searchable="Search here.."
+                    >
+                        <option value="0">MATIC</option>
+                        <option value="1" selected>WMATIC</option>
+                        <option value="2">USDC</option>
+                        <option value="3">WETH</option>
+                        <option value="4">WBTC</option>
+                        <option value="5">BAL</option>
+                    </select>
+                    <input
+                        id="swapAmount"
+                        type="number"
+                        class="form-control"
+                        style="text-align: right"
+                        placeholder="0"
+                    />
+                </div>
+
+                <div class="input-group mb-3">
+                    <span class="input-group-text">Buy</span>
+                    <select
+                        id="tokenOut"
+                        class="form-select"
+                        searchable="Search here.."
+                    >
+                        <option value="0">MATIC</option>
+                        <option value="1">WMATIC</option>
+                        <option value="2" selected>USDC</option>
+                        <option value="3">WETH</option>
+                        <option value="4">WBTC</option>
+                        <option value="5">BAL</option>
+                    </select>
+                    <input
+                        id="amountOut"
+                        type="number"
+                        class="form-control"
+                        disabled
+                        style="text-align: right"
+                        placeholder="0"
+                    />
+                </div>
+
+                <h6>Routing</h6>
+                <div
+                    class="btn-group btn-group-sm my-1"
+                    role="group"
+                    aria-label="Basic outlined example"
+                >
+                    <button type="button" class="btn btn-outline-secondary">
+                        <b>40% WETH 🠖</b><br />Balancer
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary">
+                        <b>WBC 🠖</b><br />Uniswap
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary">
+                        <b>USDC</b><br />SushiSwap
+                    </button>
+                </div>
+                <div
+                    class="btn-group btn-group-sm my-1"
+                    role="group"
+                    aria-label="Basic outlined example"
+                >
+                    <button type="button" class="btn btn-outline-secondary">
+                        <b>60% DAI 🠖</b><br />Balancer
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary">
+                        <b>WETH 🠖</b><br />Uniswap
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary">
+                        <b>USDC</b><br />SushiSwap
+                    </button>
+                </div>
+
+                <hr />
+
+                <button
+                    id="approve"
+                    type="button"
+                    class="btn my-1 w-100 btn-primary"
+                >
+                    Approve
+                </button>
+                <button
+                    id="swap"
+                    type="button"
+                    class="btn my-1 w-100 btn-primary"
+                >
+                    Swap
+                </button>
+            </div>
+        </div>
+
+        <script
+            src="https://code.jquery.com/jquery-3.6.0.min.js"
+            integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4="
+            crossorigin="anonymous"
+        ></script>
+        <script
+            src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-pprn3073KE6tl6bjs2QrFaJGz5/SUsLqktiwsUTF55Jfv3qYSDhgCecCxMW52nD2"
+            crossorigin="anonymous"
+        ></script>
+        <script>
+            const apiUrl = 'http://localhost:8080/';
+
+            async function init() {
+                const service = await fetch(apiUrl);
+                console.log('service', service);
+            }
+
+            init().then();
+        </script>
+    </body>
+</html>
