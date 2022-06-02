@@ -14,6 +14,7 @@ import {
 } from '../../test/api/config';
 import { JsonRpcProvider } from '@ethersproject/providers';
 import * as api from '../../test/api/api';
+import { BigNumber } from '@ethersproject/bignumber';
 const app = express();
 
 Sentry.init({
@@ -66,24 +67,19 @@ app.all('/tokens', (req, res) => {
 // ------------ SWAP --------------
 app.all('/swap', async (req, res) => {
     const query = req.query;
-    console.log('/swap', query);
-
-    // TODO add more checks (token fields, amount)
-    if (!(query.tokenIn && query.tokenOut && query.swapAmount)) {
-        res.status(400).send('Error: Wrong query fields');
-        return;
-    }
+    const swapRequest = JSON.parse(query.swapRequest);
+    // TODO add checks (token fields, amount)
 
     try {
         const swapInfo = await api.getSwap(
             sor,
-            query.tokenIn,
-            query.tokenOut,
-            query.swapAmount
+            swapRequest.tokenIn,
+            swapRequest.tokenOut,
+            swapRequest.swapAmount
         );
-
         res.json(swapInfo);
     } catch (e) {
+        console.error(e);
         res.status(400).send('Error:' + e);
     }
 });
@@ -112,6 +108,15 @@ async function initialize() {
 
     setInterval(updatePools, 30 * 1000);
     setInterval(updateTokens, 10 * 60 * 1000);
+
+    // for proper BigNumber serialization (toString)
+    Object.defineProperties(BigNumber.prototype, {
+        toJSON: {
+            value: function (this: BigNumber) {
+                return this.toString();
+            },
+        },
+    });
 
     console.log(`\nReady.`);
 }
