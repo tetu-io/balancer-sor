@@ -23,7 +23,7 @@
             }
 
             .input-group-text {
-                width: 30%;
+                width: 15%;
             }
         </style>
     </head>
@@ -37,15 +37,10 @@
                     <span class="input-group-text">Sell</span>
                     <select
                         id="tokenIn"
-                        class="form-select"
+                        class="form-select token-select"
                         searchable="Search here.."
                     >
-                        <option value="0">MATIC</option>
-                        <option value="1" selected>WMATIC</option>
-                        <option value="2">USDC</option>
-                        <option value="3">WETH</option>
-                        <option value="4">WBTC</option>
-                        <option value="5">BAL</option>
+                        <option value="" disabled selected>loading...</option>
                     </select>
                     <input
                         id="swapAmount"
@@ -60,15 +55,10 @@
                     <span class="input-group-text">Buy</span>
                     <select
                         id="tokenOut"
-                        class="form-select"
+                        class="form-select token-select"
                         searchable="Search here.."
                     >
-                        <option value="0">MATIC</option>
-                        <option value="1">WMATIC</option>
-                        <option value="2" selected>USDC</option>
-                        <option value="3">WETH</option>
-                        <option value="4">WBTC</option>
-                        <option value="5">BAL</option>
+                        <option value="" disabled selected>loading...</option>
                     </select>
                     <input
                         id="amountOut"
@@ -143,10 +133,59 @@
         ></script>
         <script>
             const apiUrl = 'http://localhost:8080/';
+            let service, dexes, tokens;
+
+            async function api(method = '') {
+                return await (await fetch(apiUrl + method)).json();
+            }
+
+            function fillTokenControls() {
+                const sel = $('.token-select');
+                sel.empty();
+                const tokensArray = Object.values(tokens)
+                    .filter((token) => token.symbol) // filter tokens w/o symbol
+                    .sort((a, b) => a.symbol.localeCompare(b.symbol)); // sort alphabetically
+
+                tokensArray.forEach((token) => {
+                    sel.append(
+                        $('<option>', {
+                            value: token.address,
+                            text:
+                                token.symbol +
+                                '     ' +
+                                token.address.slice(2, 6) +
+                                '...' +
+                                token.address.slice(-4),
+                        })
+                    );
+                });
+            }
+
+            async function getRoute() {
+                console.log('getRoute');
+                const tokenInAddress = $('#tokenIn').val();
+                localStorage['tokenInAddress'] = tokenInAddress;
+                const tokenIn = tokens[tokenInAddress];
+                console.log('tokenIn', tokenIn);
+
+                const tokenOutAddress = $('#tokenOut').val();
+                localStorage['tokenOutAddress'] = tokenOutAddress;
+                const tokenOut = tokens[tokenOutAddress];
+                console.log('tokenOut', tokenOut);
+            }
 
             async function init() {
-                const service = await fetch(apiUrl);
+                const requests = [api(), api('dexes'), api('tokens')];
+                [service, dexes, tokens] = await Promise.all(requests);
                 console.log('service', service);
+                console.log('dexes', dexes);
+                console.log('tokens', tokens);
+                fillTokenControls();
+
+                $('#tokenIn').val(localStorage['tokenInAddress']);
+                $('#tokenOut').val(localStorage['tokenOutAddress']);
+
+                $('select').on('change', getRoute);
             }
 
             init().then();
