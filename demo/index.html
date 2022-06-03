@@ -223,16 +223,10 @@
                     .sort((a, b) => a.symbol.localeCompare(b.symbol)); // sort alphabetically
 
                 tokensArray.forEach((token) => {
-                    sel.append(
-                        $('<option>', {
-                            value: token.address,
-                            text: token.symbol /*+
-                        '     ' +
-                        token.address.slice(2, 6) +
-                        '...' +
-                        token.address.slice(-4),*/,
-                        })
-                    );
+                    const value = token.address;
+                    const text = token.symbol;
+                    // + ' ' + token.address.slice(2, 6) + '...' + token.address.slice(-4)
+                    sel.append($('<option>', { value, text }));
                 });
             }
 
