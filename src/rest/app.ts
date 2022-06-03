@@ -106,9 +106,10 @@ async function initialize() {
 
     await updateTokens();
 
-    setInterval(updatePools, 30 * 1000);
-    setInterval(updateTokens, 10 * 60 * 1000);
-
+    if (!process.env.MULTISWAP_NO_UPDATE) {
+        setInterval(updatePools, 30 * 1000);
+        setInterval(updateTokens, 10 * 60 * 1000);
+    }
     // for proper BigNumber serialization (toString)
     Object.defineProperties(BigNumber.prototype, {
         toJSON: {

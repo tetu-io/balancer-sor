@@ -6,10 +6,10 @@
         <!-- CSS only -->
         <!--suppress SpellCheckingInspection -->
         <link
-            href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/css/bootstrap.min.css"
-            rel="stylesheet"
-            integrity="sha384-0evHe/X+R7YkIZDRvuzKMRqM+OrBnVFBL6DOitfPri4tjfHxaWutUpFmBp4vmVor"
             crossorigin="anonymous"
+            href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/css/bootstrap.min.css"
+            integrity="sha384-0evHe/X+R7YkIZDRvuzKMRqM+OrBnVFBL6DOitfPri4tjfHxaWutUpFmBp4vmVor"
+            rel="stylesheet"
         />
         <style>
             body {
@@ -33,61 +33,69 @@
                 <h1>MultiSwap</h1>
                 <hr />
 
-                <div class="input-group mb-3">
-                    <label for="tokenIn" class="input-group-text">Sell</label>
-                    <select id="tokenIn" class="form-select token-select">
-                        <option value="" disabled selected>loading...</option>
+                <div class="input-group">
+                    <label class="input-group-text" for="tokenIn">Sell</label>
+                    <select class="form-select token-select" id="tokenIn">
+                        <option disabled selected value="">loading...</option>
                     </select>
                     <!--suppress HtmlFormInputWithoutLabel -->
                     <input
-                        id="swapAmount"
-                        type="number"
                         class="form-control"
-                        style="text-align: right"
+                        id="swapAmount"
                         placeholder="0"
+                        style="text-align: right"
+                        type="number"
                     />
                 </div>
 
+                <button
+                    class="btn my-2 btn-secondary btn-sm"
+                    id="reverse"
+                    type="button"
+                >
+                    ⭿
+                </button>
+
                 <div class="input-group mb-3">
-                    <label for="tokenOut" class="input-group-text">Buy</label>
-                    <select id="tokenOut" class="form-select token-select">
-                        <option value="" disabled selected>loading...</option>
+                    <label class="input-group-text" for="tokenOut">Buy</label>
+                    <select class="form-select token-select" id="tokenOut">
+                        <option disabled selected value="">loading...</option>
                     </select>
                     <!--suppress HtmlFormInputWithoutLabel -->
                     <input
-                        id="returnAmount"
-                        type="number"
                         class="form-control"
                         disabled
-                        style="text-align: right"
+                        id="returnAmount"
                         placeholder="0"
+                        style="text-align: right"
+                        type="number"
                     />
                 </div>
 
                 <h6>Routing</h6>
                 <div class="btn-group btn-group-sm my-1" role="group">
-                    <button type="button" class="btn btn-outline-secondary">
+                    <button class="btn btn-outline-secondary" type="button">
                         <b>40% WETH 🠖</b><br />Balancer
                     </button>
-                    <button type="button" class="btn btn-outline-secondary">
+                    <button class="btn btn-outline-secondary" type="button">
                         <b>WBC 🠖</b><br />Uniswap
                     </button>
-                    <button type="button" class="btn btn-outline-secondary">
+                    <button class="btn btn-outline-secondary" type="button">
                         <b>USDC</b><br />SushiSwap
                     </button>
                 </div>
                 <div
+                    aria-label="Basic outlined example"
                     class="btn-group btn-group-sm my-1"
                     role="group"
-                    aria-label="Basic outlined example"
                 >
-                    <button type="button" class="btn btn-outline-secondary">
+                    <button class="btn btn-outline-secondary" type="button">
                         <b>60% DAI 🠖</b><br />Balancer
                     </button>
-                    <button type="button" class="btn btn-outline-secondary">
+                    <button class="btn btn-outline-secondary" type="button">
                         <b>WETH 🠖</b><br />Uniswap
                     </button>
-                    <button type="button" class="btn btn-outline-secondary">
+                    <button class="btn btn-outline-secondary" type="button">
                         <b>USDC</b><br />SushiSwap
                     </button>
                 </div>
@@ -95,16 +103,16 @@
                 <hr />
 
                 <button
+                    class="btn my-1 w-100 btn-primary"
                     id="approve"
                     type="button"
-                    class="btn my-1 w-100 btn-primary"
                 >
                     Approve
                 </button>
                 <button
+                    class="btn my-1 w-100 btn-primary"
                     id="swap"
                     type="button"
-                    class="btn my-1 w-100 btn-primary"
                 >
                     Swap
                 </button>
@@ -113,17 +121,23 @@
 
         <!--suppress SpellCheckingInspection -->
         <script
-            src="https://code.jquery.com/jquery-3.6.0.min.js"
-            integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4="
             crossorigin="anonymous"
+            integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4="
+            src="https://code.jquery.com/jquery-3.6.0.min.js"
         ></script>
         <!--suppress SpellCheckingInspection -->
         <script
-            src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/js/bootstrap.bundle.min.js"
-            integrity="sha384-pprn3073KE6tl6bjs2QrFaJGz5/SUsLqktiwsUTF55Jfv3qYSDhgCecCxMW52nD2"
             crossorigin="anonymous"
+            integrity="sha384-pprn3073KE6tl6bjs2QrFaJGz5/SUsLqktiwsUTF55Jfv3qYSDhgCecCxMW52nD2"
+            src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/js/bootstrap.bundle.min.js"
         ></script>
-        <script src="https://unpkg.com/ethers-utils"></script>
+        <!--        <script src="https://unpkg.com/ethers-utils"></script>-->
+        <script
+            crossorigin="anonymous"
+            integrity="sha512-rQkwNC0M1xDe/Q5+60yxVaivh7dpaoZthM91gAkEq4/5aLmMVNkk/Ru9Fjf3bCVA1jbJXa5sZsLPBDKHy+0LaA=="
+            referrerpolicy="no-referrer"
+            src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.6.8/ethers.umd.min.js"
+        ></script>
         <script>
             const whitelistedTokens = [
                 '0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619'.toLowerCase(),
@@ -231,14 +245,18 @@
                 localStorage['tokenOutAddress'] = tokenOutAddress;
                 const tokenOut = tokens[tokenOutAddress];
 
-                const swapAmount = $('#swapAmount').val();
-                localStorage['swapAmount'] = swapAmount;
-                const swapAmountBN = utils.parseUnits(
-                    swapAmount,
+                const swapAmountStr = $('#swapAmount').val();
+                localStorage['swapAmount'] = swapAmountStr;
+                const swapAmountBN = ethers.utils.parseUnits(
+                    swapAmountStr,
                     tokenIn.decimals
                 );
+                const swapAmount = swapAmountBN.toString();
 
-                const query = { tokenIn, tokenOut, swapAmountBN };
+                const $returnAmount = $('#returnAmount');
+                $returnAmount.val(''); // clear returnAmount
+
+                const query = { tokenIn, tokenOut, swapAmount };
                 console.log('query', query);
                 const swap = await api('swap', {
                     swapRequest: JSON.stringify(query),
@@ -246,13 +264,32 @@
                 console.log('swap', swap);
 
                 const returnAmountBN = swap.returnAmount;
-                const returnAmount = utils.formatUnits(
-                    returnAmountBN,
-                    tokenOut.decimals
-                );
+                const returnAmount = ethers.utils
+                    .formatUnits(returnAmountBN, tokenOut.decimals)
+                    .toString();
                 console.log('returnAmount', returnAmount);
 
-                $('#returnAmount').val(returnAmount);
+                $returnAmount.val(returnAmount);
+            }
+
+            let prevSwapAmountStr;
+
+            async function amountKeyup() {
+                const swapAmountStr = $('#swapAmount').val();
+                if (swapAmountStr !== prevSwapAmountStr) {
+                    prevSwapAmountStr = swapAmountStr;
+                    await inputChanged();
+                }
+            }
+
+            async function reverseTokens() {
+                const tokenInAddress = $('#tokenIn').val();
+                const tokenOutAddress = $('#tokenOut').val();
+
+                $('#tokenIn').val(tokenOutAddress);
+                $('#tokenOut').val(tokenInAddress);
+
+                await inputChanged();
             }
 
             async function init() {
@@ -269,9 +306,10 @@
                 $('#tokenOut').val(localStorage['tokenOutAddress']);
                 $('#swapAmount')
                     .val(localStorage['swapAmount'])
-                    .keyup(inputChanged);
+                    .keyup(amountKeyup);
 
                 $('select').change(inputChanged);
+                $('#reverse').click(reverseTokens);
 
                 await inputChanged();
             }
