@@ -17,12 +17,12 @@
             }
 
             .card {
-                top: 100px;
+                top: 28px;
                 float: none;
                 margin: 0 auto 10px;
             }
 
-            .input-group-text {
+            .width15 {
                 width: 15%;
             }
         </style>
@@ -34,7 +34,9 @@
                 <hr />
 
                 <div class="input-group">
-                    <label class="input-group-text" for="tokenIn">Sell</label>
+                    <label class="input-group-text width15" for="tokenIn"
+                        >Sell</label
+                    >
                     <select class="form-select token-select" id="tokenIn">
                         <option disabled selected value="">loading...</option>
                     </select>
@@ -57,7 +59,9 @@
                 </button>
 
                 <div class="input-group mb-3">
-                    <label class="input-group-text" for="tokenOut">Buy</label>
+                    <label class="input-group-text width15" for="tokenOut"
+                        >Buy</label
+                    >
                     <select class="form-select token-select" id="tokenOut">
                         <option disabled selected value="">loading...</option>
                     </select>
@@ -124,6 +128,13 @@
 
                 <button
                     class="btn my-1 w-100 btn-primary"
+                    id="connect"
+                    type="button"
+                >
+                    Connect Wallet
+                </button>
+                <button
+                    class="btn my-1 w-100 btn-primary"
                     id="approve"
                     type="button"
                 >
@@ -136,6 +147,23 @@
                 >
                     Swap
                 </button>
+
+                <div class="input-group my-3">
+                    <label class="input-group-text" for="tokenIn"
+                        >Slippage %</label
+                    >
+                    <!--suppress HtmlFormInputWithoutLabel -->
+                    <input
+                        class="form-control"
+                        id="slippage"
+                        placeholder="2"
+                        style="text-align: right"
+                        type="number"
+                        min="1"
+                        max="99"
+                        value="2"
+                    />
+                </div>
             </div>
         </div>
 
@@ -158,7 +186,9 @@
             referrerpolicy="no-referrer"
             src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.6.8/ethers.umd.min.js"
         ></script>
-        <script>
+        <script type="module">
+            import wallet from './connection.js';
+
             const whitelistedTokens = [
                 '0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619'.toLowerCase(),
                 '0xc3FdbadC7c795EF1D6Ba111e06fF8F16A20Ea539'.toLowerCase(),
@@ -224,6 +254,8 @@
             ];
 
             const apiUrl = 'http://localhost:8080/';
+            const multiSwapAddress =
+                '0xfE48c5EdD05D83eeb65853b383eBc63b77140BDF';
             let service, dexes, tokens;
 
             async function api(func = '', query = undefined) {
@@ -316,6 +348,50 @@
                 await inputChanged();
             }
 
+            async function connect() {
+                const account = await wallet.connectToAccount();
+                console.log('account', account);
+                await updateButtons();
+            }
+
+            const ERC20Abi = [
+                'function approve(address _spender, uint256 _value) public returns (bool success)',
+                'function allowance(address owner, address spender) public returns (uint256)',
+            ];
+
+            async function approve() {
+                const tokenAddress = $('#tokenIn').value;
+                console.log('tokenAddress', tokenAddress);
+                const amount = ethers.constants.MaxUint256;
+                let contract = new ethers.Contract(
+                    tokenAddress,
+                    ERC20Abi,
+                    wallet.provider
+                );
+                await contract.approve(multiSwapAddress, amount);
+            }
+
+            async function updateButtons() {
+                // Connect Wallet
+                const account = await wallet.getAccount();
+                console.log('account', account);
+                const connected = account.length > 0;
+                const accountShort = connected
+                    ? account[0].slice(2, 6) + '...' + account[0].slice(-4)
+                    : '';
+                const connectBtnTitle = connected
+                    ? `Wallet Connected ${accountShort}`
+                    : `Connect Wallet`;
+                $('#connect').html(connectBtnTitle).prop('disabled', connected);
+
+                // Approve
+                const approved = false; // TODO
+                $('#approve').prop('disabled', !connected);
+
+                // Swap
+                $('#swap').prop('disabled', !(connected && approved));
+            }
+
             async function init() {
                 // noinspection ES6MissingAwait
                 const requests = [api(), api('dexes'), api('tokens')];
@@ -330,12 +406,17 @@
                 $('#tokenOut').val(localStorage['tokenOutAddress']);
                 $('#swapAmount')
                     .val(localStorage['swapAmount'])
-                    .keyup(amountKeyup);
+                    .keyup(amountKeyup)
+                    .change(amountKeyup);
 
                 $('select').change(inputChanged);
                 $('#reverse').click(reverseTokens);
+                $('#connect').click(connect);
+                $('#approve').click(approve);
+                $('#swap').click(swap);
 
                 await inputChanged();
+                await updateButtons();
             }
 
             init().then();
