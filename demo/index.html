@@ -42,7 +42,7 @@
                     </select>
                     <!--suppress HtmlFormInputWithoutLabel -->
                     <input
-                        class="form-control"
+                        class="form-control number-separator"
                         id="swapAmount"
                         placeholder="0"
                         style="text-align: right"
@@ -67,7 +67,7 @@
                     </select>
                     <!--suppress HtmlFormInputWithoutLabel -->
                     <input
-                        class="form-control"
+                        class="form-control number-separator"
                         disabled
                         id="returnAmount"
                         placeholder="0"
@@ -137,6 +137,7 @@
                     class="btn my-1 w-100 btn-primary"
                     id="approve"
                     type="button"
+                    disabled
                 >
                     Approve
                 </button>
@@ -144,11 +145,12 @@
                     class="btn my-1 w-100 btn-primary"
                     id="swap"
                     type="button"
+                    disabled
                 >
                     Swap
                 </button>
 
-                <div class="input-group my-3">
+                <div class="input-group mt-3">
                     <label class="input-group-text" for="tokenIn"
                         >Slippage %</label
                     >
@@ -156,7 +158,6 @@
                     <input
                         class="form-control"
                         id="slippage"
-                        placeholder="2"
                         style="text-align: right"
                         type="number"
                         min="1"
@@ -188,6 +189,7 @@
         ></script>
         <script type="module">
             import wallet from './connection.js';
+            import MultiSwap2Abi from './MultiSwap2.json' assert { type: 'json' };
 
             const whitelistedTokens = [
                 '0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619'.toLowerCase(),
@@ -254,9 +256,13 @@
             ];
 
             const apiUrl = 'http://localhost:8080/';
+            const scanUrl = 'https://polygonscan.com/';
+            const _SLIPPAGE_PRECISION = 10000; // TODO use in swap call
             const multiSwapAddress =
-                '0xfE48c5EdD05D83eeb65853b383eBc63b77140BDF';
+                '0x8b56D66cCbc34DAd3e8ae214b9aA2BF752dF1041';
             let service, dexes, tokens;
+
+            let swap; // Last swap route data stored here
 
             async function api(func = '', query = undefined) {
                 const url = apiUrl + func + '?' + new URLSearchParams(query);
@@ -295,13 +301,14 @@
                 localStorage['swapAmount'] = swapAmountStr;
 
                 const $returnAmount = $('#returnAmount');
-                $returnAmount.val(''); // clear returnAmount
+                // $returnAmount.val(''); // clear returnAmount or better put progress near output amount
 
                 // do not search route for empty or 0 swapAmount
                 if (
                     !parseFloat(swapAmountStr) ||
                     parseFloat(swapAmountStr) === 0
                 ) {
+                    await updateButtons();
                     return;
                 }
 
@@ -314,7 +321,7 @@
 
                 const query = { tokenIn, tokenOut, swapAmount };
                 console.log('query', query);
-                const swap = await api('swap', {
+                swap = await api('swap', {
                     swapRequest: JSON.stringify(query),
                 });
                 console.log('swap', swap);
@@ -326,6 +333,8 @@
                 console.log('returnAmount', returnAmount);
 
                 $returnAmount.val(returnAmount);
+
+                await updateButtons();
             }
 
             let prevSwapAmountStr;
@@ -360,18 +369,46 @@
             ];
 
             async function approve() {
-                const tokenAddress = $('#tokenIn').value;
-                console.log('tokenAddress', tokenAddress);
+                const tokenAddress = $('#tokenIn').val();
                 const amount = ethers.constants.MaxUint256;
+                const tokenContract = new ethers.Contract(
+                    tokenAddress,
+                    ERC20Abi,
+                    wallet.provider
+                );
+                // const tx = await tokenContract.connect(wallet.signer)
+                //     .approve(multiSwapAddress, amount, {gasLimit: 100000});
+                const tx = {
+                    hash: '0xda0ec28d9bac3b29018259f3ce86b4f7e97dd3bf502947dec07d64b64c1be06d',
+                };
+                console.log('tx', tx);
+                await notify(
+                    'Approve ' + tokens[tokenAddress].symbol,
+                    'Click to view transaction',
+                    'https://freepikpsd.com/file/2019/10/approved-icon-png-3-Transparent-Images.png',
+                    txScanUrl(tx)
+                );
+            }
+
+            function txScanUrl(tx) {
+                return scanUrl + 'tx/' + tx.hash;
+            }
+
+            async function allowance() {
+                const tokenAddress = $('#tokenIn').val();
                 let contract = new ethers.Contract(
                     tokenAddress,
                     ERC20Abi,
                     wallet.provider
                 );
-                await contract.approve(multiSwapAddress, amount);
+                return contract.callStatic.allowance(
+                    wallet.signer.getAddress(),
+                    multiSwapAddress
+                );
             }
 
             async function updateButtons() {
+                console.log('updateButtons');
                 // Connect Wallet
                 const account = await wallet.getAccount();
                 console.log('account', account);
@@ -380,16 +417,75 @@
                     ? account[0].slice(2, 6) + '...' + account[0].slice(-4)
                     : '';
                 const connectBtnTitle = connected
-                    ? `Wallet Connected ${accountShort}`
+                    ? `✅ Wallet ${accountShort}`
                     : `Connect Wallet`;
                 $('#connect').html(connectBtnTitle).prop('disabled', connected);
 
                 // Approve
-                const approved = false; // TODO
-                $('#approve').prop('disabled', !connected);
+                const allowed = await allowance();
+                console.log('allowed', allowed);
+                // MaxInt - 2 times smaller than MaxUint
+                // To simplify just check what allowance is not less than half of MaxUint
+                const approved = allowed.gt(ethers.constants.MaxInt256);
+                const approveBtnTitle = approved ? '✅ Approved' : 'Approve';
+                $('#approve')
+                    .html(approveBtnTitle)
+                    .prop('disabled', !(connected && !approved));
 
                 // Swap
-                $('#swap').prop('disabled', !(connected && approved));
+                const haveOutput = parseFloat($('#returnAmount').val()) > 0;
+                $('#swap').prop(
+                    'disabled',
+                    !(connected && approved && haveOutput)
+                );
+            }
+
+            async function doSwap() {
+                if (swap && swap.returnAmount) {
+                    const swapContract = new ethers.Contract(
+                        multiSwapAddress,
+                        MultiSwap2Abi,
+                        wallet.provider
+                    );
+                    const slippage = $('#slippage').val();
+                    console.log('slippage', slippage);
+                    // now + 30 minutes in seconds
+                    const deadline = Math.floor(Date.now() / 1000) + 60 * 30;
+                    console.log('deadline', deadline);
+                    const tx = await swapContract
+                        .connect(wallet.signer)
+                        .multiSwap(
+                            swap.swapData, // in/out tokens, amounts
+                            swap.swaps, // array of swaps
+                            swap.tokenAddresses, // array of inter token addresses
+                            slippage,
+                            deadline,
+                            { gasLimit: 100000 }
+                        );
+                    console.log('tx', tx);
+                    const tokenIn = tokens[swap.tokenIn].symbol;
+                    const tokenOut = tokens[swap.tokenOut].symbol;
+                    const amount = $('#swapAmount').val();
+                    await notify(
+                        `Swap ${amount} ${tokenIn} 🡆 ${tokenOut}`,
+                        'Click to view transaction',
+                        'https://icon-library.com/images/replace-icon/replace-icon-22.jpg',
+                        txScanUrl(tx)
+                    );
+                }
+            }
+
+            async function notify(title, body, icon, url, options) {
+                await Notification.requestPermission();
+                const notification = new Notification(title, {
+                    body,
+                    icon,
+                    ...options,
+                });
+                notification.onclick = (e) => {
+                    window.open(url);
+                };
+                return notification;
             }
 
             async function init() {
@@ -413,10 +509,10 @@
                 $('#reverse').click(reverseTokens);
                 $('#connect').click(connect);
                 $('#approve').click(approve);
-                $('#swap').click(swap);
+                $('#swap').click(doSwap);
 
                 await inputChanged();
-                await updateButtons();
+                // setInterval(inputChanged, 5 * 1000); // TODO remove comment to auto update route
             }
 
             init().then();
