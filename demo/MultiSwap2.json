@@ -27,6 +27,6 @@
     "function initializeControllable(address)",
     "function isController(address) view returns (bool)",
     "function isGovernance(address) view returns (bool)",
-    "function multiSwap(tuple(address,address,uint256,uint256),tuple(bytes32,uint256,uint256,uint256,bytes)[],address[],uint256,uint256) payable returns (uint256)",
+    "function multiSwap(tuple(address tokenIn,address tokenOut,uint256 swapAmount,uint256 returnAmount),tuple(bytes32 poolId,uint256 assetInIndex,uint256 assetOutIndex,uint256 amount,bytes userData)[],address[] tokenAddresses,uint256 slippage,uint256 deadline) payable returns (uint256)",
     "function salvage(address,uint256)"
 ]

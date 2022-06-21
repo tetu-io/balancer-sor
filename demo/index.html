@@ -12,7 +12,9 @@
             rel="stylesheet"
         />
         <style>
-            body {
+            h1,
+            h6,
+            .text-centered {
                 text-align: center;
             }
 
@@ -33,110 +35,73 @@
                 <h1>MultiSwap</h1>
                 <hr />
 
-                <div class="input-group">
-                    <label class="input-group-text width15" for="tokenIn"
-                        >Sell</label
-                    >
-                    <select class="form-select token-select" id="tokenIn">
-                        <option disabled selected value="">loading...</option>
-                    </select>
-                    <button
-                        class="btn btn-secondary"
-                        type="button"
-                        id="addTokenOut"
-                    >
-                        +
-                    </button>
-                    <!--suppress HtmlFormInputWithoutLabel -->
-                    <input
-                        class="form-control number-separator"
-                        id="swapAmount"
-                        placeholder="0"
-                        style="text-align: right"
-                        type="number"
-                    />
-                </div>
+                <div class="text-centered">
+                    <div class="input-group">
+                        <label class="input-group-text width15" for="tokenIn"
+                            >Sell</label
+                        >
+                        <select class="form-select token-select" id="tokenIn">
+                            <option disabled selected value="">
+                                loading...
+                            </option>
+                        </select>
+                        <button
+                            class="btn btn-secondary"
+                            type="button"
+                            id="addTokenIn"
+                            title="Add Token to Web Wallet"
+                        >
+                            +
+                        </button>
+                        <!--suppress HtmlFormInputWithoutLabel -->
+                        <input
+                            class="form-control number-separator"
+                            id="swapAmount"
+                            placeholder="0"
+                            style="text-align: right"
+                            type="number"
+                        />
+                    </div>
 
-                <button
-                    class="btn my-2 btn-secondary btn-sm"
-                    id="reverse"
-                    type="button"
-                >
-                    ⭿
-                </button>
-
-                <div class="input-group mb-3">
-                    <label class="input-group-text width15" for="tokenOut"
-                        >Buy</label
-                    >
-                    <select class="form-select token-select" id="tokenOut">
-                        <option disabled selected value="">loading...</option>
-                    </select>
                     <button
-                        class="btn btn-secondary"
+                        class="btn my-2 btn-secondary btn-sm"
+                        id="reverse"
                         type="button"
-                        id="addTokenIn"
                     >
-                        +
+                        ⭿
                     </button>
-                    <!--suppress HtmlFormInputWithoutLabel -->
-                    <input
-                        class="form-control number-separator"
-                        disabled
-                        id="returnAmount"
-                        placeholder="0"
-                        style="text-align: right"
-                        type="number"
-                    />
+
+                    <div class="input-group mb-3">
+                        <label class="input-group-text width15" for="tokenOut"
+                            >Buy</label
+                        >
+                        <select class="form-select token-select" id="tokenOut">
+                            <option disabled selected value="">
+                                loading...
+                            </option>
+                        </select>
+                        <button
+                            class="btn btn-secondary"
+                            type="button"
+                            id="addTokenOut"
+                            title="Add Token to Web Wallet"
+                        >
+                            +
+                        </button>
+                        <!--suppress HtmlFormInputWithoutLabel -->
+                        <input
+                            class="form-control number-separator"
+                            disabled
+                            id="returnAmount"
+                            placeholder="0"
+                            style="text-align: right"
+                            type="number"
+                        />
+                    </div>
                 </div>
 
                 <h6>Routing</h6>
-                <div class="btn-group btn-group-sm my-1" role="group">
-                    <button
-                        class="btn btn-outline-secondary"
-                        disabled
-                        type="button"
-                    >
-                        <b>40% WETH 🠖</b><br />Balancer
-                    </button>
-                    <button
-                        class="btn btn-outline-secondary"
-                        disabled
-                        type="button"
-                    >
-                        <b>WBC 🠖</b><br />Uniswap
-                    </button>
-                    <button
-                        class="btn btn-outline-secondary"
-                        disabled
-                        type="button"
-                    >
-                        <b>USDC</b><br />SushiSwap
-                    </button>
-                </div>
-                <div class="btn-group btn-group-sm my-1" role="group">
-                    <button
-                        class="btn btn-outline-secondary"
-                        disabled
-                        type="button"
-                    >
-                        <b>60% DAI 🠖</b><br />Balancer
-                    </button>
-                    <button
-                        class="btn btn-outline-secondary"
-                        disabled
-                        type="button"
-                    >
-                        <b>WETH 🠖</b><br />Uniswap
-                    </button>
-                    <button
-                        class="btn btn-outline-secondary"
-                        disabled
-                        type="button"
-                    >
-                        <b>USDC</b><br />SushiSwap
-                    </button>
-                </div>
+                <div id="routing"></div>
 
                 <hr />
 
@@ -147,6 +112,7 @@
                 >
                     Connect Wallet
                 </button>
+
                 <button
                     class="btn my-1 w-100 btn-primary"
                     id="approve"
@@ -155,6 +121,7 @@
                 >
                     Approve
                 </button>
+
                 <button
                     class="btn my-1 w-100 btn-primary"
                     id="swap"
@@ -176,7 +143,6 @@
                         type="number"
                         min="1"
                         max="99"
-                        value="2"
                     />
                     <span class="input-group-text">%</span>
                 </div>
@@ -207,6 +173,7 @@
             import MultiSwap2Abi from './MultiSwap2.json' assert { type: 'json' };
 
             const whitelistedTokens = [
+                '0x0000000000000000000000000000000000000000'.toLowerCase(),
                 '0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619'.toLowerCase(),
                 '0xc3FdbadC7c795EF1D6Ba111e06fF8F16A20Ea539'.toLowerCase(),
                 '0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174'.toLowerCase(),
@@ -340,6 +307,7 @@
                     swapRequest: JSON.stringify(query),
                 });
                 console.log('swap', swap);
+                renderRoute();
 
                 const returnAmountBN = swap.returnAmount;
                 const returnAmount = ethers.utils
@@ -460,9 +428,9 @@
                         MultiSwap2Abi,
                         wallet.provider
                     );
-                    const slippage = $('#slippage').val();
+                    const slippage = $('#slippage').val() * _SLIPPAGE_PRECISION;
                     console.log('slippage', slippage);
-                    // now + 30 minutes in seconds
+                    // now() + 30 minutes in seconds
                     const deadline = Math.floor(Date.now() / 1000) + 60 * 30;
                     console.log('deadline', deadline);
                     const tx = await swapContract
@@ -473,7 +441,7 @@
                             swap.tokenAddresses, // array of inter token addresses
                             slippage,
                             deadline,
-                            { gasLimit: 100000 }
+                            { gasLimit: 3000000 }
                         );
                     console.log('tx', tx);
                     const tokenIn = tokens[swap.tokenIn].symbol;
@@ -485,7 +453,7 @@
                         'https://icon-library.com/images/replace-icon/replace-icon-22.jpg',
                         txScanUrl(tx)
                     );
-                }
+                } else console.error('No swap route');
             }
 
             async function notify(title, body, icon, url, options) {
@@ -517,6 +485,38 @@
                 return wasAdded;
             }
 
+            function renderRoute() {
+                let html = '<ol>';
+
+                for (const s of swap.swaps) {
+                    const dex = getPoolInfo(s.poolId);
+                    html += `<li>${dex.name} (${dex.dexType})</li>`;
+                }
+                html += '<ol>';
+                console.log('html', html);
+
+                $('#routing').html(html);
+            }
+
+            function getPoolInfo(poolId) {
+                console.log('getPoolInfo poolId', poolId);
+                for (const dex of dexes) {
+                    console.log('dex', dex);
+                    if (dex.mask && simpleAnd(poolId, dex.mask) === dex.mask)
+                        return dex;
+                }
+                return dexes[0]; // first dex must be main Balancer dex
+            }
+
+            function simpleAnd(a, mask) {
+                console.log('simpleAnd a, mask', a, mask);
+                const A = ethers.utils.arrayify(a);
+                const M = ethers.utils.arrayify(mask);
+                const C = [...A];
+                for (let i = 0; i < A.length; i++) C[i] = A[i] & M[i];
+                return ethers.utils.hexlify(C, {});
+            }
+
             async function init() {
                 // noinspection ES6MissingAwait
                 const requests = [api(), api('dexes'), api('tokens')];
@@ -527,6 +527,11 @@
 
                 fillTokenControls();
 
+                $('#slippage')
+                    .val(localStorage['slippage'] || 2)
+                    .change(() => {
+                        localStorage['slippage'] = $('#slippage').val();
+                    });
                 $('#tokenIn').val(localStorage['tokenInAddress']);
                 $('#tokenOut').val(localStorage['tokenOutAddress']);
                 $('#swapAmount')
