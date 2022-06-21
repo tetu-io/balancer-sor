@@ -40,6 +40,13 @@
                     <select class="form-select token-select" id="tokenIn">
                         <option disabled selected value="">loading...</option>
                     </select>
+                    <button
+                        class="btn btn-secondary"
+                        type="button"
+                        id="addTokenOut"
+                    >
+                        +
+                    </button>
                     <!--suppress HtmlFormInputWithoutLabel -->
                     <input
                         class="form-control number-separator"
@@ -65,6 +72,13 @@
                     <select class="form-select token-select" id="tokenOut">
                         <option disabled selected value="">loading...</option>
                     </select>
+                    <button
+                        class="btn btn-secondary"
+                        type="button"
+                        id="addTokenIn"
+                    >
+                        +
+                    </button>
                     <!--suppress HtmlFormInputWithoutLabel -->
                     <input
                         class="form-control number-separator"
@@ -152,7 +166,7 @@
 
                 <div class="input-group mt-3">
                     <label class="input-group-text" for="tokenIn"
-                        >Slippage %</label
+                        >Slippage</label
                     >
                     <!--suppress HtmlFormInputWithoutLabel -->
                     <input
@@ -164,6 +178,7 @@
                         max="99"
                         value="2"
                     />
+                    <span class="input-group-text">%</span>
                 </div>
             </div>
         </div>
@@ -376,11 +391,9 @@
                     ERC20Abi,
                     wallet.provider
                 );
-                // const tx = await tokenContract.connect(wallet.signer)
-                //     .approve(multiSwapAddress, amount, {gasLimit: 100000});
-                const tx = {
-                    hash: '0xda0ec28d9bac3b29018259f3ce86b4f7e97dd3bf502947dec07d64b64c1be06d',
-                };
+                const tx = await tokenContract
+                    .connect(wallet.signer)
+                    .approve(multiSwapAddress, amount, { gasLimit: 100000 });
                 console.log('tx', tx);
                 await notify(
                     'Approve ' + tokens[tokenAddress].symbol,
@@ -488,6 +501,22 @@
                 return notification;
             }
 
+            async function addTokenToMetamask(token) {
+                const wasAdded = await ethereum.request({
+                    method: 'wallet_watchAsset',
+                    params: {
+                        type: 'ERC20', // Initially only supports ERC20, but eventually more!
+                        options: {
+                            address: token.address, // The address that the token is at.
+                            symbol: token.symbol, // A ticker symbol or shorthand, up to 5 chars.
+                            decimals: token.decimals, // The number of decimals in the token
+                            // image: tokenImage, // A string url of the token logo
+                        },
+                    },
+                });
+                return wasAdded;
+            }
+
             async function init() {
                 // noinspection ES6MissingAwait
                 const requests = [api(), api('dexes'), api('tokens')];
@@ -510,6 +539,13 @@
                 $('#connect').click(connect);
                 $('#approve').click(approve);
                 $('#swap').click(doSwap);
+
+                $('#addTokenIn').click(() =>
+                    addTokenToMetamask(tokens[$('#tokenIn').val()])
+                );
+                $('#addTokenOut').click(() =>
+                    addTokenToMetamask(tokens[$('#tokenOut').val()])
+                );
 
                 await inputChanged();
                 // setInterval(inputChanged, 5 * 1000); // TODO remove comment to auto update route
