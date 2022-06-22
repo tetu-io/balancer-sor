@@ -495,14 +495,19 @@
                 // TODO add amounts in percents
                 for (const s of swap.swaps) {
                     console.log('s', s);
-                    if (s.amount > 0) html += '</ol><ol>';
+                    if (s.amount > 0) {
+                        const percentage = ethers.BigNumber.from(s.amount)
+                            .mul(100)
+                            .div(swap.swapAmount)
+                            .toString();
+                        html += `</ol><h5>${percentage}%</h5><ol>`;
+                    }
                     const tokenIn = tokenByIndex(s.assetInIndex);
                     const tokenOut = tokenByIndex(s.assetOutIndex);
                     const dex = getPoolInfo(s.poolId);
                     html += `<li><b>${tokenIn.symbol}</b> <small>${dex.name}</small> <b>${tokenOut.symbol}</b></li>`;
                 }
                 html += '</ol>';
-                console.log('html', html);
 
                 $('#routing').html(html);
             }
