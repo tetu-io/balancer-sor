@@ -237,7 +237,10 @@
                 '0xBbba073C31bF03b8ACf7c28EF0738DeCF3695683'.toLowerCase(),
             ];
 
-            const apiUrl = 'http://localhost:8080/';
+            const dev = window.location.hostname === 'localhost';
+            const apiUrl = dev
+                ? 'http://localhost:8080/'
+                : 'http://localhost:8080/'; // TODO
             const scanUrl = 'https://polygonscan.com/';
             const _SLIPPAGE_PRECISION = 10000; // TODO use in swap call
             const multiSwapAddress =

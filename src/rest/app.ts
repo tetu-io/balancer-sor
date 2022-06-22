@@ -37,6 +37,8 @@ app.use(compression());
 app.use(Sentry.Handlers.requestHandler());
 app.use(Sentry.Handlers.tracingHandler());
 
+app.use('/demo', express.static('demo'));
+
 const port = process.env.SOR_PORT || 8080;
 const VERSION = '1.0.0';
 
