@@ -380,6 +380,7 @@
 
             async function allowance() {
                 const tokenAddress = $('#tokenIn').val();
+                if (!tokenAddress) return null;
                 let contract = new ethers.Contract(
                     tokenAddress,
                     ERC20Abi,
@@ -406,11 +407,13 @@
                 $('#connect').html(connectBtnTitle).prop('disabled', connected);
 
                 // Approve
+
                 const allowed = await allowance();
                 console.log('allowed', allowed);
                 // MaxInt - 2 times smaller than MaxUint
                 // To simplify just check what allowance is not less than half of MaxUint
-                const approved = allowed.gt(ethers.constants.MaxInt256);
+                const approved =
+                    allowed && allowed.gt(ethers.constants.MaxInt256);
                 const approveBtnTitle = approved ? '✅ Approved' : 'Approve';
                 $('#approve')
                     .html(approveBtnTitle)
@@ -500,7 +503,7 @@
                     console.log('s', s);
                     if (s.amount > 0) {
                         const percentage = ethers.BigNumber.from(s.amount)
-                            .mul(100)
+                            .mul(101) // to avoid show 50% / 49%
                             .div(swap.swapAmount)
                             .toString();
                         html += `</ol><h5>${percentage}%</h5><ol>`;
