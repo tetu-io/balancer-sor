@@ -31,10 +31,10 @@
     </head>
     <body>
         <div class="card" style="width: 28rem">
-            <div class="card-body">
+            <div class="card-header">
                 <h1>MultiSwap</h1>
-                <hr />
-
+            </div>
+            <div class="card-body">
                 <div class="text-centered">
                     <div class="input-group">
                         <label class="input-group-text width15" for="tokenIn"
@@ -100,10 +100,10 @@
                     </div>
                 </div>
 
-                <h6>Routing</h6>
-                <div id="routing"></div>
-
-                <hr />
+                <div class="routing">
+                    <h6>Routing</h6>
+                    <div id="routing"></div>
+                </div>
 
                 <button
                     class="btn my-1 w-100 btn-primary"
@@ -334,11 +334,13 @@
             }
 
             async function reverseTokens() {
-                const tokenInAddress = $('#tokenIn').val();
-                const tokenOutAddress = $('#tokenOut').val();
+                const $tokenIn = $('#tokenIn');
+                const tokenInAddress = $tokenIn.val();
+                const $tokenOut = $('#tokenOut');
+                const tokenOutAddress = $tokenOut.val();
 
-                $('#tokenIn').val(tokenOutAddress);
-                $('#tokenOut').val(tokenInAddress);
+                $tokenIn.val(tokenOutAddress);
+                $tokenOut.val(tokenInAddress);
 
                 await inputChanged();
             }
@@ -378,6 +380,7 @@
                 return scanUrl + 'tx/' + tx.hash;
             }
 
+            // should be called when connected only
             async function allowance() {
                 const tokenAddress = $('#tokenIn').val();
                 if (!tokenAddress) return null;
@@ -386,10 +389,8 @@
                     ERC20Abi,
                     wallet.provider
                 );
-                return contract.callStatic.allowance(
-                    wallet.signer.getAddress(),
-                    multiSwapAddress
-                );
+                const address = await wallet.signer.getAddress();
+                return contract.callStatic.allowance(address, multiSwapAddress);
             }
 
             async function updateButtons() {
@@ -408,7 +409,7 @@
 
                 // Approve
 
-                const allowed = await allowance();
+                const allowed = connected && (await allowance());
                 console.log('allowed', allowed);
                 // MaxInt - 2 times smaller than MaxUint
                 // To simplify just check what allowance is not less than half of MaxUint
@@ -469,14 +470,14 @@
                     icon,
                     ...options,
                 });
-                notification.onclick = (e) => {
+                notification.onclick = () => {
                     window.open(url);
                 };
                 return notification;
             }
 
             async function addTokenToMetamask(token) {
-                const wasAdded = await ethereum.request({
+                return ethereum.request({
                     method: 'wallet_watchAsset',
                     params: {
                         type: 'ERC20', // Initially only supports ERC20, but eventually more!
@@ -488,7 +489,6 @@
                         },
                     },
                 });
-                return wasAdded;
             }
 
             function tokenByIndex(i) {
@@ -543,7 +543,7 @@
 
             async function init() {
                 // noinspection ES6MissingAwait
-                const requests = [api(), api('dexes'), api('tokens')];
+                const requests = [api('info'), api('dexes'), api('tokens')];
                 [service, dexes, tokens] = await Promise.all(requests);
                 console.log('service', service);
                 console.log('dexes', dexes);
@@ -556,8 +556,11 @@
                     .change(() => {
                         localStorage['slippage'] = $('#slippage').val();
                     });
-                $('#tokenIn').val(localStorage['tokenInAddress']);
-                $('#tokenOut').val(localStorage['tokenOutAddress']);
+
+                const $tokenIn = $('#tokenIn');
+                $tokenIn.val(localStorage['tokenInAddress']);
+                const $tokenOut = $('#tokenOut');
+                $tokenOut.val(localStorage['tokenOutAddress']);
                 $('#swapAmount')
                     .val(localStorage['swapAmount'])
                     .keyup(amountKeyup)
@@ -570,10 +573,10 @@
                 $('#swap').click(doSwap);
 
                 $('#addTokenIn').click(() =>
-                    addTokenToMetamask(tokens[$('#tokenIn').val()])
+                    addTokenToMetamask(tokens[$tokenIn.val()])
                 );
                 $('#addTokenOut').click(() =>
-                    addTokenToMetamask(tokens[$('#tokenOut').val()])
+                    addTokenToMetamask(tokens[$tokenOut.val()])
                 );
 
                 await inputChanged();

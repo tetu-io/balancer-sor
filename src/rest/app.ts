@@ -48,8 +48,13 @@ let provider;
 let tokens;
 let dexes;
 
-// ------------ VERSION --------------
+// ------------ ROOT --------------
 app.all('/', (req, res) => {
+    res.redirect('/demo');
+});
+
+// ------------ INFO --------------
+app.all('/info', (req, res) => {
     res.json({
         title: 'SOR (Smart Order Router)',
         version: VERSION,
