@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <title>MultiSwap Demo</title>
+        <!-- CSS only -->
+        <!--suppress SpellCheckingInspection -->
+        <link
+            crossorigin="anonymous"
+            href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/css/bootstrap.min.css"
+            integrity="sha384-0evHe/X+R7YkIZDRvuzKMRqM+OrBnVFBL6DOitfPri4tjfHxaWutUpFmBp4vmVor"
+            rel="stylesheet"
+        />
+        <style>
+            h1,
+            h6,
+            .text-centered {
+                text-align: center;
+            }
+
+            .card {
+                top: 28px;
+                float: none;
+                margin: 0 auto 10px;
+            }
+
+            .width15 {
+                width: 15%;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="card" style="width: 28rem">
+            <div class="card-header">
+                <h1>MultiSwap</h1>
+            </div>
+            <div class="card-body">
+                <div class="text-centered">
+                    <div class="input-group">
+                        <label class="input-group-text width15" for="tokenIn"
+                            >Sell</label
+                        >
+                        <select class="form-select token-select" id="tokenIn">
+                            <option disabled selected value="">
+                                loading...
+                            </option>
+                        </select>
+                        <button
+                            class="btn btn-secondary"
+                            type="button"
+                            id="addTokenIn"
+                            title="Add Token to Web Wallet"
+                        >
+                            +
+                        </button>
+                        <!--suppress HtmlFormInputWithoutLabel -->
+                        <input
+                            class="form-control number-separator"
+                            id="swapAmount"
+                            placeholder="0"
+                            style="text-align: right"
+                            type="number"
+                        />
+                    </div>
+
+                    <button
+                        class="btn my-2 btn-secondary btn-sm"
+                        id="reverse"
+                        type="button"
+                    >
+                        ⭿
+                    </button>
+
+                    <div class="input-group mb-3">
+                        <label class="input-group-text width15" for="tokenOut"
+                            >Buy</label
+                        >
+                        <select class="form-select token-select" id="tokenOut">
+                            <option disabled selected value="">
+                                loading...
+                            </option>
+                        </select>
+                        <button
+                            class="btn btn-secondary"
+                            type="button"
+                            id="addTokenOut"
+                            title="Add Token to Web Wallet"
+                        >
+                            +
+                        </button>
+                        <!--suppress HtmlFormInputWithoutLabel -->
+                        <input
+                            class="form-control number-separator"
+                            disabled
+                            id="returnAmount"
+                            placeholder="0"
+                            style="text-align: right"
+                            type="number"
+                        />
+                    </div>
+                </div>
+
+                <div class="routing">
+                    <h6>Routing</h6>
+                    <div id="routing"></div>
+                </div>
+
+                <button
+                    class="btn my-1 w-100 btn-primary"
+                    id="connect"
+                    type="button"
+                >
+                    Connect Wallet
+                </button>
+
+                <button
+                    class="btn my-1 w-100 btn-primary"
+                    id="approve"
+                    type="button"
+                    disabled
+                >
+                    Approve
+                </button>
+
+                <button
+                    class="btn my-1 w-100 btn-primary"
+                    id="swap"
+                    type="button"
+                    disabled
+                >
+                    Swap
+                </button>
+
+                <div class="input-group mt-3">
+                    <label class="input-group-text" for="tokenIn"
+                        >Slippage</label
+                    >
+                    <!--suppress HtmlFormInputWithoutLabel -->
+                    <input
+                        class="form-control"
+                        id="slippage"
+                        style="text-align: right"
+                        type="number"
+                        min="1"
+                        max="99"
+                    />
+                    <span class="input-group-text">%</span>
+                </div>
+            </div>
+        </div>
+
+        <!--suppress SpellCheckingInspection -->
+        <script
+            crossorigin="anonymous"
+            integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4="
+            src="https://code.jquery.com/jquery-3.6.0.min.js"
+        ></script>
+        <!--suppress SpellCheckingInspection -->
+        <script
+            crossorigin="anonymous"
+            integrity="sha384-pprn3073KE6tl6bjs2QrFaJGz5/SUsLqktiwsUTF55Jfv3qYSDhgCecCxMW52nD2"
+            src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/js/bootstrap.bundle.min.js"
+        ></script>
+        <!--        <script src="https://unpkg.com/ethers-utils"></script>-->
+        <script
+            crossorigin="anonymous"
+            integrity="sha512-rQkwNC0M1xDe/Q5+60yxVaivh7dpaoZthM91gAkEq4/5aLmMVNkk/Ru9Fjf3bCVA1jbJXa5sZsLPBDKHy+0LaA=="
+            referrerpolicy="no-referrer"
+            src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.6.8/ethers.umd.min.js"
+        ></script>
+        <script type="module">
+            import wallet from './connection.js';
+            import MultiSwap2Abi from './MultiSwap2.json' assert { type: 'json' };
+
+            const whitelistedTokens = [
+                '0x0000000000000000000000000000000000000000'.toLowerCase(),
+                '0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619'.toLowerCase(),
+                '0xc3FdbadC7c795EF1D6Ba111e06fF8F16A20Ea539'.toLowerCase(),
+                '0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174'.toLowerCase(),
+                '0x0d500B1d8E8eF31E21C99d1Db9A6444d3ADf1270'.toLowerCase(),
+                '0x831753DD7087CaC61aB5644b308642cc1c33Dc13'.toLowerCase(),
+                '0x0b3F868E0BE5597D5DB7fEB59E1CADBb0fdDa50a'.toLowerCase(),
+                '0x1BFD67037B42Cf73acF2047067bd4F2C47D9BfD6'.toLowerCase(),
+                '0xFbdd194376de19a88118e84E279b977f165d01b8'.toLowerCase(),
+                '0x0361BdEAB89DF6BBcc52c43589FABba5143d19dD'.toLowerCase(),
+                '0x7f426F6Dc648e50464a0392E60E1BB465a67E9cf'.toLowerCase(),
+                '0x8C92e38eCA8210f4fcBf17F0951b198Dd7668292'.toLowerCase(),
+                '0xEde1B77C0Ccc45BFa949636757cd2cA7eF30137F'.toLowerCase(),
+                '0x5fe2B58c013d7601147DcdD68C143A77499f5531'.toLowerCase(),
+                '0x104592a158490a9228070E0A8e5343B499e125D0'.toLowerCase(),
+                '0x3e121107F6F22DA4911079845a470757aF4e1A1b'.toLowerCase(),
+                '0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063'.toLowerCase(),
+                '0x172370d5Cd63279eFa6d502DAB29171933a610AF'.toLowerCase(),
+                '0xc2132D05D31c914a87C6611C10748AEb04B58e8F'.toLowerCase(),
+                '0x53E0bca35eC356BD5ddDFebbD1Fc0fD03FaBad39'.toLowerCase(),
+                '0xD6DF932A45C0f255f85145f286eA0b292B21C90B'.toLowerCase(),
+                '0xD0660cD418a64a1d44E9214ad8e459324D8157f1'.toLowerCase(),
+                '0x4EaC4c4e9050464067D673102F8E24b2FccEB350'.toLowerCase(),
+                '0x50B728D8D964fd00C2d0AAD81718b71311feF68a'.toLowerCase(),
+                '0x6aB6d61428fde76768D7b45D8BFeec19c6eF91A8'.toLowerCase(),
+                '0x99dA82C5464C49962Cdda44fe30d352Bc5Da0580'.toLowerCase(),
+                '0x580A84C73811E1839F75d86d75d88cCa0c241fF4'.toLowerCase(),
+                '0xa3Fa99A148fA48D14Ed51d610c367C61876997F1'.toLowerCase(),
+                '0x4c4BF319237D98a30A929A96112EfFa8DA3510EB'.toLowerCase(),
+                '0xc8bcb58caEf1bE972C0B638B1dD8B0748Fdc8A44'.toLowerCase(),
+                '0x4A81f8796e0c6Ad4877A51C86693B0dE8093F2ef'.toLowerCase(), // iron ice
+                '0xa5Eb60CA85898f8b26e18fF7c7E43623ccbA772C'.toLowerCase(),
+                '0xaa9654becca45b5bdfa5ac646c939c62b527d394'.toLowerCase(),
+                '0xE7a24EF0C5e95Ffb0f6684b813A78F2a3AD7D171'.toLowerCase(),
+                '0xf8a57c1d3b9629b77b6726a042ca48990A84Fb49'.toLowerCase(),
+                '0xdAD97F7713Ae9437fa9249920eC8507e5FbB23d3'.toLowerCase(),
+                '0xdaB35042e63E93Cc8556c9bAE482E5415B5Ac4B1'.toLowerCase(), // Hermes
+                '0xc168e40227e4ebd8c1cae80f7a55a4f0e6d66c97'.toLowerCase(),
+                '0xb5106A3277718eCaD2F20aB6b86Ce0Fee7A21F09'.toLowerCase(),
+                '0xacee7bd17e7b04f7e48b29c0c91af67758394f0f'.toLowerCase(),
+                '0x225084D30cc297F3b177d9f93f5C3Ab8fb6a1454'.toLowerCase(),
+                '0xf28164A485B0B2C90639E47b0f377b4a438a16B1'.toLowerCase(),
+                '0x255707B70BF90aa112006E1b07B9AeA6De021424'.toLowerCase(),
+                '0xD86b5923F3AD7b585eD81B448170ae026c65ae9a'.toLowerCase(),
+                '0x5c2ed810328349100A66B82b78a1791B101C9D61'.toLowerCase(),
+                '0x8A953CfE442c5E8855cc6c61b1293FA648BAE472'.toLowerCase(),
+                '0x9a71012B13CA4d3D0Cdc72A177DF3ef03b0E76A3'.toLowerCase(),
+                '0xab0b2ddB9C7e440fAc8E140A89c0dbCBf2d7Bbff'.toLowerCase(),
+                '0x4e78011ce80ee02d2c3e649fb657e45898257815'.toLowerCase(),
+                '0x2F800Db0fdb5223b3C3f354886d907A671414A7F'.toLowerCase(),
+                '0x42d61D766B85431666B39B89C43011f24451bFf6'.toLowerCase(),
+                '0x29F1e986FCa02B7E54138c04C4F503DdDD250558'.toLowerCase(),
+                '0xdf9B4b57865B403e08c85568442f95c26b7896b0'.toLowerCase(),
+                '0xcD86152047e800d67BDf00A4c635A8B6C0e5C4c2'.toLowerCase(),
+                '0x948D0a28b600BDBd77AF4ea30E6F338167034181'.toLowerCase(),
+                '0xfc4a30f328E946ef3E727BD294a93e84c2e43c24'.toLowerCase(),
+                '0xc46DB78Be28B5F2461097ed9e3Fcc92E9FF8676d'.toLowerCase(),
+                '0x3066818837c5e6eD6601bd5a91B0762877A6B731'.toLowerCase(),
+                '0x8D546026012bF75073d8A586f24A5d5ff75b9716'.toLowerCase(),
+                '0x17e9C5b37283ac5fBE527011CeC257b832f03eb3'.toLowerCase(),
+                '0xc250e9987a032acac293d838726c511e6e1c029d'.toLowerCase(),
+                '0xBbba073C31bF03b8ACf7c28EF0738DeCF3695683'.toLowerCase(),
+            ];
+
+            const dev = window.location.hostname === 'localhost';
+            const apiUrl = dev
+                ? 'http://localhost:8080/'
+                : window.location.origin + '/';
+            const scanUrl = 'https://polygonscan.com/';
+            const _SLIPPAGE_PRECISION = 10000; // TODO use in swap call
+            const multiSwapAddress =
+                '0x8b56D66cCbc34DAd3e8ae214b9aA2BF752dF1041';
+            let service, dexes, tokens;
+
+            let swap; // Last swap route data stored here
+
+            async function api(func = '', query = undefined) {
+                const url = apiUrl + func + '?' + new URLSearchParams(query);
+                console.log('url', url);
+
+                return await (await fetch(url)).json();
+            }
+
+            function fillTokenControls() {
+                const sel = $('.token-select');
+                sel.empty();
+                const tokensArray = Object.values(tokens)
+                    .filter((token) =>
+                        whitelistedTokens.includes(token.address.toLowerCase())
+                    ) // filter tokens w/o symbol
+                    .sort((a, b) => a.symbol.localeCompare(b.symbol)); // sort alphabetically
+
+                tokensArray.forEach((token) => {
+                    const value = token.address;
+                    const text = token.symbol;
+                    // + ' ' + token.address.slice(2, 6) + '...' + token.address.slice(-4)
+                    sel.append($('<option>', { value, text }));
+                });
+            }
+
+            async function inputChanged() {
+                const tokenInAddress = $('#tokenIn').val();
+                localStorage['tokenInAddress'] = tokenInAddress;
+                const tokenIn = tokens[tokenInAddress];
+
+                const tokenOutAddress = $('#tokenOut').val();
+                localStorage['tokenOutAddress'] = tokenOutAddress;
+                const tokenOut = tokens[tokenOutAddress];
+
+                const swapAmountStr = $('#swapAmount').val();
+                localStorage['swapAmount'] = swapAmountStr;
+
+                const $returnAmount = $('#returnAmount');
+                // $returnAmount.val(''); // clear returnAmount or better put progress near output amount
+
+                // do not search route for empty or 0 swapAmount
+                if (
+                    !parseFloat(swapAmountStr) ||
+                    parseFloat(swapAmountStr) === 0
+                ) {
+                    await updateButtons();
+                    return;
+                }
+
+                const swapAmountBN = ethers.utils.parseUnits(
+                    swapAmountStr,
+                    tokenIn.decimals
+                );
+
+                const swapAmount = swapAmountBN.toString();
+
+                const query = { tokenIn, tokenOut, swapAmount };
+                console.log('query', query);
+                swap = await api('swap', {
+                    swapRequest: JSON.stringify(query),
+                });
+                console.log('swap', swap);
+                renderRoute();
+
+                const returnAmountBN = swap.returnAmount;
+                const returnAmount = ethers.utils
+                    .formatUnits(returnAmountBN, tokenOut.decimals)
+                    .toString();
+                console.log('returnAmount', returnAmount);
+
+                $returnAmount.val(returnAmount);
+
+                await updateButtons();
+            }
+
+            let prevSwapAmountStr;
+
+            async function amountKeyup() {
+                const swapAmountStr = $('#swapAmount').val();
+                if (swapAmountStr !== prevSwapAmountStr) {
+                    prevSwapAmountStr = swapAmountStr;
+                    await inputChanged();
+                }
+            }
+
+            async function reverseTokens() {
+                const $tokenIn = $('#tokenIn');
+                const tokenInAddress = $tokenIn.val();
+                const $tokenOut = $('#tokenOut');
+                const tokenOutAddress = $tokenOut.val();
+
+                $tokenIn.val(tokenOutAddress);
+                $tokenOut.val(tokenInAddress);
+
+                await inputChanged();
+            }
+
+            async function connect() {
+                const account = await wallet.connectToAccount();
+                console.log('account', account);
+                await updateButtons();
+            }
+
+            const ERC20Abi = [
+                'function approve(address _spender, uint256 _value) public returns (bool success)',
+                'function allowance(address owner, address spender) public returns (uint256)',
+            ];
+
+            async function approve() {
+                const tokenAddress = $('#tokenIn').val();
+                const amount = ethers.constants.MaxUint256;
+                const tokenContract = new ethers.Contract(
+                    tokenAddress,
+                    ERC20Abi,
+                    wallet.provider
+                );
+                const tx = await tokenContract
+                    .connect(wallet.signer)
+                    .approve(multiSwapAddress, amount, { gasLimit: 100000 });
+                console.log('tx', tx);
+                await notify(
+                    'Approve ' + tokens[tokenAddress].symbol,
+                    'Click to view transaction',
+                    'https://freepikpsd.com/file/2019/10/approved-icon-png-3-Transparent-Images.png',
+                    txScanUrl(tx)
+                );
+            }
+
+            function txScanUrl(tx) {
+                return scanUrl + 'tx/' + tx.hash;
+            }
+
+            // should be called when connected only
+            async function allowance() {
+                const tokenAddress = $('#tokenIn').val();
+                if (!tokenAddress) return null;
+                let contract = new ethers.Contract(
+                    tokenAddress,
+                    ERC20Abi,
+                    wallet.provider
+                );
+                const address = await wallet.signer.getAddress();
+                return contract.callStatic.allowance(address, multiSwapAddress);
+            }
+
+            async function updateButtons() {
+                console.log('updateButtons');
+                // Connect Wallet
+                const account = await wallet.getAccount();
+                console.log('account', account);
+                const connected = account.length > 0;
+                const accountShort = connected
+                    ? account[0].slice(2, 6) + '...' + account[0].slice(-4)
+                    : '';
+                const connectBtnTitle = connected
+                    ? `✅ Wallet ${accountShort}`
+                    : `Connect Wallet`;
+                $('#connect').html(connectBtnTitle).prop('disabled', connected);
+
+                // Approve
+
+                const allowed = connected && (await allowance());
+                console.log('allowed', allowed);
+                // MaxInt - 2 times smaller than MaxUint
+                // To simplify just check what allowance is not less than half of MaxUint
+                const approved =
+                    allowed && allowed.gt(ethers.constants.MaxInt256);
+                const approveBtnTitle = approved ? '✅ Approved' : 'Approve';
+                $('#approve')
+                    .html(approveBtnTitle)
+                    .prop('disabled', !(connected && !approved));
+
+                // Swap
+                const haveOutput = parseFloat($('#returnAmount').val()) > 0;
+                $('#swap').prop(
+                    'disabled',
+                    !(connected && approved && haveOutput)
+                );
+            }
+
+            async function doSwap() {
+                if (swap && swap.returnAmount) {
+                    const swapContract = new ethers.Contract(
+                        multiSwapAddress,
+                        MultiSwap2Abi,
+                        wallet.provider
+                    );
+                    const slippage = $('#slippage').val() * _SLIPPAGE_PRECISION;
+                    console.log('slippage', slippage);
+                    // now() + 30 minutes in seconds
+                    const deadline = Math.floor(Date.now() / 1000) + 60 * 30;
+                    console.log('deadline', deadline);
+                    const tx = await swapContract
+                        .connect(wallet.signer)
+                        .multiSwap(
+                            swap.swapData, // in/out tokens, amounts
+                            swap.swaps, // array of swaps
+                            swap.tokenAddresses, // array of inter token addresses
+                            slippage,
+                            deadline,
+                            { gasLimit: 3000000 }
+                        );
+                    console.log('tx', tx);
+                    const tokenIn = tokens[swap.tokenIn].symbol;
+                    const tokenOut = tokens[swap.tokenOut].symbol;
+                    const amount = $('#swapAmount').val();
+                    await notify(
+                        `Swap ${amount} ${tokenIn} 🡆 ${tokenOut}`,
+                        'Click to view transaction',
+                        'https://icon-library.com/images/replace-icon/replace-icon-22.jpg',
+                        txScanUrl(tx)
+                    );
+                } else console.error('No swap route');
+            }
+
+            async function notify(title, body, icon, url, options) {
+                await Notification.requestPermission();
+                const notification = new Notification(title, {
+                    body,
+                    icon,
+                    ...options,
+                });
+                notification.onclick = () => {
+                    window.open(url);
+                };
+                return notification;
+            }
+
+            async function addTokenToMetamask(token) {
+                return ethereum.request({
+                    method: 'wallet_watchAsset',
+                    params: {
+                        type: 'ERC20', // Initially only supports ERC20, but eventually more!
+                        options: {
+                            address: token.address, // The address that the token is at.
+                            symbol: token.symbol, // A ticker symbol or shorthand, up to 5 chars.
+                            decimals: token.decimals, // The number of decimals in the token
+                            // image: tokenImage, // A string url of the token logo
+                        },
+                    },
+                });
+            }
+
+            function tokenByIndex(i) {
+                const address = swap.tokenAddresses[i];
+                return tokens[address];
+            }
+
+            function renderRoute() {
+                let html = '<ol>';
+                // TODO add amounts in percents
+                for (const s of swap.swaps) {
+                    console.log('s', s);
+                    if (s.amount > 0) {
+                        const percentage = ethers.BigNumber.from(s.amount)
+                            .mul(101) // to avoid show 50% / 49%
+                            .div(swap.swapAmount)
+                            .toString();
+                        html += `</ol><h5>${percentage}%</h5><ol>`;
+                    }
+                    const tokenIn = tokenByIndex(s.assetInIndex);
+                    const tokenOut = tokenByIndex(s.assetOutIndex);
+                    const dex = getPoolInfo(s.poolId);
+                    html += `<li><b>${tokenIn.symbol}</b> <small>${dex.name}</small> <b>${tokenOut.symbol}</b></li>`;
+                }
+                html += '</ol>';
+
+                $('#routing').html(html);
+            }
+
+            function getPoolInfo(poolId) {
+                console.log('getPoolInfo poolId', poolId);
+                const dexId = parseInt(poolId.slice(-1), 16);
+                console.log('dexId', dexId);
+                for (const dex of dexes) {
+                    if (
+                        dex.mask &&
+                        simpleAnd(poolId, dex.mask) === dex.mask &&
+                        dex.dexId === dexId
+                    )
+                        return dex;
+                }
+                return dexes[0]; // first dex must be main Balancer dex
+            }
+
+            function simpleAnd(a, mask) {
+                const A = ethers.utils.arrayify(a);
+                const M = ethers.utils.arrayify(mask);
+                const C = [...A];
+                for (let i = 0; i < A.length; i++) C[i] = A[i] & M[i];
+                return ethers.utils.hexlify(C, {});
+            }
+
+            async function init() {
+                // noinspection ES6MissingAwait
+                const requests = [api('info'), api('dexes'), api('tokens')];
+                [service, dexes, tokens] = await Promise.all(requests);
+                console.log('service', service);
+                console.log('dexes', dexes);
+                console.log('tokens', tokens);
+
+                fillTokenControls();
+
+                $('#slippage')
+                    .val(localStorage['slippage'] || 2)
+                    .change(() => {
+                        localStorage['slippage'] = $('#slippage').val();
+                    });
+
+                const $tokenIn = $('#tokenIn');
+                $tokenIn.val(localStorage['tokenInAddress']);
+                const $tokenOut = $('#tokenOut');
+                $tokenOut.val(localStorage['tokenOutAddress']);
+                $('#swapAmount')
+                    .val(localStorage['swapAmount'])
+                    .keyup(amountKeyup)
+                    .change(amountKeyup);
+
+                $('select').change(inputChanged);
+                $('#reverse').click(reverseTokens);
+                $('#connect').click(connect);
+                $('#approve').click(approve);
+                $('#swap').click(doSwap);
+
+                $('#addTokenIn').click(() =>
+                    addTokenToMetamask(tokens[$tokenIn.val()])
+                );
+                $('#addTokenOut').click(() =>
+                    addTokenToMetamask(tokens[$tokenOut.val()])
+                );
+
+                await inputChanged();
+                // setInterval(inputChanged, 5 * 1000); // TODO remove comment to auto update route
+            }
+
+            init().then();
+        </script>
+    </body>
+</html>

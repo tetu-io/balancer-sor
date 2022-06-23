@@ -14,8 +14,7 @@
         "example": "set TS_NODE_PROJECT=tsconfig.testing.json&&ts-node ./test/testScripts/swapExample.ts",
         "example-tetu": "set TS_NODE_PROJECT=tsconfig.testing.json&&ts-node ./test/testScripts/swapExampleTetu.ts",
         "start": "set TS_NODE_PROJECT=tsconfig.testing.json&&ts-node src/rest/app.ts",
-        "dev": "set TS_NODE_PROJECT=tsconfig.testing.json&&nodemon src/rest/app.ts",
-        "run": "TS_NODE_PROJECT='tsconfig.testing.json' ts-node src/rest/app.ts"
+        "dev": "set TS_NODE_PROJECT=tsconfig.testing.json&&nodemon src/rest/app.ts"
     },
     "husky": {
         "hooks": {
@@ -67,10 +66,14 @@
         "rollup": "^2.56.3",
         "rollup-plugin-dts": "^4.0.0",
         "ts-node": "^10.8.0",
+        "typechain": "^8.1.0",
         "typescript": "^4.3.5"
     },
     "dependencies": {
+        "@sentry/node": "^7.0.0",
+        "@sentry/tracing": "^7.0.0",
         "compression": "^1.7.4",
+        "cors": "^2.8.5",
         "express": "^4.18.1",
         "isomorphic-fetch": "^2.2.1"
     },

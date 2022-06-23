@@ -1,5 +1,8 @@
 import compression from 'compression';
 import express from 'express';
+import cors from 'cors';
+import * as Sentry from '@sentry/node';
+import * as Tracing from '@sentry/tracing';
 import {
     BALANCER_SUBGRAPH_URLS,
     CONTRACT_UTILS,
@@ -11,10 +14,33 @@ import {
 } from '../../test/api/config';
 import { JsonRpcProvider } from '@ethersproject/providers';
 import * as api from '../../test/api/api';
+import { BigNumber } from '@ethersproject/bignumber';
 const app = express();
+
+Sentry.init({
+    dsn: 'https://2874e5f5af684388851e388268273345@o1270885.ingest.sentry.io/6462171',
+    integrations: [
+        // enable HTTP calls tracing
+        new Sentry.Integrations.Http({ tracing: true }),
+        // enable Express.js middleware tracing
+        new Tracing.Integrations.Express({ app }),
+    ],
+
+    // Set tracesSampleRate to 1.0 to capture 100%
+    // of transactions for performance monitoring.
+    // We recommend adjusting this value in production
+    tracesSampleRate: 1.0,
+});
+
+app.use(cors());
 app.use(compression());
+app.use(Sentry.Handlers.requestHandler());
+app.use(Sentry.Handlers.tracingHandler());
+
+app.use('/demo', express.static('demo'));
+
 const port = process.env.SOR_PORT || 8080;
-const VERSION = '1.0.0';
+const VERSION = '1.0.1';
 
 const networkId = Network.POLYGON;
 let sor;
@@ -22,56 +48,57 @@ let provider;
 let tokens;
 let dexes;
 
+// ------------ ROOT --------------
 app.all('/', (req, res) => {
-    console.log('/');
+    res.redirect('/demo');
+});
+
+// ------------ INFO --------------
+app.all('/info', (req, res) => {
     res.json({
         title: 'SOR (Smart Order Router)',
         version: VERSION,
     });
 });
 
+// ------------ DEXES --------------
 app.all('/dexes', (req, res) => {
-    console.log('/dexes');
-    // TODO sentry
     res.json(dexes);
 });
 
+// ------------ TOKENS --------------
 app.all('/tokens', (req, res) => {
-    // TODO sentry
-    console.log('/tokens');
     res.json(tokens);
 });
 
+// ------------ SWAP --------------
 app.all('/swap', async (req, res) => {
-    // TODO sentry
     const query = req.query;
-    console.log('/swap', query);
-
-    // TODO add more checks (token fields, amount)
-    if (!(query.tokenIn && query.tokenOut && query.swapAmount)) {
-        res.status(400).send('Error: Wrong query fields');
-        return;
-    }
+    const swapRequest = JSON.parse(query.swapRequest);
+    // TODO add checks (token fields, amount)
 
     try {
         const swapInfo = await api.getSwap(
             sor,
-            query.tokenIn,
-            query.tokenOut,
-            query.swapAmount
+            swapRequest.tokenIn,
+            swapRequest.tokenOut,
+            swapRequest.swapAmount
         );
-
         res.json(swapInfo);
     } catch (e) {
+        console.error(e);
         res.status(400).send('Error:' + e);
     }
 });
 
 app.listen(port, async () => {
-    // TODO sentry
+    console.log(`Listening on port ${port}`);
+});
 
+app.use(Sentry.Handlers.errorHandler());
+
+async function initialize() {
     console.log(`SOR (Smart Order Router) v${VERSION}`);
-
     provider = new JsonRpcProvider(PROVIDER_URLS[networkId]);
 
     sor = await api.init(
@@ -86,11 +113,22 @@ app.listen(port, async () => {
 
     await updateTokens();
 
-    setInterval(updatePools, 30 * 1000);
-    setInterval(updateTokens, 10 * 60 * 1000);
+    if (!process.env.MULTISWAP_NO_UPDATE) {
+        setInterval(updatePools, 30 * 1000);
+        setInterval(updateTokens, 10 * 60 * 1000);
+    }
+    // for proper BigNumber serialization (toString)
+    Object.defineProperties(BigNumber.prototype, {
+        toJSON: {
+            value: function (this: BigNumber) {
+                return this.toString();
+            },
+        },
+    });
 
-    console.log(`\nReady.\nListening on port ${port}`);
-});
+    console.log(`\nReady.`);
+}
+initialize().then();
 
 async function updatePools() {
     console.time('fetchPools');
