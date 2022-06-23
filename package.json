@@ -13,7 +13,7 @@
         "lint": "eslint ./src ./test --ext .ts --max-warnings 0",
         "example": "set TS_NODE_PROJECT=tsconfig.testing.json&&ts-node ./test/testScripts/swapExample.ts",
         "example-tetu": "set TS_NODE_PROJECT=tsconfig.testing.json&&ts-node ./test/testScripts/swapExampleTetu.ts",
-        "start": "set TS_NODE_PROJECT=tsconfig.testing.json&&ts-node src/rest/app.ts",
+        "start": "TS_NODE_PROJECT='tsconfig.testing.json' ts-node src/rest/app.ts",
         "dev": "set TS_NODE_PROJECT=tsconfig.testing.json&&nodemon src/rest/app.ts"
     },
     "husky": {
