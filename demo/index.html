@@ -240,7 +240,7 @@
             const dev = window.location.hostname === 'localhost';
             const apiUrl = dev
                 ? 'http://localhost:8080/'
-                : 'http://localhost:8080/'; // TODO
+                : window.location.origin + '/';
             const scanUrl = 'https://polygonscan.com/';
             const _SLIPPAGE_PRECISION = 10000; // TODO use in swap call
             const multiSwapAddress =
