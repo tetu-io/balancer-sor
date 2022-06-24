@@ -72,7 +72,7 @@
                         <input
                             class="form-control number-separator"
                             id="swapAmount"
-                            placeholder="-"
+                            placeholder="0"
                             style="text-align: right"
                             type="number"
                         />
@@ -108,7 +108,7 @@
                             class="form-control number-separator"
                             disabled
                             id="returnAmount"
-                            placeholder="0"
+                            placeholder="-"
                             style="text-align: right"
                             type="number"
                         />
@@ -311,6 +311,7 @@
                     !parseFloat(swapAmountStr) ||
                     parseFloat(swapAmountStr) === 0
                 ) {
+                    $('#routing').html('');
                     await updateButtons();
                     return;
                 }

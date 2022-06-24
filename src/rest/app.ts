@@ -123,8 +123,8 @@ async function initialize() {
     dexes = api.getDexes(sor); // cache dexes
 
     if (!process.env.MULTISWAP_NO_UPDATE) {
-        setInterval(updatePools, 30 * 1000);
-        setInterval(updateTokens, 10 * 60 * 1000);
+        setInterval(updatePools, 60 * 1000);
+        setInterval(updateTokens, 30 * 60 * 1000);
     }
 
     await updateTokens();

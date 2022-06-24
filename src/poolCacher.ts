@@ -49,7 +49,7 @@ export class PoolCacher {
             return true;
         } catch (err) {
             // On error clear all caches
-            // TODO may be just ignore errorous pools and build route with successful data
+            //TODO may be just ignore errorous pools and build route with successful data
             this._finishedFetching = false;
             this.pools = [];
             //  throw an exception, or return 'false' ?
