@@ -297,6 +297,8 @@
                     return;
                 }
 
+                if (!tokenIn || !tokenOut) return;
+
                 const swapAmountBN = ethers.utils.parseUnits(
                     swapAmountStr,
                     tokenIn.decimals

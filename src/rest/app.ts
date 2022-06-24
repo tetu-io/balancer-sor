@@ -63,21 +63,21 @@ app.all('/info', (req, res) => {
 
 // ------------ DEXES --------------
 app.all('/dexes', (req, res) => {
-    res.json(dexes);
+    res.json(dexes || []);
 });
 
 // ------------ TOKENS --------------
 app.all('/tokens', (req, res) => {
-    res.json(tokens);
+    res.json(tokens || {});
 });
 
 // ------------ SWAP --------------
 app.all('/swap', async (req, res) => {
-    const query = req.query;
-    const swapRequest = JSON.parse(query.swapRequest);
-    // TODO add checks (token fields, amount)
-
     try {
+        const query = req.query;
+        const swapRequest = JSON.parse(query.swapRequest);
+        // TODO add checks (token fields, amount)
+
         const swapInfo = await api.getSwap(
             sor,
             swapRequest.tokenIn,
@@ -97,6 +97,15 @@ app.listen(port, async () => {
 
 app.use(Sentry.Handlers.errorHandler());
 
+// for proper BigNumber serialization (toString)
+Object.defineProperties(BigNumber.prototype, {
+    toJSON: {
+        value: function (this: BigNumber) {
+            return this.toString();
+        },
+    },
+});
+
 async function initialize() {
     console.log(`SOR (Smart Order Router) v${VERSION}`);
     provider = new JsonRpcProvider(PROVIDER_URLS[networkId]);
@@ -111,20 +120,12 @@ async function initialize() {
     );
     dexes = api.getDexes(sor); // cache dexes
 
-    await updateTokens();
-
     if (!process.env.MULTISWAP_NO_UPDATE) {
         setInterval(updatePools, 30 * 1000);
         setInterval(updateTokens, 10 * 60 * 1000);
     }
-    // for proper BigNumber serialization (toString)
-    Object.defineProperties(BigNumber.prototype, {
-        toJSON: {
-            value: function (this: BigNumber) {
-                return this.toString();
-            },
-        },
-    });
+
+    await updateTokens();
 
     console.log(`\nReady.`);
 }
