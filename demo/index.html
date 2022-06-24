@@ -287,10 +287,13 @@
             }
 
             let updateUiInterval;
-
-            async function inputChanged() {
+            function resetUiUpdateInterval() {
                 if (updateUiInterval) clearInterval(updateUiInterval);
                 updateUiInterval = setInterval(inputChanged, 15 * 1000);
+            }
+
+            async function inputChanged() {
+                resetUiUpdateInterval();
 
                 const tokenInAddress = $('#tokenIn').val();
                 localStorage['tokenInAddress'] = tokenInAddress;
@@ -348,6 +351,8 @@
                 }
 
                 await updateButtons();
+
+                resetUiUpdateInterval();
             }
 
             let prevSwapAmountStr;
