@@ -286,7 +286,12 @@
                 });
             }
 
+            let updateUiInterval;
+
             async function inputChanged() {
+                if (updateUiInterval) clearInterval(updateUiInterval);
+                updateUiInterval = setInterval(inputChanged, 15 * 1000);
+
                 const tokenInAddress = $('#tokenIn').val();
                 localStorage['tokenInAddress'] = tokenInAddress;
                 const tokenIn = tokens[tokenInAddress];
@@ -599,7 +604,6 @@
                     addTokenToMetamask(tokens[$tokenOut.val()])
                 );
 
-                setInterval(inputChanged, 15 * 1000);
                 await inputChanged();
             }
 
