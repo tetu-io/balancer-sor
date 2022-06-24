@@ -40,7 +40,7 @@ app.use(Sentry.Handlers.tracingHandler());
 app.use('/demo', express.static('demo'));
 
 const port = process.env.SOR_PORT || 8080;
-const VERSION = '1.0.1';
+const VERSION = '1.0.3';
 
 const networkId = Network.POLYGON;
 let sor;
@@ -63,12 +63,14 @@ app.all('/info', (req, res) => {
 
 // ------------ DEXES --------------
 app.all('/dexes', (req, res) => {
-    res.json(dexes || []);
+    if (dexes) res.json(dexes);
+    else res.status(400).send('Error: Server not ready');
 });
 
 // ------------ TOKENS --------------
 app.all('/tokens', (req, res) => {
-    res.json(tokens || {});
+    if (tokens) res.json(tokens);
+    else res.status(400).send('Error: Server not ready');
 });
 
 // ------------ SWAP --------------

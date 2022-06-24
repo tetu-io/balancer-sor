@@ -242,7 +242,7 @@
                 ? 'http://localhost:8080/'
                 : window.location.origin + '/';
             const scanUrl = 'https://polygonscan.com/';
-            const _SLIPPAGE_PRECISION = 10000; // TODO use in swap call
+            const _SLIPPAGE_PRECISION = 10000;
             const multiSwapAddress =
                 '0x8b56D66cCbc34DAd3e8ae214b9aA2BF752dF1041';
             let service, dexes, tokens;
@@ -251,8 +251,6 @@
 
             async function api(func = '', query = undefined) {
                 const url = apiUrl + func + '?' + new URLSearchParams(query);
-                console.log('url', url);
-
                 return await (await fetch(url)).json();
             }
 
@@ -396,7 +394,6 @@
             }
 
             async function updateButtons() {
-                console.log('updateButtons');
                 // Connect Wallet
                 const account = await wallet.getAccount();
                 console.log('account', account);
@@ -500,12 +497,12 @@
 
             function renderRoute() {
                 let html = '<ol>';
-                // TODO add amounts in percents
                 for (const s of swap.swaps) {
                     console.log('s', s);
                     if (s.amount > 0) {
                         const percentage = ethers.BigNumber.from(s.amount)
-                            .mul(101) // to avoid show 50% / 49%
+                            .add(1)
+                            .mul(100)
                             .div(swap.swapAmount)
                             .toString();
                         html += `</ol><h5>${percentage}%</h5><ol>`;
@@ -581,8 +578,8 @@
                     addTokenToMetamask(tokens[$tokenOut.val()])
                 );
 
+                setInterval(inputChanged, 5 * 1000);
                 await inputChanged();
-                // setInterval(inputChanged, 5 * 1000); // TODO remove comment to auto update route
             }
 
             init().then();
