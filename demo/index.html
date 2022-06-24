@@ -460,7 +460,8 @@
                         MultiSwap2Abi,
                         wallet.provider
                     );
-                    const slippage = $('#slippage').val() * _SLIPPAGE_PRECISION;
+                    const slippage =
+                        ($('#slippage').val() * _SLIPPAGE_PRECISION) / 100;
                     console.log('slippage', slippage);
                     // now() + 30 minutes in seconds
                     const deadline = Math.floor(Date.now() / 1000) + 60 * 30;
