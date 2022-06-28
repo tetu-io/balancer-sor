@@ -17,7 +17,7 @@
                 color: white;
             }
             h1,
-            h6,
+            h4,
             .text-centered {
                 text-align: center;
             }
@@ -86,7 +86,7 @@
                         ⭿
                     </button>
 
-                    <div class="input-group mb-3">
+                    <div class="input-group mb-1">
                         <label class="input-group-text width15" for="tokenOut"
                             >Buy</label
                         >
@@ -114,9 +114,15 @@
                         />
                     </div>
                 </div>
+                <div
+                    style="text-align: right; font-size: small"
+                    class="text-secondary"
+                >
+                    <span id="swapStaticResult"></span>
+                </div>
 
-                <div class="routing">
-                    <h6>Routing</h6>
+                <div class="routing mt-3">
+                    <h4>Routing</h4>
                     <div id="routing"></div>
                 </div>
 
@@ -258,9 +264,13 @@
                 : window.location.origin + '/';
             const scanUrl = 'https://polygonscan.com/';
             const _SLIPPAGE_PRECISION = 10000;
+            const gasLimit = 3000000;
             const multiSwapAddress =
                 '0x8b56D66cCbc34DAd3e8ae214b9aA2BF752dF1041';
-            let service, dexes, tokens;
+
+            let service, // API service version object
+                dexes, // array of dexes, names, masks
+                tokens; // array of supported tokens and its decimals etc.
 
             let swap; // Last swap route data stored here
 
@@ -307,7 +317,9 @@
                 localStorage['swapAmount'] = swapAmountStr;
 
                 const $returnAmount = $('#returnAmount');
-                $returnAmount.val(''); // clear returnAmount or better put progress near output amount
+                $returnAmount.val(''); // clear returnAmount
+
+                $('#deviation').html('');
 
                 // do not search route for empty or 0 swapAmount
                 if (
@@ -337,6 +349,7 @@
                         swapRequest: JSON.stringify(query),
                     });
                     console.log('swap', swap);
+
                     renderRoute();
 
                     const returnAmountBN = swap.returnAmount;
@@ -344,8 +357,28 @@
                         .formatUnits(returnAmountBN, tokenOut.decimals)
                         .toString();
                     console.log('returnAmount', returnAmount);
-
                     $returnAmount.val(returnAmount);
+
+                    // emulate swap by static call to check output price
+                    doSwapStaticCall()
+                        .then((staticAmountBN) => {
+                            const staticAmount = ethers.utils
+                                .formatUnits(staticAmountBN, tokenOut.decimals)
+                                .toString();
+                            console.log('staticAmount', staticAmount);
+                            const deviation =
+                                (staticAmount / returnAmount) * 100 - 100;
+                            console.log('deviation', deviation);
+                            $('#swapStaticResult').html(
+                                `Swap deviation: ${deviation.toFixed(4)}%`
+                            );
+                        })
+                        .catch((e) => {
+                            console.log('reason', e.reason);
+                            $('#swapStaticResult').html(
+                                `Tx error: ${e.reason}`
+                            );
+                        });
                 } finally {
                     $('#progress').removeClass('progress-bar-animated');
                 }
@@ -459,27 +492,49 @@
                 );
             }
 
+            function getSlippage() {
+                return ($('#slippage').val() * _SLIPPAGE_PRECISION) / 100;
+            }
+            function getDeadline() {
+                return Math.floor(Date.now() / 1000) + 60 * 30;
+            }
+            function getSwapContract() {
+                return new ethers.Contract(
+                    multiSwapAddress,
+                    MultiSwap2Abi,
+                    wallet.provider
+                );
+            }
+
+            async function doSwapStaticCall() {
+                if (swap && swap.returnAmount) {
+                    try {
+                        return getSwapContract()
+                            .connect(wallet.signer)
+                            .callStatic.multiSwap(
+                                swap.swapData, // in/out tokens, amounts
+                                swap.swaps, // array of swaps
+                                swap.tokenAddresses, // array of inter token addresses
+                                getSlippage(),
+                                getDeadline(),
+                                { gasLimit }
+                            );
+                    } catch (e) {
+                        console.log(e);
+                    }
+                } else console.error('doSwapStaticCall: No swap route');
+            }
+
             async function doSwap() {
                 if (swap && swap.returnAmount) {
-                    const swapContract = new ethers.Contract(
-                        multiSwapAddress,
-                        MultiSwap2Abi,
-                        wallet.provider
-                    );
-                    const slippage =
-                        ($('#slippage').val() * _SLIPPAGE_PRECISION) / 100;
-                    console.log('slippage', slippage);
-                    // now() + 30 minutes in seconds
-                    const deadline = Math.floor(Date.now() / 1000) + 60 * 30;
-                    console.log('deadline', deadline);
-                    const tx = await swapContract
+                    const tx = await getSwapContract()
                         .connect(wallet.signer)
                         .multiSwap(
                             swap.swapData, // in/out tokens, amounts
                             swap.swaps, // array of swaps
                             swap.tokenAddresses, // array of inter token addresses
-                            slippage,
-                            deadline,
+                            getSlippage(),
+                            getDeadline(),
                             { gasLimit: 3000000 }
                         );
                     console.log('tx', tx);
