@@ -34,9 +34,12 @@ Sentry.init({
 
 app.use(cors());
 app.use(compression());
+// noinspection TypeScriptValidateJSTypes
 app.use(Sentry.Handlers.requestHandler());
+// noinspection TypeScriptValidateJSTypes
 app.use(Sentry.Handlers.tracingHandler());
 
+// noinspection TypeScriptValidateJSTypes
 app.use('/demo', express.static('demo'));
 
 const port = process.env.SOR_PORT || 8080;
@@ -97,6 +100,7 @@ app.listen(port, async () => {
     console.log(`Listening on port ${port}`);
 });
 
+// noinspection TypeScriptValidateJSTypes
 app.use(Sentry.Handlers.errorHandler());
 
 // for proper BigNumber serialization (toString)
@@ -133,10 +137,20 @@ async function initialize() {
 }
 initialize().then();
 
+function sleep(ms) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 async function updatePools() {
     console.time('fetchPools');
     console.log(new Date().toLocaleTimeString(), 'fetchPools...');
-    if (sor) await sor.fetchPools();
+    if (sor) {
+        let fetched;
+        do {
+            fetched = await sor.fetchPools();
+            if (!fetched) await sleep(1000);
+        } while (!fetched);
+    }
     console.timeEnd('fetchPools');
 }
 
