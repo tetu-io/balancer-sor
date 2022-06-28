@@ -12,6 +12,12 @@
             integrity="sha384-0evHe/X+R7YkIZDRvuzKMRqM+OrBnVFBL6DOitfPri4tjfHxaWutUpFmBp4vmVor"
             rel="stylesheet"
         />
+
+        <script
+            src="https://browser.sentry-cdn.com/7.3.0/bundle.tracing.es5.min.js"
+            crossorigin="anonymous"
+        ></script>
+
         <style>
             h1 {
                 color: white;
@@ -258,6 +264,15 @@
                 '0xBbba073C31bF03b8ACf7c28EF0738DeCF3695683'.toLowerCase(),
             ];
 
+            const version = '1.0.0';
+            console.log('version', version);
+
+            Sentry.init({
+                dsn: 'https://d553f43fc5e14e669380f8af8cd050d1@o1270885.ingest.sentry.io/6535410',
+                integrations: [new Sentry.BrowserTracing()],
+                tracesSampleRate: 1.0,
+            });
+
             const dev = window.location.hostname === 'localhost';
             const apiUrl = dev
                 ? 'http://localhost:8080/'
@@ -266,7 +281,7 @@
             const _SLIPPAGE_PRECISION = 10000;
             const gasLimit = 3000000;
             const multiSwapAddress =
-                '0x8b56D66cCbc34DAd3e8ae214b9aA2BF752dF1041';
+                '0xABb67857ad54d5dDebd4280821833611a8C57D14'; // w fixed slippage
 
             let service, // API service version object
                 dexes, // array of dexes, names, masks
