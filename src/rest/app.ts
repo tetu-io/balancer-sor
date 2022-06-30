@@ -64,36 +64,40 @@ app.all('/info', (req, res) => {
     });
 });
 
+const _SERVER_NOT_READY = 'Error: Server not ready';
+
 // ------------ DEXES --------------
 app.all('/dexes', (req, res) => {
     if (dexes) res.json(dexes);
-    else res.status(400).send('Error: Server not ready');
+    else res.status(400).send(_SERVER_NOT_READY);
 });
 
 // ------------ TOKENS --------------
 app.all('/tokens', (req, res) => {
     if (tokens) res.json(tokens);
-    else res.status(400).send('Error: Server not ready');
+    else res.status(400).send(_SERVER_NOT_READY);
 });
 
 // ------------ SWAP --------------
 app.all('/swap', async (req, res) => {
-    try {
-        const query = req.query;
-        const swapRequest = JSON.parse(query.swapRequest);
-        // TODO add checks (token fields, amount)
+    if (!sor) res.status(400).send(_SERVER_NOT_READY);
+    else
+        try {
+            const query = req.query;
+            const swapRequest = JSON.parse(query.swapRequest);
+            // TODO add checks (token fields, amount)
 
-        const swapInfo = await api.getSwap(
-            sor,
-            swapRequest.tokenIn,
-            swapRequest.tokenOut,
-            swapRequest.swapAmount
-        );
-        res.json(swapInfo);
-    } catch (e) {
-        console.error(e);
-        res.status(400).send('Error:' + e);
-    }
+            const swapInfo = await api.getSwap(
+                sor,
+                swapRequest.tokenIn,
+                swapRequest.tokenOut,
+                swapRequest.swapAmount
+            );
+            res.json(swapInfo);
+        } catch (e) {
+            console.error(e);
+            res.status(400).send('Error:' + e);
+        }
 });
 
 app.listen(port, async () => {

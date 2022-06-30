@@ -28,6 +28,7 @@ export enum PoolTypes {
     Linear,
     Gyro2,
     Gyro3,
+    // UniswapV2,
 }
 
 export interface SwapOptions {
@@ -64,6 +65,7 @@ export interface Swap {
 }
 
 export interface SubgraphPoolBase {
+    platform?: string; // for platform filtering etc.
     id: string;
     address: string;
     poolType: string;
@@ -173,6 +175,7 @@ export enum PoolFilter {
 }
 
 export interface PoolBase {
+    platform?: string;
     poolType: PoolTypes;
     id: string;
     address: string;

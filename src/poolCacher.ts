@@ -40,6 +40,8 @@ export class PoolCacher {
                         );
                         pools = [];
                     }
+                    console.log('pools length', pools.length);
+                    console.log('pools', pools[100]);
                     return pools;
                 }
             );

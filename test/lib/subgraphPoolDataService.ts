@@ -172,6 +172,7 @@ export class SubgraphPoolDataService implements PoolDataService {
         console.timeEnd(timeIdSubgraph);
 
         const pools = [...data.pool0, ...data.pool1000];
+        for (const pool of pools) pool.platform = this.name;
 
         if (this.config.onchain) {
             const timeIdOnchain = 'On chain getPools (balancer)';

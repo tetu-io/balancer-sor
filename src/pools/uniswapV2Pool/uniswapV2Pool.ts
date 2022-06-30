@@ -32,6 +32,7 @@ export type WeightedPoolToken = Pick<
 >;
 
 export class UniswapV2Pool implements PoolBase {
+    platform = 'UniswapV2';
     poolType: PoolTypes = PoolTypes.Weighted;
     id: string;
     address: string;

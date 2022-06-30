@@ -106,6 +106,8 @@ export class SubgraphUniswapPoolDataService implements PoolDataService {
         });
         console.timeEnd(timeIdSubgraph);
 
+        for (const pool of pools) pool.platform = this.name;
+
         if (this.config.onchain) {
             const timeIdOnchain = 'On chain ' + timeId;
             console.time(timeIdOnchain);
