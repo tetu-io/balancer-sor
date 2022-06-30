@@ -282,7 +282,9 @@
             const gasLimit = 3000000;
             const multiSwapAddress =
                 '0xABb67857ad54d5dDebd4280821833611a8C57D14'; // w fixed slippage
-            let excludePlatforms = ['Balancer']; // TODO remove balancer
+            let excludePlatforms = JSON.parse(
+                localStorage['excludePlatforms'] ?? '[]'
+            );
 
             let service, // API service version object
                 dexes, // array of dexes, names, masks
@@ -620,21 +622,23 @@
                     const tokenOut = tokenByIndex(s.assetOutIndex);
                     const dex = getPoolInfo(s.poolId);
                     html += `
-<li><b>${tokenIn.symbol}</b> <small>${dex.name}
-<a href="#" onClick="excludePlatform('${dex.name}')" alt="Click to exclude"
+<li><b>${tokenIn.symbol}</b> <small>${dex.name}<a href="#"
+onClick="excludePlatform('${dex.name}')" alt="Click to exclude"
 class="text-danger" style="text-decoration: none">🗙</a>
 </small> <b>${tokenOut.symbol}</b></li>`;
                 }
                 html += `</ol>`;
 
-                const ep = excludePlatforms
-                    .map(
-                        (p) =>
-                            `<span class="badge bg-secondary">${p}
-<a href="#" onClick="restorePlatform('${p}')" class="text-white" style="text-decoration: none">🗙</a></span>`
-                    )
-                    .join(' ');
-                html += `<h6>Excluded platforms: ${ep}</h6>`;
+                if (excludePlatforms.length > 0) {
+                    const ep = excludePlatforms
+                        .map(
+                            (p) =>
+                                `<span class="badge bg-secondary">${p}
+    <a href="#" onClick="restorePlatform('${p}')" class="text-white" style="text-decoration: none">🗙</a></span>`
+                        )
+                        .join(' ');
+                    html += `<h6>Excluded platforms: ${ep}</h6>`;
+                }
 
                 $('#routing').html(html);
             }
@@ -705,14 +709,20 @@ class="text-danger" style="text-decoration: none">🗙</a>
 
             window.excludePlatform = function (platform) {
                 excludePlatforms.push(platform);
-                inputChanged().then();
+                excludePlatformsChanged();
             };
             window.restorePlatform = function (platform) {
                 excludePlatforms = excludePlatforms.filter(
                     (p) => p !== platform
                 );
-                inputChanged().then();
+                excludePlatformsChanged();
             };
+
+            function excludePlatformsChanged() {
+                inputChanged().then();
+                localStorage['excludePlatforms'] =
+                    JSON.stringify(excludePlatforms);
+            }
 
             window.excludePlatform = excludePlatform;
 

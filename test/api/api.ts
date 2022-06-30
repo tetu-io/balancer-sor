@@ -178,7 +178,7 @@ export async function getSwap(
         tokenOut.address,
         SwapTypes.SwapExactIn,
         swapAmount,
-        { gasPrice, maxPools, excludePlatforms }
+        { gasPrice, maxPools, excludePlatforms, forceRefresh: true }
     );
     console.timeEnd('getSwaps');
 

@@ -18,7 +18,7 @@ export class PoolCacher {
         return this._finishedFetching;
     }
 
-    public get havePools(): boolean {
+    public havePools(): boolean {
         return this.pools.length > 0;
     }
 

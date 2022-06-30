@@ -91,7 +91,7 @@ export class SOR {
         swapAmount: BigNumberish,
         swapOptions?: Partial<SwapOptions>
     ): Promise<SwapInfo> {
-        if (!this.poolCacher.havePools) return cloneDeep(EMPTY_SWAPINFO);
+        if (!this.poolCacher.havePools()) return cloneDeep(EMPTY_SWAPINFO);
 
         // Set any unset options to their defaults
         const options: SwapOptions = {
@@ -209,6 +209,7 @@ export class SOR {
         );
 
         if (paths.length == 0) return cloneDeep(EMPTY_SWAPINFO);
+        console.log('paths.length', paths.length);
 
         // Path is guaranteed to contain both tokenIn and tokenOut
         let tokenInDecimals;
