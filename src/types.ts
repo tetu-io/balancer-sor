@@ -28,7 +28,7 @@ export enum PoolTypes {
     Linear,
     Gyro2,
     Gyro3,
-    // UniswapV2,
+    // UniswapV2, // TODO
 }
 
 export interface SwapOptions {
@@ -38,6 +38,7 @@ export interface SwapOptions {
     maxPools: number;
     poolTypeFilter: PoolFilter;
     forceRefresh: boolean;
+    excludePlatforms: string[];
 }
 
 export type PoolPairBase = {

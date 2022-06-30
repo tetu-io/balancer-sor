@@ -91,7 +91,8 @@ app.all('/swap', async (req, res) => {
                 sor,
                 swapRequest.tokenIn,
                 swapRequest.tokenOut,
-                swapRequest.swapAmount
+                swapRequest.swapAmount,
+                swapRequest.excludePlatforms
             );
             res.json(swapInfo);
         } catch (e) {

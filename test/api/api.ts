@@ -152,7 +152,8 @@ export async function getSwap(
     sor: SOR,
     tokenIn: ITokenData,
     tokenOut: ITokenData,
-    swapAmount: BigNumberish
+    swapAmount: BigNumberish,
+    excludePlatforms: string[]
 ): Promise<SwapInfo> {
     // gasPrice is used by SOR as a factor to determine how many pools to swap against.
     // i.e. higher cost means more costly to trade against lots of different pools.
@@ -177,7 +178,7 @@ export async function getSwap(
         tokenOut.address,
         SwapTypes.SwapExactIn,
         swapAmount,
-        { gasPrice, maxPools }
+        { gasPrice, maxPools, excludePlatforms }
     );
     console.timeEnd('getSwaps');
 

@@ -23,8 +23,17 @@ export const filterPoolsByType = (
     return pools.filter((p) => p.poolType === poolTypeFilter);
 };
 
+export const filterPoolsByPlatform = (
+    pools: SubgraphPoolBase[],
+    excludePlatforms: string[]
+): SubgraphPoolBase[] => {
+    return pools.filter(
+        (p) => !excludePlatforms.includes(p.platform as string)
+    );
+};
+
 /*
-The purpose of this function is to build dictionaries of direct pools 
+The purpose of this function is to build dictionaries of direct pools
 and plausible hop pools.
 */
 export function filterPoolsOfInterest(

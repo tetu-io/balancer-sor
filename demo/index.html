@@ -358,7 +358,13 @@
                 try {
                     $('#progress').addClass('progress-bar-animated');
 
-                    const query = { tokenIn, tokenOut, swapAmount };
+                    const excludePlatforms = []; // TODO connect with ui
+                    const query = {
+                        tokenIn,
+                        tokenOut,
+                        swapAmount,
+                        excludePlatforms,
+                    };
                     console.log('query', query);
                     swap = await api('swap', {
                         swapRequest: JSON.stringify(query),

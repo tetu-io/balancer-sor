@@ -7,7 +7,10 @@ import { getWrappedInfo, setWrappedInfo } from './wrapInfo';
 import { formatSwaps } from './formatSwaps';
 import { PoolCacher } from './poolCacher';
 import { RouteProposer } from './routeProposal';
-import { filterPoolsByType } from './routeProposal/filtering';
+import {
+    filterPoolsByPlatform,
+    filterPoolsByType,
+} from './routeProposal/filtering';
 import { SwapCostCalculator } from './swapCostCalculator';
 import { getLidoStaticSwaps, isLidoStableSwap } from './pools/lido';
 import { isSameAddress } from './utils';
@@ -38,6 +41,7 @@ export class SOR {
         maxPools: 4,
         timestamp: Math.floor(Date.now() / 1000),
         forceRefresh: false,
+        excludePlatforms: [],
     };
 
     /**
@@ -97,7 +101,14 @@ export class SOR {
 
         const pools: SubgraphPoolBase[] = this.poolCacher.getPools();
 
-        const filteredPools = filterPoolsByType(pools, options.poolTypeFilter);
+        const filteredByPlatform = filterPoolsByPlatform(
+            pools,
+            options.excludePlatforms
+        );
+        const filteredPools = filterPoolsByType(
+            filteredByPlatform,
+            options.poolTypeFilter
+        );
 
         const wrappedInfo = await getWrappedInfo(
             this.provider,
