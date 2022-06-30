@@ -5,11 +5,9 @@ export interface SorConfig {
     chainId: number;
     vault: string;
     weth: string;
-    bbausd?: { id: string; address: string };
-    wethBBausd?: { id: string; address: string };
     staBal3Pool?: { id: string; address: string };
-    wethStaBal3?: { id: string; address: string };
     usdcConnectingPool?: { id: string; usdc: string };
+    wETHwstETH?: { id: string; address: string };
     lbpRaisingTokens?: string[];
 }
 
@@ -122,12 +120,14 @@ export interface SwapInfo {
     tokenAddresses: string[];
     swaps: SwapV2[];
     swapAmount: BigNumber;
-    swapAmountForSwaps?: BigNumber; // Used with stETH/wstETH
+    swapAmountForSwaps: BigNumber; // Used with stETH/wstETH
     returnAmount: BigNumber;
-    returnAmountFromSwaps?: BigNumber; // Used with stETH/wstETH
+    returnAmountFromSwaps: BigNumber; // Used with stETH/wstETH
     returnAmountConsideringFees: BigNumber;
     tokenIn: string;
+    tokenInForSwaps?: string; // Used with stETH/wstETH
     tokenOut: string;
+    tokenOutFromSwaps?: string; // Used with stETH/wstETH
     marketSp: string;
 }
 
