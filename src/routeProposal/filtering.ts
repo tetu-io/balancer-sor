@@ -27,9 +27,11 @@ export const filterPoolsByPlatform = (
     pools: SubgraphPoolBase[],
     excludePlatforms: string[]
 ): SubgraphPoolBase[] => {
-    return pools.filter(
-        (p) => !excludePlatforms.includes(p.platform as string)
-    );
+    console.log('filterPoolsByPlatform excludePlatforms', excludePlatforms);
+    return pools.filter((p) => {
+        p.platform;
+        return !excludePlatforms.includes(p.platform as string);
+    });
 };
 
 /*

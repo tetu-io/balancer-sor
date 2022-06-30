@@ -282,6 +282,7 @@
             const gasLimit = 3000000;
             const multiSwapAddress =
                 '0xABb67857ad54d5dDebd4280821833611a8C57D14'; // w fixed slippage
+            let excludePlatforms = ['Balancer']; // TODO remove balancer
 
             let service, // API service version object
                 dexes, // array of dexes, names, masks
@@ -358,7 +359,6 @@
                 try {
                     $('#progress').addClass('progress-bar-animated');
 
-                    const excludePlatforms = []; // TODO connect with ui
                     const query = {
                         tokenIn,
                         tokenOut,
@@ -619,9 +619,22 @@
                     const tokenIn = tokenByIndex(s.assetInIndex);
                     const tokenOut = tokenByIndex(s.assetOutIndex);
                     const dex = getPoolInfo(s.poolId);
-                    html += `<li><b>${tokenIn.symbol}</b> <small>${dex.name}</small> <b>${tokenOut.symbol}</b></li>`;
+                    html += `
+<li><b>${tokenIn.symbol}</b> <small>${dex.name}
+<a href="#" onClick="excludePlatform('${dex.name}')" alt="Click to exclude"
+class="text-danger" style="text-decoration: none">🗙</a>
+</small> <b>${tokenOut.symbol}</b></li>`;
                 }
-                html += '</ol>';
+                html += `</ol>`;
+
+                const ep = excludePlatforms
+                    .map(
+                        (p) =>
+                            `<span class="badge bg-secondary">${p}
+<a href="#" onClick="restorePlatform('${p}')" class="text-white" style="text-decoration: none">🗙</a></span>`
+                    )
+                    .join(' ');
+                html += `<h6>Excluded platforms: ${ep}</h6>`;
 
                 $('#routing').html(html);
             }
@@ -689,6 +702,19 @@
 
                 await inputChanged();
             }
+
+            window.excludePlatform = function (platform) {
+                excludePlatforms.push(platform);
+                inputChanged().then();
+            };
+            window.restorePlatform = function (platform) {
+                excludePlatforms = excludePlatforms.filter(
+                    (p) => p !== platform
+                );
+                inputChanged().then();
+            };
+
+            window.excludePlatform = excludePlatform;
 
             init().then();
         </script>

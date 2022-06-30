@@ -91,7 +91,7 @@ export class SOR {
         swapAmount: BigNumberish,
         swapOptions?: Partial<SwapOptions>
     ): Promise<SwapInfo> {
-        if (!this.poolCacher.finishedFetching) return cloneDeep(EMPTY_SWAPINFO);
+        if (!this.poolCacher.havePools) return cloneDeep(EMPTY_SWAPINFO);
 
         // Set any unset options to their defaults
         const options: SwapOptions = {
@@ -100,15 +100,25 @@ export class SOR {
         };
 
         const pools: SubgraphPoolBase[] = this.poolCacher.getPools();
+        console.log('pools', pools.length);
 
+        console.log('options.excludePlatforms', options.excludePlatforms);
         const filteredByPlatform = filterPoolsByPlatform(
             pools,
             options.excludePlatforms
         );
+        console.log('filteredByPlatform', filteredByPlatform.length);
+
         const filteredPools = filterPoolsByType(
             filteredByPlatform,
             options.poolTypeFilter
         );
+        console.log('filteredPools', filteredPools.length);
+
+        const platforms = {}; // TODO remove
+        for (const p of filteredPools)
+            if (p.platform) platforms[p.platform] = p.platform;
+        console.log('platforms', Object.keys(platforms));
 
         const wrappedInfo = await getWrappedInfo(
             this.provider,
@@ -188,6 +198,7 @@ export class SOR {
         swapOptions: SwapOptions
     ): Promise<SwapInfo> {
         if (pools.length === 0) return cloneDeep(EMPTY_SWAPINFO);
+        console.log('!!! pools.length', pools.length); // TODO remove
 
         const paths = this.routeProposer.getCandidatePaths(
             tokenIn,

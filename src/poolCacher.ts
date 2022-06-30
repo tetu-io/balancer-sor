@@ -18,6 +18,10 @@ export class PoolCacher {
         return this._finishedFetching;
     }
 
+    public get havePools(): boolean {
+        return this.pools.length > 0;
+    }
+
     public getPools(): SubgraphPoolBase[] {
         return cloneDeep(this.pools);
     }

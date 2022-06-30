@@ -94,6 +94,10 @@ app.all('/swap', async (req, res) => {
                 swapRequest.swapAmount,
                 swapRequest.excludePlatforms
             );
+            console.log(
+                'swapRequest.excludePlatforms',
+                swapRequest.excludePlatforms
+            ); // TODO remove
             res.json(swapInfo);
         } catch (e) {
             console.error(e);
