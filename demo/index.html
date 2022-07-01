@@ -14,14 +14,15 @@
         />
 
         <script
-            src="https://browser.sentry-cdn.com/7.3.0/bundle.tracing.es5.min.js"
             crossorigin="anonymous"
+            src="https://browser.sentry-cdn.com/7.3.0/bundle.tracing.es5.min.js"
         ></script>
 
         <style>
             h1 {
                 color: white;
             }
+
             h1,
             h4,
             .text-centered {
@@ -46,12 +47,12 @@
             </div>
             <div class="progress" style="height: 12px; border-radius: 0">
                 <div
-                    id="progress"
-                    class="progress-bar progress-bar-striped"
-                    role="progressbar"
-                    aria-valuenow="100"
-                    aria-valuemin="0"
                     aria-valuemax="100"
+                    aria-valuemin="0"
+                    aria-valuenow="100"
+                    class="progress-bar progress-bar-striped"
+                    id="progress"
+                    role="progressbar"
                     style="width: 100%"
                 ></div>
             </div>
@@ -68,9 +69,9 @@
                         </select>
                         <button
                             class="btn btn-secondary"
-                            type="button"
                             id="addTokenIn"
                             title="Add Token to Web Wallet"
+                            type="button"
                         >
                             +
                         </button>
@@ -103,9 +104,9 @@
                         </select>
                         <button
                             class="btn btn-secondary"
-                            type="button"
                             id="addTokenOut"
                             title="Add Token to Web Wallet"
+                            type="button"
                         >
                             +
                         </button>
@@ -146,25 +147,25 @@
 
                 <button
                     class="btn my-1 w-100 btn-primary"
+                    disabled
                     id="approve"
                     type="button"
-                    disabled
                 >
                     Approve
                 </button>
 
                 <button
                     class="btn my-1 w-100 btn-primary"
+                    disabled
                     id="swap"
                     type="button"
-                    disabled
                 >
                     Swap
                 </button>
 
                 <div
-                    style="text-align: center; font-size: small"
                     class="text-secondary"
+                    style="text-align: center; font-size: small"
                 >
                     <span id="swapStaticResult"></span>&nbsp;
                 </div>
@@ -177,10 +178,10 @@
                     <input
                         class="form-control"
                         id="slippage"
+                        max="99"
+                        min="1"
                         style="text-align: right"
                         type="number"
-                        min="1"
-                        max="99"
                     />
                     <span class="input-group-text">%</span>
                 </div>
@@ -202,14 +203,15 @@
         <!--        <script src="https://unpkg.com/ethers-utils"></script>-->
         <script
             crossorigin="anonymous"
-            integrity="sha512-rQkwNC0M1xDe/Q5+60yxVaivh7dpaoZthM91gAkEq4/5aLmMVNkk/Ru9Fjf3bCVA1jbJXa5sZsLPBDKHy+0LaA=="
             referrerpolicy="no-referrer"
             src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.6.8/ethers.umd.min.js"
         ></script>
         <script type="module">
+            /*global ethereum*/
             import wallet from './connection.js';
             import MultiSwap2Abi from './MultiSwap2.json' assert { type: 'json' };
 
+            // noinspection SpellCheckingInspection
             const whitelistedTokens = [
                 '0x0000000000000000000000000000000000000000'.toLowerCase(),
                 '0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619'.toLowerCase(),
@@ -280,7 +282,7 @@
 
             Sentry.init({
                 dsn: 'https://d553f43fc5e14e669380f8af8cd050d1@o1270885.ingest.sentry.io/6535410',
-                integrations: [new Sentry.BrowserTracing()],
+                integrations: [new Sentry.BrowserTracing(undefined)],
                 tracesSampleRate: 1.0,
             });
 
@@ -291,8 +293,9 @@
             const scanUrl = 'https://polygonscan.com/';
             const _SLIPPAGE_PRECISION = 10000;
             const gasLimit = 3000000;
+            // noinspection SpellCheckingInspection
             const multiSwapAddress =
-                '0xABb67857ad54d5dDebd4280821833611a8C57D14'; // w fixed slippage
+                '0xABb67857ad54d5dDebd4280821833611a8C57D14';
             let excludePlatforms = JSON.parse(
                 localStorage['excludePlatforms'] ?? '[]'
             );
@@ -326,6 +329,7 @@
             }
 
             let updateUiInterval;
+
             function resetUiUpdateInterval() {
                 if (updateUiInterval) clearInterval(updateUiInterval);
                 updateUiInterval = setInterval(inputChanged, 15 * 1000);
@@ -479,6 +483,7 @@
                     ERC20Abi,
                     wallet.provider
                 );
+                // noinspection JSUnresolvedFunction
                 const tx = await tokenContract
                     .connect(wallet.signer)
                     .approve(multiSwapAddress, amount, { gasLimit: 100000 });
@@ -544,9 +549,11 @@
             function getSlippage() {
                 return ($('#slippage').val() * _SLIPPAGE_PRECISION) / 100;
             }
+
             function getDeadline() {
                 return Math.floor(Date.now() / 1000) + 60 * 30;
             }
+
             function getSwapContract() {
                 return new ethers.Contract(
                     multiSwapAddress,
@@ -576,6 +583,7 @@
 
             async function doSwap() {
                 if (swap && swap.returnAmount) {
+                    // noinspection JSUnresolvedFunction
                     const tx = await getSwapContract()
                         .connect(wallet.signer)
                         .multiSwap(
@@ -648,9 +656,9 @@
                     const tokenOut = tokenByIndex(s.assetOutIndex);
                     const dex = getPoolInfo(s.poolId);
                     html += `
-<li><b>${tokenIn.symbol}</b> <small>${dex.name}<a href="#"
-onClick="excludePlatform('${dex.name}')" alt="Click to exclude"
-class="text-danger" style="text-decoration: none">🗙</a>
+<li><b>${tokenIn.symbol}</b> <small>${dex.name}<a href='#'
+onClick="excludePlatform('${dex.name}')" title='Click to exclude'
+class='text-danger' style='text-decoration: none'>🗙</a>
 </small> <b>${tokenOut.symbol}</b></li>`;
                 }
                 html += `</ol>`;
@@ -659,8 +667,8 @@ class="text-danger" style="text-decoration: none">🗙</a>
                     const ep = excludePlatforms
                         .map(
                             (p) =>
-                                `<span class="badge bg-secondary">${p}
-    <a href="#" onClick="restorePlatform('${p}')" class="text-white" style="text-decoration: none">🗙</a></span>`
+                                `<span class='badge bg-secondary'>${p}
+    <a href='#' onClick="restorePlatform('${p}')" class='text-white' style='text-decoration: none'>🗙</a></span>`
                         )
                         .join(' ');
                     html += `<h6>Excluded platforms: ${ep}</h6>`;
@@ -685,8 +693,8 @@ class="text-danger" style="text-decoration: none">🗙</a>
             }
 
             function simpleAnd(a, mask) {
-                const A = ethers.utils.arrayify(a);
-                const M = ethers.utils.arrayify(mask);
+                const A = ethers.utils.arrayify(a, undefined);
+                const M = ethers.utils.arrayify(mask, undefined);
                 const C = [...A];
                 for (let i = 0; i < A.length; i++) C[i] = A[i] & M[i];
                 return ethers.utils.hexlify(C, {});
