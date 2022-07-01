@@ -280,7 +280,7 @@
             const version = '1.0.0 alpha 1';
             console.log('version', version);
 
-            if (Sentry)
+            if (typeof Sentry !== 'undefined')
                 Sentry.init({
                     dsn: 'https://d553f43fc5e14e669380f8af8cd050d1@o1270885.ingest.sentry.io/6535410',
                     integrations: [new Sentry.BrowserTracing(undefined)],
