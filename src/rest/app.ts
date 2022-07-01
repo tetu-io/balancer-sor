@@ -85,7 +85,6 @@ app.all('/swap', async (req, res) => {
         try {
             const query = req.query;
             const swapRequest = JSON.parse(query.swapRequest);
-            // TODO add checks (token fields, amount)
 
             const swapInfo = await api.getSwap(
                 sor,
@@ -94,10 +93,6 @@ app.all('/swap', async (req, res) => {
                 swapRequest.swapAmount,
                 swapRequest.excludePlatforms
             );
-            console.log(
-                'swapRequest.excludePlatforms',
-                swapRequest.excludePlatforms
-            ); // TODO remove
             res.json(swapInfo);
         } catch (e) {
             console.error(e);
