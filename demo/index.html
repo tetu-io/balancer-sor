@@ -120,12 +120,16 @@
                         />
                     </div>
                 </div>
-                <div
-                    style="text-align: right; font-size: small"
-                    class="text-secondary"
+
+                <table
+                    class="table table-sm table-borderless"
+                    style="font-size: small"
                 >
-                    <span id="swapStaticResult"></span>
-                </div>
+                    <tr>
+                        <td id="priceTokenIn"></td>
+                        <td id="priceTokenOut" style="text-align: right"></td>
+                    </tr>
+                </table>
 
                 <div class="routing mt-3">
                     <h4>Routing</h4>
@@ -157,6 +161,13 @@
                 >
                     Swap
                 </button>
+
+                <div
+                    style="text-align: center; font-size: small"
+                    class="text-secondary"
+                >
+                    <span id="swapStaticResult"></span>&nbsp;
+                </div>
 
                 <div class="input-group mt-3">
                     <label class="input-group-text" for="tokenIn"
@@ -382,6 +393,19 @@
                     console.log('returnAmount', returnAmount);
                     $returnAmount.val(returnAmount);
 
+                    const tokenInPrice = (
+                        parseFloat(returnAmount) / parseFloat(swapAmountStr)
+                    ).toFixed(4);
+                    const tokenOutPrice = (
+                        parseFloat(swapAmountStr) / parseFloat(returnAmount)
+                    ).toFixed(4);
+                    $('#priceTokenIn').html(
+                        `1 ${tokenIn.symbol} = ${tokenInPrice} ${tokenOut.symbol}`
+                    );
+                    $('#priceTokenOut').html(
+                        `1 ${tokenOut.symbol} = ${tokenOutPrice} ${tokenIn.symbol}`
+                    );
+
                     // emulate swap by static call to check output price
                     doSwapStaticCall()
                         .then((staticAmountBN) => {
@@ -392,8 +416,11 @@
                             const deviation =
                                 (staticAmount / returnAmount) * 100 - 100;
                             console.log('deviation', deviation);
+                            const plus = deviation > 0 ? '+' : '';
                             $('#swapStaticResult').html(
-                                `Swap deviation: ${deviation.toFixed(4)}%`
+                                `Swap deviation: ${plus}${deviation.toFixed(
+                                    4
+                                )}%`
                             );
                         })
                         .catch((e) => {
@@ -497,7 +524,6 @@
                 // Approve
 
                 const allowed = connected && (await allowance());
-                console.log('allowed', allowed);
                 // MaxInt - 2 times smaller than MaxUint
                 // To simplify just check what allowance is not less than half of MaxUint
                 const approved =
