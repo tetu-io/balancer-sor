@@ -63,19 +63,18 @@ export const UNISWAP_SUBGRAPHS = {
             url: 'https://api.thegraph.com/subgraphs/name/sameepsi/quickswap06',
             swapFee: '0.03',
         },
-        /*        {
+
+        {
             name: 'ApeSwap',
             dexId: dexId++,
             url: 'https://api.thegraph.com/subgraphs/name/apeswapfinance/dex-polygon',
             swapFee: '0.02',
-
         },
         {
             name: 'JetSwap',
             dexId: dexId++,
             url: 'https://api.thegraph.com/subgraphs/name/smartcookie0501/jetswap-subgraph-polygon',
             swapFee: '0.01',
-
         },
         {
             name: 'Polycat',
@@ -100,6 +99,6 @@ export const UNISWAP_SUBGRAPHS = {
             dexId: dexId++,
             url: 'https://api.thegraph.com/subgraphs/name/waultfinance/waultswap-polygon',
             swapFee: '0.02',
-        },*/
+        },
     ],
 };
