@@ -47,7 +47,7 @@ export class SOR {
     /**
      * @param {Provider} provider - Provider.
      * @param {SorConfig} config - Chain specific configuration for the SOR.
-     * @param {PoolDataService} poolDataService - Generic service that fetches pool data from an external data source.
+     * @param {poolDataServiceOrServices} poolDataServiceOrServices - Generic services that fetches pool data from an external data source.
      * @param {TokenPriceService} tokenPriceService - Generic service that fetches token prices from an external price feed. Used in calculating swap cost.
      */
     constructor(
@@ -82,6 +82,7 @@ export class SOR {
      * @param {string} tokenOut - Address of tokenOut.
      * @param {SwapTypes} swapType - SwapExactIn where the amount of tokens in (sent to the Pool) is known or SwapExactOut where the amount of tokens out (received from the Pool) is known.
      * @param {BigNumberish} swapAmount - Either amountIn or amountOut depending on the `swapType` value.
+     * @param {Partial<SwapOptions>} swapOptions - Additional swap options. See SwapOptions declaration.
      * @returns {SwapInfo} Swap information including return amount and swaps structure to be submitted to Vault.
      */
     async getSwaps(
@@ -100,25 +101,16 @@ export class SOR {
         };
 
         const pools: SubgraphPoolBase[] = this.poolCacher.getPools();
-        console.log('pools', pools.length);
 
-        console.log('options.excludePlatforms', options.excludePlatforms);
         const filteredByPlatform = filterPoolsByPlatform(
             pools,
             options.excludePlatforms
         );
-        console.log('filteredByPlatform', filteredByPlatform.length);
 
         const filteredPools = filterPoolsByType(
             filteredByPlatform,
             options.poolTypeFilter
         );
-        console.log('filteredPools', filteredPools.length);
-
-        const platforms = {}; // TODO remove
-        for (const p of filteredPools)
-            if (p.platform) platforms[p.platform] = p.platform;
-        console.log('platforms', Object.keys(platforms));
 
         const wrappedInfo = await getWrappedInfo(
             this.provider,
@@ -198,7 +190,6 @@ export class SOR {
         swapOptions: SwapOptions
     ): Promise<SwapInfo> {
         if (pools.length === 0) return cloneDeep(EMPTY_SWAPINFO);
-        console.log('!!! pools.length', pools.length); // TODO remove
 
         const paths = this.routeProposer.getCandidatePaths(
             tokenIn,
@@ -259,6 +250,7 @@ export class SOR {
         return swapInfo;
     }
 
+    // noinspection JSMethodCanBeStatic
     /**
      * Find optimal routes for trade from given candidate paths
      */

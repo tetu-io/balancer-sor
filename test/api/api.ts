@@ -15,7 +15,6 @@ import ContractUtilsAbi from '../abi/ContractUtils.json';
 import { SubgraphPoolDataService } from '../lib/subgraphPoolDataService';
 import { SubgraphUniswapPoolDataService } from '../lib/subgraphUniswapPoolDataService';
 import { mockTokenPriceService } from '../lib/mockTokenPriceService';
-import * as fs from 'fs';
 import { balancerVaultAddress, MULTIADDR } from './config';
 // import { CoingeckoTokenPriceService } from '../lib/coingeckoTokenPriceService';
 
@@ -28,9 +27,16 @@ export interface UniswapSubgraphData {
 
 export const _SLIPPAGE_DENOMINATOR = 10000;
 
-export async function getTokens(sor: SOR, contractUtilsAddress: string) {
+interface ITokens {
+    [address: string]: ITokenData;
+}
+
+export async function getTokens(
+    sor: SOR,
+    contractUtilsAddress: string
+): Promise<ITokens> {
     const pools = sor.getPools();
-    const tokens: { [address: string]: ITokenData } = {};
+    const tokens: ITokens = {};
     for (const pool of pools) {
         for (const token of pool.tokens) {
             tokens[token.address] = {
@@ -59,7 +65,7 @@ export async function init(
     sorConfig: SorConfig,
     balancerSubgraphUrl: string,
     uniswapSubgraphs: UniswapSubgraphData[]
-) {
+): Promise<SOR> {
     // Use the mock pool data service if you want to use pool data from a file. (for testing purposes etc.)
     // const poolsSource = require('../testData/testPools/gusdBug.json');
     // mockPoolDataService.setPools(poolsSource);
@@ -105,7 +111,7 @@ export async function init(
     // console.log(JSON.stringify(subgraphPools));
     // console.log(`-------`);
 
-    /// CoinGecko does not work for TETU end some rare tokens // TODO may be add another price source?
+    /// CoinGecko does not work for TETU end some rare tokens // may be add another price source?
     // Also it slow downs route building. Prefer do not use it!
     // const coingeckoTokenPriceService = new CoingeckoTokenPriceService(
     //     networkId
@@ -118,9 +124,8 @@ export async function init(
         sorConfig,
         subgraphPoolDataServices,
         // mockPoolDataService,
-        mockTokenPriceService,
+        mockTokenPriceService
         // coingeckoTokenPriceService,
-        multiAddress
     );
 }
 
@@ -130,13 +135,12 @@ export async function initSOR(
     provider: JsonRpcProvider,
     config: SorConfig,
     poolDataServices: PoolDataService[],
-    tokenPriceService: TokenPriceService,
-    multiAddress: string
-) {
+    tokenPriceService: TokenPriceService
+): Promise<SOR> {
     const sor = new SOR(provider, config, poolDataServices, tokenPriceService);
     console.log('Fetching pools...');
     console.time('fetchPools');
-    await sor.fetchPools(); // TODO call fetchPools() every minute on background at the server to cache it and quickly do getSwap
+    await sor.fetchPools();
     console.timeEnd('fetchPools');
     return sor;
 }
@@ -153,7 +157,7 @@ export async function getSwap(
     tokenIn: ITokenData,
     tokenOut: ITokenData,
     swapAmount: BigNumberish,
-    excludePlatforms: string[]
+    excludePlatforms: string[] = []
 ): Promise<SwapInfo> {
     // gasPrice is used by SOR as a factor to determine how many pools to swap against.
     // i.e. higher cost means more costly to trade against lots of different pools.
@@ -204,15 +208,23 @@ export async function getSwap(
     return swapInfo;
 }
 
-export function getDexes(sor: SOR) {
+interface IDex {
+    name?: string;
+    dexType?: string;
+    mask?: string;
+    dexId?: number;
+}
+
+type IDexes = IDex[];
+
+export function getDexes(sor: SOR): IDexes {
     const dataServices = sor.poolDataServiceOrServices as PoolDataService[];
-    const dexes = dataServices.map((ds) => {
+    return dataServices.map((ds) => {
         return {
             name: ds.name,
             dexType: ds.dexType,
             mask: ds.poolIdMask,
             dexId: ds.dexId,
-        };
+        } as IDex;
     });
-    return dexes;
 }

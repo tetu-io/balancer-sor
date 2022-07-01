@@ -355,10 +355,11 @@
 
                 $('#swapStaticResult').html('');
 
-                // do not search route for empty or 0 swapAmount
+                // do not search route for empty or 0 swapAmount or same tokens
                 if (
                     !parseFloat(swapAmountStr) ||
-                    parseFloat(swapAmountStr) === 0
+                    parseFloat(swapAmountStr) === 0 ||
+                    tokenIn === tokenOut
                 ) {
                     $('#routing').html('');
                     await updateButtons();
@@ -488,11 +489,11 @@
                 const tx = await tokenContract
                     .connect(wallet.signer)
                     .approve(multiSwapAddress, amount, { gasLimit: 100000 });
-                console.log('tx', tx);
+                console.log('Approve tx', tx);
                 await notify(
                     'Approve ' + tokens[tokenAddress].symbol,
                     'Click to view transaction',
-                    'https://freepikpsd.com/file/2019/10/approved-icon-png-3-Transparent-Images.png',
+                    'https://free-png.ru/wp-content/uploads/2021/07/free-png.ru-3.png',
                     txScanUrl(tx)
                 );
             }
