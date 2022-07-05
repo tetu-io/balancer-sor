@@ -104,7 +104,7 @@ export class SOR {
 
         const filteredByPlatform = filterPoolsByPlatform(
             pools,
-            options.excludePlatforms
+            options.excludePlatforms || []
         );
 
         const filteredPools = filterPoolsByType(

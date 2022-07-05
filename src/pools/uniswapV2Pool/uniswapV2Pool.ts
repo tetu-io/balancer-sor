@@ -26,7 +26,7 @@ import {
 import { BigNumber, formatFixed, parseFixed } from '@ethersproject/bignumber';
 import { WeiPerEther as ONE } from '@ethersproject/constants';
 
-export type WeightedPoolToken = Pick<
+export type UniswapV2PoolToken = Pick<
     NoNullableField<SubgraphToken>,
     'address' | 'balance' | 'decimals' | 'weight'
 >;
@@ -38,7 +38,7 @@ export class UniswapV2Pool implements PoolBase {
     address: string;
     swapFee: BigNumber;
     totalShares: BigNumber;
-    tokens: WeightedPoolToken[];
+    tokens: UniswapV2PoolToken[];
     tokensList: string[];
     MAX_IN_RATIO = parseFixed('0.3', 18);
     MAX_OUT_RATIO = parseFixed('0.3', 18);
@@ -52,7 +52,7 @@ export class UniswapV2Pool implements PoolBase {
             pool.address,
             pool.swapFee,
             pool.totalShares,
-            pool.tokens as WeightedPoolToken[],
+            pool.tokens as UniswapV2PoolToken[],
             pool.tokensList
         );
         if (isLBP) uniswapV2Pool.isLBP = true;
@@ -64,7 +64,7 @@ export class UniswapV2Pool implements PoolBase {
         address: string,
         swapFee: string,
         totalShares: string,
-        tokens: WeightedPoolToken[],
+        tokens: UniswapV2PoolToken[],
         tokensList: string[]
     ) {
         this.id = id;

@@ -38,7 +38,7 @@ export interface SwapOptions {
     maxPools: number;
     poolTypeFilter: PoolFilter;
     forceRefresh: boolean;
-    excludePlatforms: string[];
+    excludePlatforms?: string[];
 }
 
 export type PoolPairBase = {
