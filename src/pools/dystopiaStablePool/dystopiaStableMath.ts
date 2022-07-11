@@ -2,8 +2,9 @@ import { formatFixed } from '@ethersproject/bignumber';
 import { BigNumber as OldBigNumber, bnum } from '../../utils/bignumber';
 import { MathSol } from '../../utils/basicOperations';
 import { PoolPairBase } from '../../types';
+import getSellPrice from './dystopia-stable-pool';
 
-// The following function are BigInt versions implemented by Sergio.
+// The following function are BigInt versions
 // BigInt was requested from integrators as it is more efficient.
 // Swap outcomes formulas should match exactly those from smart contracts.
 // PairType = 'token->token'
@@ -14,25 +15,21 @@ export function _calcOutGivenIn(
     amountIn: bigint,
     fee: bigint
 ): bigint {
-    console.count('_calcOutGivenIn');
     // is it necessary to check ranges of variables? same for the other functions
     const amountInWithFee = subtractFee(amountIn, fee);
-    const numerator = MathSol.mulDownFixed(amountInWithFee, balanceOut);
-    const denominator = MathSol.add(balanceIn, amountInWithFee);
-    return MathSol.divDownFixed(numerator, denominator);
+    return getSellPrice(balanceIn, balanceOut, 18n, 18n, amountInWithFee);
 }
 
 // PairType = 'token->token'
 // SwapType = 'swapExactOut'
 export function _calcInGivenOut(
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     balanceIn: bigint,
     balanceOut: bigint,
     amountOut: bigint,
     fee: bigint
 ): bigint {
-    const numerator = MathSol.mulDownFixed(balanceIn, amountOut);
-    const denominator = subtractFee(MathSol.sub(balanceOut, amountOut), fee);
-    return MathSol.divUpFixed(numerator, denominator);
+    return 0n; // buy side is not supported
 }
 
 function subtractFee(amount: bigint, fee: bigint): bigint {
@@ -42,6 +39,24 @@ function subtractFee(amount: bigint, fee: bigint): bigint {
 
 // Number functions
 
+function getSellPriceNum(
+    reservesIn: number,
+    reservesOut: number,
+    decimalsIn: number,
+    decimalsOut: number,
+    srcAmount: number
+): number {
+    return Number(
+        getSellPrice(
+            BigInt(reservesIn),
+            BigInt(reservesOut),
+            BigInt(decimalsIn),
+            BigInt(decimalsOut),
+            BigInt(srcAmount)
+        )
+    );
+}
+
 function _calcOutGivenInNum(
     balanceIn: number,
     balanceOut: number,
@@ -49,22 +64,19 @@ function _calcOutGivenInNum(
     fee: number
 ): number {
     const amountInWithFee = subtractFeeNum(amountIn, fee);
-    const numerator = amountInWithFee * balanceOut;
-    const denominator = balanceIn + amountInWithFee;
-    return numerator / denominator;
+    return getSellPriceNum(balanceIn, balanceOut, 18, 18, amountInWithFee);
 }
 
 // PairType = 'token->token'
 // SwapType = 'swapExactOut'
 function _calcInGivenOutNum(
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     balanceIn: number,
     balanceOut: number,
     amountOut: number,
     fee: number
 ): number {
-    const numerator = balanceIn * amountOut;
-    const denominator = subtractFeeNum(balanceOut - amountOut, fee);
-    return numerator / denominator;
+    return 0; // buy side is not supported
 }
 
 function subtractFeeNum(amount: number, fee: number): number {
@@ -96,17 +108,13 @@ export function _spotPriceAfterSwapExactTokenInForTokenOutBigInt(
 // PairType = 'token->token'
 // SwapType = 'swapExactOut'
 export function _spotPriceAfterSwapTokenInForExactTokenOutBigInt(
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     balanceIn: bigint,
     balanceOut: bigint,
     amountOut: bigint,
     fee: bigint
 ): bigint {
-    const amountIn = _calcInGivenOut(balanceIn, balanceOut, amountOut, fee);
-    const balanceIn2 = MathSol.add(balanceIn, amountIn);
-    const balanceOut2 = MathSol.sub(balanceOut, amountOut);
-
-    const numerator = MathSol.mulDownFixed(balanceIn2, MathSol.ONE);
-    return MathSol.divUpFixed(numerator, balanceOut2);
+    return 0n; // buy side is not supported
 }
 
 // PairType = 'token->BPT'
@@ -149,23 +157,11 @@ export function _derivativeSpotPriceAfterSwapExactTokenInForTokenOut(
 // PairType = 'token->token'
 // SwapType = 'swapExactOut'
 export function _derivativeSpotPriceAfterSwapTokenInForExactTokenOut(
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     amount: OldBigNumber,
     poolPairData: PoolPairBase
 ): OldBigNumber {
-    const Bi = parseFloat(
-        formatFixed(poolPairData.balanceIn, poolPairData.decimalsIn)
-    );
-    const Bo = parseFloat(
-        formatFixed(poolPairData.balanceOut, poolPairData.decimalsOut)
-    );
-    const Ao = amount.toNumber();
-    const f = parseFloat(formatFixed(poolPairData.swapFee, 18));
-
-    const sp = Bi / Bo;
-    const Bi2 = Bi + _calcInGivenOutNum(Bi, Bo, Ao, f);
-    const Bo2 = Bo - Ao;
-    const sp2 = Bi2 / Bo2;
-    return bnum(sp2 - sp);
+    return bnum(0); // buy side is not supported
 }
 
 // PairType = 'token->token'
@@ -192,20 +188,9 @@ export function _spotPriceAfterSwapExactTokenInForTokenOut(
 // PairType = 'token->token'
 // SwapType = 'swapExactOut'
 export function _spotPriceAfterSwapTokenInForExactTokenOut(
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     amount: OldBigNumber,
     poolPairData: PoolPairBase
 ): OldBigNumber {
-    const Bi = parseFloat(
-        formatFixed(poolPairData.balanceIn, poolPairData.decimalsIn)
-    );
-    const Bo = parseFloat(
-        formatFixed(poolPairData.balanceOut, poolPairData.decimalsOut)
-    );
-    const Ao = amount.toNumber();
-    const f = parseFloat(formatFixed(poolPairData.swapFee, 18));
-
-    const Bi2 = Bi + _calcInGivenOutNum(Bi, Bo, Ao, f);
-    const Bo2 = Bo - Ao;
-    const sp2 = Bi2 / Bo2;
-    return bnum(sp2);
+    return bnum(0); // buy side is not supported
 }
