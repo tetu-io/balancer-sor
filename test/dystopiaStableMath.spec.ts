@@ -49,8 +49,7 @@ describe('dystStableMath tests', function () {
             console.log('outOnchain ', outOnchain);
 
             const r = await pairContract.getReserves();
-            // const fee = WeiPerEther.div(2000).toBigInt();
-            const fee = parseFixed('1', 6).div(2000).toBigInt(); // TO DO check fee calc carefully
+            const fee = amount.div(2000).toBigInt();
             console.log('fee', fee);
             const outOffchain = _calcOutGivenIn(
                 r[0].toBigInt(),
