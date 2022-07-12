@@ -15,9 +15,7 @@ export function _calcOutGivenIn(
     amountIn: bigint,
     fee: bigint
 ): bigint {
-    // is it necessary to check ranges of variables? same for the other functions
-    const amountInWithFee = subtractFee(amountIn, fee);
-    return getSellPrice(balanceIn, balanceOut, 18n, 18n, amountInWithFee);
+    return getSellPrice(balanceIn, balanceOut, 18n, 18n, amountIn, fee);
 }
 
 // PairType = 'token->token'

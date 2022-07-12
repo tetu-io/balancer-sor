@@ -1,3 +1,5 @@
+import { MathSol } from '../../utils/basicOperations';
+
 export const RESERVE_LIMIT = BigInt(2) ** BigInt(112) - BigInt(1);
 export const SWAP_FEE_FACTOR = BigInt(2000);
 
@@ -71,13 +73,17 @@ function getSellPrice(
     reservesOut: bigint,
     decimalsIn: bigint,
     decimalsOut: bigint,
-    srcAmount: bigint
+    srcAmount: bigint,
+    fee?: bigint
 ): bigint {
     if (BigInt(reservesIn) + srcAmount > RESERVE_LIMIT) {
         return BigInt(0);
     }
 
-    const amountIn = srcAmount - srcAmount / SWAP_FEE_FACTOR;
+    const fees = fee
+        ? MathSol.mulUpFixed(srcAmount, fee)
+        : srcAmount / SWAP_FEE_FACTOR;
+    const amountIn = srcAmount - fees;
 
     const reservesInN = BigInt(reservesIn);
     const reservesOutN = BigInt(reservesOut);
