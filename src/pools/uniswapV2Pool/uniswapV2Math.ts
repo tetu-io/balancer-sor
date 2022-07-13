@@ -14,7 +14,6 @@ export function _calcOutGivenIn(
     amountIn: bigint,
     fee: bigint
 ): bigint {
-    console.count('_calcOutGivenIn');
     // is it necessary to check ranges of variables? same for the other functions
     const amountInWithFee = subtractFee(amountIn, fee);
     const numerator = MathSol.mulDownFixed(amountInWithFee, balanceOut);

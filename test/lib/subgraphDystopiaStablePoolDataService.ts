@@ -8,7 +8,6 @@ const queryWithLinear = `
     first: 1000,
     orderBy:reserveETH,
     orderDirection: desc
-    where: {isStable: true}
   ) {
     id,
     reserveETH,
@@ -38,20 +37,19 @@ export const Query: { [chainId: number]: string } = {
     42161: queryWithLinear,
 };
 
-export class SubgraphDystStablePoolDataService implements PoolDataService {
+export class SubgraphDystopiaStablePoolDataService implements PoolDataService {
     // This constant is added to pool address to generate bytes32 balancer-like pool id
     // so Swapper contract can detect what it is Uniswap V2 pool and call its swap function
     // format: [pool address][poolIdSuffix][dexId:4bit]
     // noinspection JSStringConcatenationToES6Template,SpellCheckingInspection
     protected readonly poolIdSuffix = 'ddddddddddddddddddddddd';
     public readonly poolIdMask =
-        '0x0000000000000000000000000000000000000000ddddddddddddddddddddddd0'; // last half-byte - index of uniswap dex
-    public readonly dexType = 'Solidly';
+        '0x0000000000000000000000000000000000000000ddddddddddddddddddddddd0'; // last half-byte - index of compatible dex
+    public readonly dexType = 'Dystopia';
     constructor(
         public readonly config: {
             chainId: number;
             multiAddress: string;
-            vaultAddress: string;
             subgraphUrl: string;
             provider: Provider;
             onchain: boolean;
@@ -65,7 +63,7 @@ export class SubgraphDystStablePoolDataService implements PoolDataService {
     }
 
     public async getPools(): Promise<SubgraphPoolBase[]> {
-        const timeId = `getPools (uniswap) #${this.dexId} ${this.name}`;
+        const timeId = `getPools (dystopia) #${this.dexId} ${this.name}`;
         const timeIdSubgraph = 'Subgraph ' + timeId;
         console.time(timeIdSubgraph);
         const response = await fetch(this.config.subgraphUrl, {
@@ -86,7 +84,7 @@ export class SubgraphDystStablePoolDataService implements PoolDataService {
                     this.poolIdSuffix +
                     (this.dexId ? this.dexId.toString(16) : '0'),
                 address: pool.id,
-                poolType: 'SolidlyStable',
+                poolType: pool.isStable ? 'DystopiaStable' : 'UniswapV2',
                 swapFee: this.config.swapFee ?? '0.005',
                 swapEnabled: true,
                 totalShares: pool.totalSupply,

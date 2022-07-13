@@ -1,29 +1,18 @@
-import { getAddress } from '@ethersproject/address';
 import {
     BigNumber as OldBigNumber,
     bnum,
     scale,
     ZERO,
 } from '../../utils/bignumber';
-import { isSameAddress } from '../../utils';
 import {
-    PoolBase,
     PoolTypes,
     PoolPairBase,
-    SwapTypes,
     SubgraphPoolBase,
     SubgraphToken,
     NoNullableField,
 } from '../../types';
-import {
-    _calcOutGivenIn,
-    _calcInGivenOut,
-    _spotPriceAfterSwapExactTokenInForTokenOut,
-    _spotPriceAfterSwapTokenInForExactTokenOut,
-    _derivativeSpotPriceAfterSwapExactTokenInForTokenOut,
-    _derivativeSpotPriceAfterSwapTokenInForExactTokenOut,
-} from './dystopiaStableMath';
-import { BigNumber, formatFixed, parseFixed } from '@ethersproject/bignumber';
+import { _calcOutGivenIn } from './dystopiaMath';
+import { BigNumber, parseFixed } from '@ethersproject/bignumber';
 import { UniswapV2Pool } from '../uniswapV2Pool/uniswapV2Pool';
 
 export type UniswapV2PoolToken = Pick<
@@ -31,6 +20,7 @@ export type UniswapV2PoolToken = Pick<
     'address' | 'balance' | 'decimals' | 'weight'
 >;
 
+// noinspection JSUnusedGlobalSymbols
 export class DystopiaStablePool extends UniswapV2Pool {
     platform = 'Dystopia';
     poolType: PoolTypes = PoolTypes.Weighted; // TODO
@@ -42,14 +32,11 @@ export class DystopiaStablePool extends UniswapV2Pool {
     tokensList: string[];
     MAX_IN_RATIO = parseFixed('0.3', 18);
     MAX_OUT_RATIO = parseFixed('0.3', 18);
-    isLBP = false;
 
-    static fromPool(
-        pool: SubgraphPoolBase,
-        isLBP?: boolean
-    ): DystopiaStablePool {
+    static fromPool(pool: SubgraphPoolBase): DystopiaStablePool {
         if (!pool.totalWeight)
             throw new Error('DystopiaStablePool missing totalWeight');
+
         const dystopiaStablePool = new DystopiaStablePool(
             pool.id,
             pool.address,
@@ -58,7 +45,6 @@ export class DystopiaStablePool extends UniswapV2Pool {
             pool.tokens as UniswapV2PoolToken[],
             pool.tokensList
         );
-        if (isLBP) dystopiaStablePool.isLBP = true;
         return dystopiaStablePool;
     }
 
@@ -81,7 +67,9 @@ export class DystopiaStablePool extends UniswapV2Pool {
                     amount.dp(poolPairData.decimalsIn, 1).toString(),
                     poolPairData.decimalsIn
                 ).toBigInt(),
-                poolPairData.swapFee.toBigInt()
+                poolPairData.swapFee.toBigInt(),
+                BigInt(poolPairData.decimalsIn),
+                BigInt(poolPairData.decimalsOut)
             );
             // return human scaled
             const amtOldBn = bnum(amt.toString());
@@ -91,32 +79,12 @@ export class DystopiaStablePool extends UniswapV2Pool {
         }
     }
 
-    // TODO
-    // Using BigNumber.js decimalPlaces (dp), allows us to consider token decimal accuracy correctly,
-    // i.e. when using token with 2decimals 0.002 should be returned as 0
-    // Uses ROUND_UP mode (0)
     // calcInGivenOut
     _tokenInForExactTokenOut(
         poolPairData: PoolPairBase,
         amount: OldBigNumber
     ): OldBigNumber {
         if (amount.isNaN()) return amount;
-
-        try {
-            const amt = _calcInGivenOut(
-                poolPairData.balanceIn.toBigInt(),
-                poolPairData.balanceOut.toBigInt(),
-                parseFixed(
-                    amount.dp(poolPairData.decimalsOut, 1).toString(),
-                    poolPairData.decimalsOut
-                ).toBigInt(),
-                poolPairData.swapFee.toBigInt()
-            );
-            // return human scaled
-            const amtOldBn = bnum(amt.toString());
-            return scale(amtOldBn, -poolPairData.decimalsIn);
-        } catch (err) {
-            return ZERO;
-        }
+        return ZERO; // buy side is not supported
     }
 }

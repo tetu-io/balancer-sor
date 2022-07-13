@@ -49,7 +49,6 @@ export class SubgraphUniswapPoolDataService implements PoolDataService {
         public readonly config: {
             chainId: number;
             multiAddress: string;
-            vaultAddress: string;
             subgraphUrl: string;
             provider: Provider;
             onchain: boolean;

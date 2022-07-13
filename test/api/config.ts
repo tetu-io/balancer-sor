@@ -40,6 +40,11 @@ export const BALANCER_SUBGRAPH_URLS = {
         'https://api.thegraph.com/subgraphs/name/balancer-labs/balancer-polygon-v2',
 };
 
+export const DYSTOPIA_SUBGRAPH_URLS = {
+    [Network.POLYGON]:
+        'https://api.thegraph.com/subgraphs/name/dystopia-exchange/dystopia-v2',
+};
+
 // dexId (range 0-15) is used to show swap dex name on UI
 let dexId = 0;
 

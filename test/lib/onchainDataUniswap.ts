@@ -22,7 +22,7 @@ export async function getOnChainBalancesUniswap(
     const multicaller = new Multicaller(multiAddress, provider, pairAbi);
 
     subgraphPools.forEach((pool) => {
-        if (pool.poolType !== 'UniswapV2')
+        if (!['UniswapV2', 'DystopiaStable'].includes(pool.poolType))
             throw new Error(
                 `Pool type must be UniswapV2: ${pool.poolType} ${pool.id}`
             );

@@ -16,7 +16,7 @@ import { SubgraphPoolDataService } from '../lib/subgraphPoolDataService';
 import { SubgraphUniswapPoolDataService } from '../lib/subgraphUniswapPoolDataService';
 import { mockTokenPriceService } from '../lib/mockTokenPriceService';
 import { balancerVaultAddress, MULTIADDR } from './config';
-// import { CoingeckoTokenPriceService } from '../lib/coingeckoTokenPriceService';
+import { SubgraphDystopiaStablePoolDataService } from '../lib/subgraphDystopiaStablePoolDataService';
 
 export interface UniswapSubgraphData {
     name: string;
@@ -64,6 +64,7 @@ export async function init(
     multiAddress: string,
     sorConfig: SorConfig,
     balancerSubgraphUrl: string,
+    dystopiaSubgraphUrl: string,
     uniswapSubgraphs: UniswapSubgraphData[]
 ): Promise<SOR> {
     // Use the mock pool data service if you want to use pool data from a file. (for testing purposes etc.)
@@ -87,7 +88,6 @@ export async function init(
             new SubgraphUniswapPoolDataService(
                 {
                     chainId: networkId,
-                    vaultAddress: balancerVaultAddress,
                     multiAddress: MULTIADDR[networkId],
                     provider,
                     subgraphUrl: graph.url,
@@ -99,8 +99,22 @@ export async function init(
             )
     );
 
+    const subgraphDystopiaPoolDataService =
+        new SubgraphDystopiaStablePoolDataService(
+            {
+                chainId: networkId,
+                multiAddress,
+                provider,
+                subgraphUrl: dystopiaSubgraphUrl,
+                onchain: true, // do not use 'false' as balancer do not provide right data on subgraph only - without onchain data
+            },
+            'Dystopia',
+            0
+        );
+
     const subgraphPoolDataServices: PoolDataService[] = [
         subgraphBalancerPoolDataService,
+        subgraphDystopiaPoolDataService,
         ...subgraphUniswapPoolDataServices,
     ];
 

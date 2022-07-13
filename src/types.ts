@@ -52,6 +52,7 @@ export type PoolPairBase = {
     decimalsOut: number;
     balanceIn: BigNumber;
     balanceOut: BigNumber;
+    dystStable?: boolean;
 };
 
 export interface Swap {
@@ -99,6 +100,9 @@ export interface SubgraphPoolBase {
 
     // Gyro3 specific field
     gyro3PriceBounds?: Gyro3PriceBounds;
+
+    // Dystopia (Solidly) specific fields
+    dystStable?: boolean;
 }
 
 export type SubgraphToken = {

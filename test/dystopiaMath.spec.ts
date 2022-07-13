@@ -3,17 +3,14 @@
 import dotenv from 'dotenv'; // for INFURA=key
 dotenv.config();
 
-import { assert, expect } from 'chai';
+import { expect } from 'chai';
 import dystPairAbi from '../src/pools/dystopiaStablePool/DystPair.json';
 import dystFactorAbi from '../src/pools/dystopiaStablePool/DystFactory.json';
 import ERC20Abi from '../test/abi/ERC20.json';
 import { Contract } from '@ethersproject/contracts';
 import { Network, PROVIDER_URLS } from './testScripts/constants';
 import { JsonRpcProvider } from '@ethersproject/providers';
-import {
-    _calcInGivenOut,
-    _calcOutGivenIn,
-} from '../src/pools/dystopiaStablePool/dystopiaStableMath';
+import { _calcOutGivenIn } from '../src/pools/dystopiaStablePool/dystopiaMath';
 import { parseFixed } from '@ethersproject/bignumber';
 import { SWAP_FEE_FACTOR } from '../src/pools/dystopiaStablePool/dystopia-stable-pool';
 
@@ -44,27 +41,17 @@ describe('dystStableMath tests', function () {
             expect(symbol).is.eq('sAMM-USD+/USDC');
         });
 
-        it('dystStable _calcInGivenOut', async () => {
-            // Dystopia not supports Buy side - tokens in for exact tokens out
-            const amountIn = _calcInGivenOut(10n, 20n, 5n, 1n);
-            expect(amountIn).is.eq(0n);
-        });
-
         it('dystStable _calcOutGivenIn', async () => {
             const pairsLength = await factoryContract.allPairsLength();
             console.log('pairsLength', pairsLength.toString());
+            let maxDeviation = 0;
 
-            const skipPairs = [21, 27];
-            const startPair = 7; //7; // 7 - first stable pool
-            // for (let i = startPair; i < pairsLength; i++) {
-            const pairsToCheck = [
-                /*7, 10,*/ 11, 12, 13, 14, 19, 20, 24, 26, 27, 33, 41,
-            ];
-            for (const i of pairsToCheck) {
-                if (skipPairs.includes(i)) {
-                    console.log(i, '- skipped');
-                    continue;
-                }
+            const startPair = 1; //7; // 7 - first stable pool
+            for (let i = startPair; i < pairsLength; i++) {
+                // const pairsToCheck = [
+                //     7, 10, 11, 12, 13, 14, 19, 20, 24, 26, 27, 33, 41
+                // ];
+                // for (const i of pairsToCheck) {
 
                 const dystPairAddress = await factoryContract.allPairs(i);
                 console.log(i, 'dystPairAddress', dystPairAddress);
@@ -75,52 +62,56 @@ describe('dystStableMath tests', function () {
                     provider
                 );
 
-                // bypass non-stable pairs
-                if (!(await pairContract.stable())) continue;
-                console.log(
-                    'It is stable. Testing\n-----------------------------'
-                );
+                const stable = await pairContract.stable();
+                console.log('stable', stable);
 
                 const token0 = await pairContract.token0();
                 console.log('token0', token0);
-
-                const tokenContract = new Contract(token0, ERC20Abi, provider);
-
-                const decimalsIn = await tokenContract.decimals();
+                const token0Contract = new Contract(token0, ERC20Abi, provider);
+                const decimalsIn = await token0Contract.decimals();
                 console.log('decimalsIn', decimalsIn);
 
-                const amount = parseFixed('1', decimalsIn);
+                const token1 = await pairContract.token1();
+                console.log('token1', token1);
+                const token1Contract = new Contract(token1, ERC20Abi, provider);
+                const decimalsOut = await token1Contract.decimals();
+                console.log('decimalsOut', decimalsOut);
 
+                const amount = parseFixed('1', decimalsIn);
                 console.log('amount', amount.toString());
 
                 const r = await pairContract.getReserves();
                 console.log('reserves', r[0].toString(), r[1].toString());
+
+                const minReserve = 1000000;
+                if (r[0].lt(minReserve) || r[1].lt(minReserve)) {
+                    console.log('Reservers to low. Skipping...');
+                    continue;
+                }
 
                 const outOnchain = BigInt(
                     await pairContract.getAmountOut(amount, token0)
                 );
                 console.log('outOnchain ', outOnchain);
 
-                const DYST_SWAP_FEE_RATIO = 2000n; // https://github.com/dystopia-exchange/dystopia-contracts/blob/0bf82cef3d94f1e35c2dd0dc84a8db246cef3ca4/contracts/base/core/DystPair.sol#L41
-                const fee = 1000000000000000000n / DYST_SWAP_FEE_RATIO; // SOR uses 18 fixed points fee / ratio
+                const fee = 1000000000000000000n / SWAP_FEE_FACTOR; // SOR uses 18 fixed points fee / ratio
                 const outOffchain = _calcOutGivenIn(
                     r[0].toBigInt(),
                     r[1].toBigInt(),
                     amount.toBigInt(),
-                    fee
+                    fee,
+                    decimalsIn,
+                    decimalsOut,
+                    stable
                 );
                 console.log('outOffchain', outOffchain);
                 const deviation = 1 - Number(outOffchain) / Number(outOnchain);
                 console.log('deviation', (deviation * 100).toFixed(6), '%');
                 console.log('-----------------------------');
 
-                // assert.approximately(
-                //     Number(outOnchain),
-                //     Number(outOffchain),
-                //     Number(outOnchain / 10000n),
-                //     'wrong result'
-                // );
+                maxDeviation = Math.max(maxDeviation, deviation);
             }
-        }).timeout(1000000);
+            expect(maxDeviation).lt(0.00001, 'Deviation too big');
+        }).timeout(10000000);
     });
 });

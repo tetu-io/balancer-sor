@@ -6,6 +6,7 @@ import * as api from '../api/api';
 import {
     BALANCER_SUBGRAPH_URLS,
     CONTRACT_UTILS,
+    DYSTOPIA_SUBGRAPH_URLS,
     MULTIADDR,
     Network,
     PROVIDER_URLS,
@@ -23,6 +24,7 @@ export async function initAndGenerateTestData(
     contractUtilsAddress: string,
     sorConfig: SorConfig,
     balancerSubgraphUrl: string,
+    dystopiaSubgraphUrl: string,
     uniswapSubgraphs: UniswapSubgraphData[]
 ): Promise<void> {
     // Pools source can be Subgraph URL or pools data set passed directly
@@ -35,13 +37,14 @@ export async function initAndGenerateTestData(
         multiAddress,
         sorConfig,
         balancerSubgraphUrl,
+        dystopiaSubgraphUrl,
         uniswapSubgraphs
     );
 
     const dexes = api.getDexes(sor);
     console.log('dexes', dexes);
 
-    // Generate test data for multiswap2 contract
+    // Generate test data for multiswap2 contract (tetu-contracts-io project)
     await generateTestData(sor);
 }
 
@@ -51,6 +54,10 @@ async function generateTestData(sor: SOR) {
     const a = TOKENS[sor.config.chainId];
 
     const testSwaps = [
+        // Dystopia
+        { tokenIn: a.USDC, tokenOut: a.DYST, amount: 1000 },
+        { tokenIn: a.DYST, tokenOut: a.WMATIC, amount: 10000 },
+
         { tokenIn: a.USDC, tokenOut: a.WMATIC, amount: 100000 },
         { tokenIn: a.WMATIC, tokenOut: a.USDC, amount: 100000 },
         { tokenIn: a.BAL, tokenOut: a.SAND, amount: 1000 },
@@ -63,7 +70,6 @@ async function generateTestData(sor: SOR) {
         { tokenIn: a.SUSHI, tokenOut: a.BAL, amount: 1000 },
         { tokenIn: a.SUSHI, tokenOut: a.TETU, amount: 1000 },
         { tokenIn: a.TETU, tokenOut: a.SUSHI, amount: 1000 },
-        // TO DO WMATIC, MATIC
     ];
 
     interface ITestData {
@@ -126,5 +132,6 @@ initAndGenerateTestData(
     CONTRACT_UTILS[networkId],
     SOR_CONFIG[networkId],
     BALANCER_SUBGRAPH_URLS[networkId],
+    DYSTOPIA_SUBGRAPH_URLS[networkId],
     UNISWAP_SUBGRAPHS[networkId]
 ).then();

@@ -73,5 +73,10 @@ export const TOKENS = {
             decimals: 18,
             symbol: 'SAND',
         },
+        DYST: {
+            address: '0x39aB6574c289c3Ae4d88500eEc792AB5B947A5Eb'.toLowerCase(),
+            decimals: 18,
+            symbol: 'DYST',
+        },
     },
 };

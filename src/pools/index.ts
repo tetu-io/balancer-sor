@@ -18,6 +18,7 @@ import {
     PoolPairBase,
     PoolTypes,
 } from '../types';
+import { DystopiaStablePool } from './dystopiaStablePool/dystopiaStablePool';
 
 export function parseNewPool(
     pool: SubgraphPoolBase,
@@ -61,6 +62,8 @@ export function parseNewPool(
             newPool = PhantomStablePool.fromPool(pool);
         } else if (pool.poolType === 'UniswapV2') {
             newPool = UniswapV2Pool.fromPool(pool);
+        } else if (pool.poolType === 'DystopiaStable') {
+            newPool = DystopiaStablePool.fromPool(pool);
         } else {
             console.error(
                 `Unknown pool type or type field missing: ${pool.poolType} ${pool.id}`

@@ -1,7 +1,7 @@
 import { MathSol } from '../../utils/basicOperations';
 
-export const RESERVE_LIMIT = BigInt(2) ** BigInt(112) - BigInt(1);
-export const SWAP_FEE_FACTOR = BigInt(2000);
+export const RESERVE_LIMIT = 2n ** 112n - 1n;
+export const SWAP_FEE_FACTOR = 2000n;
 
 export const BI_POWS = new Array(37)
     .fill(undefined)
@@ -48,7 +48,7 @@ function _getY(x0: bigint, xy: bigint, y: bigint): bigint {
             const dy = ((k - xy) * e18) / _d(x0, y);
             y = y - dy;
         }
-        if (_closeTo(y, yPrev, BigInt(1))) {
+        if (_closeTo(y, yPrev, 1n)) {
             break;
         }
     }
@@ -76,8 +76,8 @@ function getSellPrice(
     srcAmount: bigint,
     fee?: bigint
 ): bigint {
-    if (BigInt(reservesIn) + srcAmount > RESERVE_LIMIT) {
-        return BigInt(0);
+    if (reservesIn + srcAmount > RESERVE_LIMIT) {
+        return 0n;
     }
 
     const fees = fee
@@ -87,8 +87,8 @@ function getSellPrice(
 
     const reservesInN = BigInt(reservesIn);
     const reservesOutN = BigInt(reservesOut);
-    const decimalsInN = BigInt(decimalsIn);
-    const decimalsOutN = BigInt(decimalsOut);
+    const decimalsInN = 10n ** BigInt(decimalsIn);
+    const decimalsOutN = 10n ** BigInt(decimalsOut);
 
     const xy = _k(reservesInN, reservesOutN, decimalsInN, decimalsOutN);
     const reserveA = (reservesInN * e18) / decimalsInN;
