@@ -33,11 +33,9 @@ describe('dystStableMath tests', function () {
             console.log('pairsLength', pairsLength.toString());
             let maxDeviation = 0;
 
-            const startPair = 1; //7; // 7 - first stable pool
+            const startPair = 1;
             for (let i = startPair; i < pairsLength; i++) {
-                // const pairsToCheck = [
-                //     7, 10, 11, 12, 13, 14, 19, 20, 24, 26, 27, 33, 41
-                // ];
+                // const pairsToCheck = [47, 66];
                 // for (const i of pairsToCheck) {
 
                 const dystPairAddress = await factoryContract.allPairs(i);
@@ -71,8 +69,12 @@ describe('dystStableMath tests', function () {
                 console.log('reserves', r[0].toString(), r[1].toString());
 
                 const minReserve = 1000000;
-                if (r[0].lt(minReserve) || r[1].lt(minReserve)) {
-                    console.log('Reservers to low. Skipping...');
+                if (
+                    r[0].div(4).lt(amount) ||
+                    r[0].lt(minReserve) ||
+                    r[1].lt(minReserve)
+                ) {
+                    console.log('Reserves to low. Skipping...');
                     continue;
                 }
 

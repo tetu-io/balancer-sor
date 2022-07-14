@@ -16,9 +16,9 @@ export function _calcOutGivenIn(
 ): bigint {
     // is it necessary to check ranges of variables? same for the other functions
     const amountInWithFee = subtractFee(amountIn, fee);
-    const numerator = MathSol.mulDownFixed(amountInWithFee, balanceOut);
+    const numerator = MathSol.mul(amountInWithFee, balanceOut);
     const denominator = MathSol.add(balanceIn, amountInWithFee);
-    return MathSol.divDownFixed(numerator, denominator);
+    return MathSol.divDown(numerator, denominator);
 }
 
 // PairType = 'token->token'
@@ -29,9 +29,10 @@ export function _calcInGivenOut(
     amountOut: bigint,
     fee: bigint
 ): bigint {
-    const numerator = MathSol.mulDownFixed(balanceIn, amountOut);
+    // TODO uniswapV2Math._calcInGivenOut do not use xxxFixed - troubles with rounding tokens
+    const numerator = MathSol.mulDownFixed(balanceIn, amountOut); // TODO  mulDownFixed -> mul
     const denominator = subtractFee(MathSol.sub(balanceOut, amountOut), fee);
-    return MathSol.divUpFixed(numerator, denominator);
+    return MathSol.divUpFixed(numerator, denominator); // TODO divUpFixed -> divUp
 }
 
 function subtractFee(amount: bigint, fee: bigint): bigint {
@@ -114,6 +115,7 @@ export function _spotPriceAfterSwapTokenInForExactTokenOutBigInt(
 export function _spotPriceAfterSwapTokenInForExactBPTOut(
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     amount: OldBigNumber,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     poolPairData: PoolPairBase
 ): OldBigNumber {
     return bnum(0); // UniswapV2 does not support BPT swaps // TODO check what return 0 is right idea
