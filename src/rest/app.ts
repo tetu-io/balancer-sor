@@ -6,6 +6,7 @@ import * as Tracing from '@sentry/tracing';
 import {
     BALANCER_SUBGRAPH_URLS,
     CONTRACT_UTILS,
+    DYSTOPIA_SUBGRAPH_URLS,
     MULTIADDR,
     Network,
     PROVIDER_URLS,
@@ -126,6 +127,7 @@ async function initialize() {
         MULTIADDR[networkId],
         SOR_CONFIG[networkId],
         BALANCER_SUBGRAPH_URLS[networkId],
+        DYSTOPIA_SUBGRAPH_URLS[networkId],
         UNISWAP_SUBGRAPHS[networkId]
     );
     dexes = api.getDexes(sor); // cache dexes

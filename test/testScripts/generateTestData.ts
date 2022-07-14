@@ -54,11 +54,12 @@ async function generateTestData(sor: SOR) {
     const a = TOKENS[sor.config.chainId];
 
     const testSwaps = [
+        // Coverage tests
+        { tokenIn: a.USDC, tokenOut: a.WMATIC, amount: 100000 },
         // Dystopia
         { tokenIn: a.USDC, tokenOut: a.DYST, amount: 1000 },
         { tokenIn: a.DYST, tokenOut: a.WMATIC, amount: 10000 },
 
-        { tokenIn: a.USDC, tokenOut: a.WMATIC, amount: 100000 },
         { tokenIn: a.WMATIC, tokenOut: a.USDC, amount: 100000 },
         { tokenIn: a.BAL, tokenOut: a.SAND, amount: 1000 },
         { tokenIn: a.SAND, tokenOut: a.BAL, amount: 1000 },
