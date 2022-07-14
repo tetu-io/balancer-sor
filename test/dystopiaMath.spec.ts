@@ -11,6 +11,7 @@ import { Contract } from '@ethersproject/contracts';
 import { Network, PROVIDER_URLS } from './testScripts/constants';
 import { JsonRpcProvider } from '@ethersproject/providers';
 import { _calcOutGivenIn } from '../src/pools/dystopiaStablePool/dystopiaMath';
+import { _calcOutGivenIn as _calcOutGivenInUniswap } from '../src/pools/uniswapV2Pool/uniswapV2Math';
 import { parseFixed } from '@ethersproject/bignumber';
 import { SWAP_FEE_FACTOR } from '../src/pools/dystopiaStablePool/dystopia-stable-pool';
 
@@ -26,20 +27,6 @@ describe('dystStableMath tests', function () {
             dystFactorAbi,
             provider
         );
-
-        const dystStablePairAddress =
-            '0x421a018cc5839c4c0300afb21c725776dc389b1a'; // https://info.dystopia.exchange/pair/0x421a018cc5839c4c0300afb21c725776dc389b1a
-        const pairContract = new Contract(
-            dystStablePairAddress,
-            dystPairAbi,
-            provider
-        );
-
-        it('dystStable symbol check', async () => {
-            const symbol = await pairContract.symbol();
-            console.log('symbol', symbol);
-            expect(symbol).is.eq('sAMM-USD+/USDC');
-        });
 
         it('dystStable _calcOutGivenIn', async () => {
             const pairsLength = await factoryContract.allPairsLength();
@@ -95,15 +82,21 @@ describe('dystStableMath tests', function () {
                 console.log('outOnchain ', outOnchain);
 
                 const fee = 1000000000000000000n / SWAP_FEE_FACTOR; // SOR uses 18 fixed points fee / ratio
-                const outOffchain = _calcOutGivenIn(
-                    r[0].toBigInt(),
-                    r[1].toBigInt(),
-                    amount.toBigInt(),
-                    fee,
-                    decimalsIn,
-                    decimalsOut,
-                    stable
-                );
+                const outOffchain = stable
+                    ? _calcOutGivenIn(
+                          r[0].toBigInt(),
+                          r[1].toBigInt(),
+                          amount.toBigInt(),
+                          fee,
+                          decimalsIn,
+                          decimalsOut
+                      )
+                    : _calcOutGivenInUniswap(
+                          r[0].toBigInt(),
+                          r[1].toBigInt(),
+                          amount.toBigInt(),
+                          fee
+                      );
                 console.log('outOffchain', outOffchain);
                 const deviation = 1 - Number(outOffchain) / Number(outOnchain);
                 console.log('deviation', (deviation * 100).toFixed(6), '%');
