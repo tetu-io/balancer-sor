@@ -121,8 +121,8 @@ export async function init(
     // console.log(JSON.stringify(subgraphPools));
     // console.log(`-------`);
 
-    /// CoinGecko does not work for TETU end some rare tokens // may be add another price source?
-    // Also, it slow downs route building. Prefer do not use it!
+    /// CoinGecko does not work for TETU end some rare tokens // may be to add another price source?
+    // Also, it slow-downs route building. Prefer do not use it!
     // const coingeckoTokenPriceService = new CoingeckoTokenPriceService(
     //     networkId
     // );
