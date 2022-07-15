@@ -44,7 +44,7 @@ app.use(Sentry.Handlers.tracingHandler());
 app.use('/demo', express.static('demo'));
 
 const port = process.env.SOR_PORT || 8080;
-const API_VERSION = '1.0.3';
+const API_VERSION = '1.1.0';
 
 const networkId = Network.POLYGON;
 let sor;

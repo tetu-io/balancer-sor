@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<!--App Version 1.0.1-->
 <html lang="en">
     <head>
         <meta charset="UTF-8" />
@@ -275,17 +276,17 @@
                 '0x17e9C5b37283ac5fBE527011CeC257b832f03eb3'.toLowerCase(),
                 '0xc250e9987a032acac293d838726c511e6e1c029d'.toLowerCase(),
                 '0xBbba073C31bF03b8ACf7c28EF0738DeCF3695683'.toLowerCase(),
+                '0x39aB6574c289c3Ae4d88500eEc792AB5B947A5Eb'.toLowerCase(), //DYST
             ];
 
-            const version = '1.0.0 alpha 1';
+            const version = '1.1.0';
             console.log('version', version);
 
-            if (typeof Sentry !== 'undefined')
-                Sentry.init({
-                    dsn: 'https://d553f43fc5e14e669380f8af8cd050d1@o1270885.ingest.sentry.io/6535410',
-                    integrations: [new Sentry.BrowserTracing(undefined)],
-                    tracesSampleRate: 1.0,
-                });
+            Sentry.init({
+                dsn: 'https://d553f43fc5e14e669380f8af8cd050d1@o1270885.ingest.sentry.io/6535410',
+                integrations: [new Sentry.BrowserTracing(undefined)],
+                tracesSampleRate: 1.0,
+            });
 
             const dev = window.location.hostname === 'localhost';
             const apiUrl = dev
@@ -296,7 +297,8 @@
             const gasLimit = 3000000;
             // noinspection SpellCheckingInspection
             const multiSwapAddress =
-                '0x78043B892E7b3bADdF1A9488129a1063a0aCF7E5';
+                '0x05f14e91f8a0aEe60dCeC853a2e5F03ae8A02620';
+
             let excludePlatforms = JSON.parse(
                 localStorage['excludePlatforms'] ?? '[]'
             );
