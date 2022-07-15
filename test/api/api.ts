@@ -67,10 +67,6 @@ export async function init(
     dystopiaSubgraphUrl: string,
     uniswapSubgraphs: UniswapSubgraphData[]
 ): Promise<SOR> {
-    // Use the mock pool data service if you want to use pool data from a file. (for testing purposes etc.)
-    // const poolsSource = require('../testData/testPools/gusdBug.json');
-    // mockPoolDataService.setPools(poolsSource);
-
     const subgraphBalancerPoolDataService = new SubgraphPoolDataService(
         {
             chainId: networkId,
@@ -126,7 +122,7 @@ export async function init(
     // console.log(`-------`);
 
     /// CoinGecko does not work for TETU end some rare tokens // may be add another price source?
-    // Also it slow downs route building. Prefer do not use it!
+    // Also, it slow downs route building. Prefer do not use it!
     // const coingeckoTokenPriceService = new CoingeckoTokenPriceService(
     //     networkId
     // );

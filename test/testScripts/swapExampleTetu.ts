@@ -7,6 +7,7 @@ import {
     BALANCER_SUBGRAPH_URLS,
     balancerVaultAddress,
     CONTRACT_UTILS,
+    DYSTOPIA_SUBGRAPH_URLS,
     MULTIADDR,
     Network,
     PROVIDER_URLS,
@@ -28,6 +29,7 @@ export async function swapExample(
     contractUtilsAddress: string,
     sorConfig: SorConfig,
     balancerSubgraphUrl: string,
+    dystopiaSubgraphUrl: string,
     uniswapSubgraphs: UniswapSubgraphData[],
     tokenIn: ITokenData,
     tokenOut: ITokenData,
@@ -44,6 +46,7 @@ export async function swapExample(
         multiAddress,
         sorConfig,
         balancerSubgraphUrl,
+        dystopiaSubgraphUrl,
         uniswapSubgraphs
     );
 
@@ -149,6 +152,7 @@ swapExample(
     CONTRACT_UTILS[networkId],
     SOR_CONFIG[networkId],
     BALANCER_SUBGRAPH_URLS[networkId],
+    DYSTOPIA_SUBGRAPH_URLS[networkId],
     UNISWAP_SUBGRAPHS[networkId],
     TOKENS[networkId].BAL,
     TOKENS[networkId].TETU,
