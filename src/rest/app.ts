@@ -65,23 +65,28 @@ app.all('/info', (req, res) => {
     });
 });
 
-const _SERVER_NOT_READY = 'Error: Server not ready';
+const _SERVER_NOT_READY = 'Server not ready';
+
+function returnError(res, errorMessage = _SERVER_NOT_READY) {
+    const json = JSON.stringify({ error: errorMessage });
+    res.status(400).send(json);
+}
 
 // ------------ DEXES --------------
 app.all('/dexes', (req, res) => {
     if (dexes) res.json(dexes);
-    else res.status(400).send(_SERVER_NOT_READY);
+    else returnError(res);
 });
 
 // ------------ TOKENS --------------
 app.all('/tokens', (req, res) => {
     if (tokens) res.json(tokens);
-    else res.status(400).send(_SERVER_NOT_READY);
+    else returnError(res);
 });
 
 // ------------ SWAP --------------
 app.all('/swap', async (req, res) => {
-    if (!sor) res.status(400).send(_SERVER_NOT_READY);
+    if (!sor) returnError(res);
     else
         try {
             const query = req.query;
@@ -97,7 +102,7 @@ app.all('/swap', async (req, res) => {
             res.json(swapInfo);
         } catch (e) {
             console.error(e);
-            res.status(400).send('Error:' + e);
+            returnError(res, e.toString());
         }
 });
 
