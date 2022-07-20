@@ -15,8 +15,8 @@ import { _calcOutGivenIn as _calcOutGivenInUniswap } from '../src/pools/uniswapV
 import { parseFixed } from '@ethersproject/bignumber';
 import { SWAP_FEE_FACTOR } from '../src/pools/dystopiaStablePool/dystopia-stable-pool';
 
-describe('dystStableMath tests', function () {
-    this.timeout(20000);
+describe('dystopiaMath tests', function () {
+    this.timeout(30000);
     context('spot prices', async () => {
         const networkId = Network.POLYGON;
         const provider = new JsonRpcProvider(PROVIDER_URLS[networkId]);
@@ -28,7 +28,7 @@ describe('dystStableMath tests', function () {
             provider
         );
 
-        it('dystStable _calcOutGivenIn', async () => {
+        it('dystopia _calcOutGivenIn', async () => {
             const pairsLength = await factoryContract.allPairsLength();
             console.log('pairsLength', pairsLength.toString());
             let maxDeviation = 0;

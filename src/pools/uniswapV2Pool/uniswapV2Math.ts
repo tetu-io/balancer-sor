@@ -29,10 +29,9 @@ export function _calcInGivenOut(
     amountOut: bigint,
     fee: bigint
 ): bigint {
-    // TODO uniswapV2Math._calcInGivenOut do not use xxxFixed - troubles with rounding tokens
-    const numerator = MathSol.mulDownFixed(balanceIn, amountOut); // TODO  mulDownFixed -> mul
+    const numerator = MathSol.mul(balanceIn, amountOut);
     const denominator = subtractFee(MathSol.sub(balanceOut, amountOut), fee);
-    return MathSol.divUpFixed(numerator, denominator); // TODO divUpFixed -> divUp
+    return MathSol.divUp(numerator, denominator);
 }
 
 function subtractFee(amount: bigint, fee: bigint): bigint {

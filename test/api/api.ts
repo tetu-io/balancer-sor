@@ -14,9 +14,9 @@ import {
 import ContractUtilsAbi from '../abi/ContractUtils.json';
 import { SubgraphPoolDataService } from '../lib/subgraphPoolDataService';
 import { SubgraphUniswapPoolDataService } from '../lib/subgraphUniswapPoolDataService';
+import { SubgraphDystopiaStablePoolDataService } from '../lib/subgraphDystopiaStablePoolDataService';
 import { mockTokenPriceService } from '../lib/mockTokenPriceService';
 import { balancerVaultAddress, MULTIADDR } from './config';
-import { SubgraphDystopiaStablePoolDataService } from '../lib/subgraphDystopiaStablePoolDataService';
 
 export interface UniswapSubgraphData {
     name: string;
