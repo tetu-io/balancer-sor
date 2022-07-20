@@ -75,7 +75,7 @@ function subtractFeeNum(amount: number, fee: number): number {
 //     return MathSol.divUpFixed(amount, MathSol.complementFixed(fee));
 // }
 
-// TO DO - Swap old versions of these in Pool for the BigInt version
+/*// TO DO - Swap old versions of these in Pool for the BigInt version
 // PairType = 'token->token'
 // SwapType = 'swapExactIn'
 export function _spotPriceAfterSwapExactTokenInForTokenOutBigInt(
@@ -118,7 +118,7 @@ export function _spotPriceAfterSwapTokenInForExactBPTOut(
     poolPairData: PoolPairBase
 ): OldBigNumber {
     return bnum(0); // UniswapV2 does not support BPT swaps // TODO check what return 0 is right idea
-}
+}*/
 
 /////////
 ///  Derivatives of spotPriceAfterSwap

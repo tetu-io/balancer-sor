@@ -18,10 +18,10 @@ import {
 import {
     _calcOutGivenIn,
     _calcInGivenOut,
+    _derivativeSpotPriceAfterSwapTokenInForExactTokenOut,
     _spotPriceAfterSwapExactTokenInForTokenOut,
     _spotPriceAfterSwapTokenInForExactTokenOut,
     _derivativeSpotPriceAfterSwapExactTokenInForTokenOut,
-    _derivativeSpotPriceAfterSwapTokenInForExactTokenOut,
 } from './uniswapV2Math';
 import { BigNumber, formatFixed, parseFixed } from '@ethersproject/bignumber';
 import { WeiPerEther as ONE } from '@ethersproject/constants';
@@ -44,7 +44,7 @@ export class UniswapV2Pool implements PoolBase {
     MAX_OUT_RATIO = parseFixed('0.3', 18);
     isLBP = false;
 
-    static fromPool(pool: SubgraphPoolBase, isLBP?: boolean): UniswapV2Pool {
+    static fromPool(pool: SubgraphPoolBase): UniswapV2Pool {
         if (!pool.totalWeight)
             throw new Error('Uniswap2Pool missing totalWeight');
         const uniswapV2Pool = new UniswapV2Pool(
@@ -55,7 +55,6 @@ export class UniswapV2Pool implements PoolBase {
             pool.tokens as UniswapV2PoolToken[],
             pool.tokensList
         );
-        if (isLBP) uniswapV2Pool.isLBP = true;
         return uniswapV2Pool;
     }
 

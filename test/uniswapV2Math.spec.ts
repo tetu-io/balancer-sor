@@ -17,6 +17,8 @@ import {
 } from '../src/pools/uniswapV2Pool/uniswapV2Math';
 import { parseFixed } from '@ethersproject/bignumber';
 
+const _MAX_PAIRS_TO_TEST = 20;
+
 describe('uniswapV2Math tests', function () {
     this.timeout(30000);
     context('spot prices', async () => {
@@ -39,7 +41,6 @@ describe('uniswapV2Math tests', function () {
             let maxDeviation = 0;
 
             const startPair = 1;
-            const _MAX_PAIRS_TO_TEST = 10;
             const lastPair = Math.min(pairsLength, _MAX_PAIRS_TO_TEST);
             for (let i = startPair; i < lastPair; i++) {
                 // const pairsToCheck = [47, 66];

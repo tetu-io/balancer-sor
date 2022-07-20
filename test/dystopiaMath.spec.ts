@@ -15,6 +15,8 @@ import { _calcOutGivenIn as _calcOutGivenInUniswap } from '../src/pools/uniswapV
 import { parseFixed } from '@ethersproject/bignumber';
 import { SWAP_FEE_FACTOR } from '../src/pools/dystopiaStablePool/dystopia-stable-pool';
 
+const _MAX_PAIRS_TO_TEST = 30;
+
 describe('dystopiaMath tests', function () {
     this.timeout(30000);
     context('spot prices', async () => {
@@ -34,10 +36,8 @@ describe('dystopiaMath tests', function () {
             let maxDeviation = 0;
 
             const startPair = 1;
-            for (let i = startPair; i < pairsLength; i++) {
-                // const pairsToCheck = [47, 66];
-                // for (const i of pairsToCheck) {
-
+            const lastPair = Math.min(pairsLength, _MAX_PAIRS_TO_TEST);
+            for (let i = startPair; i < lastPair; i++) {
                 const dystPairAddress = await factoryContract.allPairs(i);
                 console.log(i, 'dystPairAddress', dystPairAddress);
 
