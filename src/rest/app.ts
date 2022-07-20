@@ -122,27 +122,42 @@ Object.defineProperties(BigNumber.prototype, {
     },
 });
 
+function wait(ms) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 async function initialize() {
     console.log(`SOR (Smart Order Router) v${API_VERSION}`);
     provider = new JsonRpcProvider(PROVIDER_URLS[networkId]);
 
-    sor = await api.init(
-        networkId,
-        provider,
-        MULTIADDR[networkId],
-        SOR_CONFIG[networkId],
-        BALANCER_SUBGRAPH_URLS[networkId],
-        DYSTOPIA_SUBGRAPH_URLS[networkId],
-        UNISWAP_SUBGRAPHS[networkId]
-    );
-    dexes = api.getDexes(sor); // cache dexes
+    let success = false;
+    do {
+        try {
+            sor = await api.init(
+                networkId,
+                provider,
+                MULTIADDR[networkId],
+                SOR_CONFIG[networkId],
+                BALANCER_SUBGRAPH_URLS[networkId],
+                DYSTOPIA_SUBGRAPH_URLS[networkId],
+                UNISWAP_SUBGRAPHS[networkId]
+            );
 
-    if (!process.env.MULTISWAP_NO_UPDATE) {
-        setInterval(updatePools, 60 * 1000);
-        setInterval(updateTokens, 30 * 60 * 1000);
-    }
+            dexes = api.getDexes(sor); // cache dexes
 
-    await updateTokens();
+            if (!process.env.MULTISWAP_NO_UPDATE) {
+                setInterval(updatePools, 60 * 1000);
+                setInterval(updateTokens, 30 * 60 * 1000);
+            }
+
+            await updateTokens();
+            success = true;
+        } catch (e) {
+            console.error(e);
+            console.log('Repeating initialization...');
+            await wait(1000);
+        }
+    } while (!success);
 
     console.log(`\nReady.`);
 }
