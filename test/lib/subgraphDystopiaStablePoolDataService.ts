@@ -85,7 +85,7 @@ export class SubgraphDystopiaStablePoolDataService implements PoolDataService {
                     (this.dexId ? this.dexId.toString(16) : '0'),
                 address: pool.id,
                 poolType: pool.isStable ? 'DystopiaStable' : 'UniswapV2',
-                swapFee: this.config.swapFee ?? '0.005',
+                swapFee: this.config.swapFee ?? '0.0005',
                 swapEnabled: true,
                 totalShares: pool.totalSupply,
                 tokens: [

@@ -48,7 +48,6 @@ export class DystopiaStablePool extends UniswapV2Pool {
         return dystopiaStablePool;
     }
 
-    // TODO
     // Using BigNumber.js decimalPlaces (dp), allows us to consider token decimal accuracy correctly,
     // i.e. when using token with 2decimals 0.002 should be returned as 0
     // Uses ROUND_DOWN mode (1)
