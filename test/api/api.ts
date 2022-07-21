@@ -218,14 +218,14 @@ export async function getSwap(
     return swapInfo;
 }
 
-interface IDex {
+export interface IDex {
     name?: string;
     dexType?: string;
     mask?: string;
     dexId?: number;
 }
 
-type IDexes = IDex[];
+export type IDexes = IDex[];
 
 export function getDexes(sor: SOR): IDexes {
     const dataServices = sor.poolDataServiceOrServices as PoolDataService[];
@@ -237,4 +237,8 @@ export function getDexes(sor: SOR): IDexes {
             dexId: ds.dexId,
         } as IDex;
     });
+}
+
+export function wait(ms: number): Promise<void> {
+    return new Promise((resolve) => setTimeout(resolve, ms));
 }

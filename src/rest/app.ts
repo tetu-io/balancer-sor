@@ -16,6 +16,7 @@ import {
 import { JsonRpcProvider } from '@ethersproject/providers';
 import * as api from '../../test/api/api';
 import { BigNumber } from '@ethersproject/bignumber';
+import { wait } from '../../test/api/api';
 const app = express();
 
 Sentry.init({
@@ -122,10 +123,6 @@ Object.defineProperties(BigNumber.prototype, {
     },
 });
 
-function wait(ms) {
-    return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
 async function initialize() {
     console.log(`SOR (Smart Order Router) v${API_VERSION}`);
     provider = new JsonRpcProvider(PROVIDER_URLS[networkId]);
@@ -155,7 +152,7 @@ async function initialize() {
         } catch (e) {
             console.error(e);
             console.log('Repeating initialization...');
-            await wait(1000);
+            await wait(2000);
         }
     } while (!success);
 
@@ -174,7 +171,7 @@ async function updatePools() {
         let fetched;
         do {
             fetched = await sor.fetchPools();
-            if (!fetched) await sleep(1000);
+            if (!fetched) await sleep(2000);
         } while (!fetched);
     }
     console.timeEnd('fetchPools');
