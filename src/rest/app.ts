@@ -45,7 +45,7 @@ app.use(Sentry.Handlers.tracingHandler());
 app.use('/demo', express.static('demo'));
 
 const port = process.env.SOR_PORT || 8080;
-const API_VERSION = '1.1.1';
+const APP_VERSION = '1.1.2';
 
 const networkId = Network.POLYGON;
 let sor;
@@ -67,7 +67,7 @@ app.all('/info', (req, res) => {
 
     res.json({
         title: 'SOR (Smart Order Router)',
-        version: API_VERSION,
+        version: APP_VERSION,
         serverReady: serverReady,
     });
 });
@@ -133,7 +133,7 @@ Object.defineProperties(BigNumber.prototype, {
 });
 
 async function initialize() {
-    console.log(`SOR (Smart Order Router) v${API_VERSION}`);
+    console.log(`SOR (Smart Order Router) v${APP_VERSION}`);
     provider = new JsonRpcProvider(PROVIDER_URLS[networkId]);
 
     let success = false;
