@@ -16,19 +16,7 @@ import {
     UNISWAP_SUBGRAPHS,
 } from './api/config';
 import { JsonRpcProvider } from '@ethersproject/providers';
-
-const testTokens = {
-    WMATIC: {
-        address: '0x0d500b1d8e8ef31e21c99d1db9a6444d3adf1270',
-        decimals: 18,
-        symbol: 'WMATIC',
-    },
-    USDC: {
-        address: '0x2791bca1f2de4661ed88a30c99a7a9449aa84174',
-        decimals: 6,
-        symbol: 'USDC',
-    },
-};
+import { testTokens } from './api-test-data';
 
 const networkId = Network.POLYGON;
 let sor;
@@ -116,7 +104,7 @@ describe('API tests', function () {
     });
 
     it('swap (no route)', async function () {
-        const amount = '0'; // 1 USD
+        const amount = '0';
         const swap = await api.getSwap(
             sor,
             testTokens.USDC,
@@ -126,15 +114,13 @@ describe('API tests', function () {
         );
         console.log('swap', swap);
 
-        expect(swap.tokenIn).eq('');
-        expect(swap.tokenOut).eq('');
-        expect(swap.swapAmount.toString()).eq(amount);
-
         expect(swap.swaps.length).eq(0, 'swaps length must be 0');
         expect(swap.tokenAddresses.length).eq(
             0,
             'token addresses (assets) length must be 0'
         );
-        expect(swap.returnAmount.toString()).eq('0', 'returnAmount must be 0');
+
+        expect(swap.tokenIn).eq('');
+        expect(swap.tokenOut).eq('');
     });
 });
