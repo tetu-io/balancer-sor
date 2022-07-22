@@ -106,9 +106,9 @@ app.all('/swap', async (req, res) => {
                 swapRequest.swapAmount,
                 swapRequest.excludePlatforms
             );
-            console.log('swapInfo', swapInfo);
-            const json = JSON.stringify(swapInfo, undefined, ' ');
-            console.log('json', json);
+            // console.log('swapInfo', swapInfo);
+            const json = JSON.stringify(swapInfo, undefined, '  ');
+            console.log('swapInfo json', json);
             res.json(swapInfo);
         } catch (e) {
             console.error(e);
