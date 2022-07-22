@@ -38,7 +38,7 @@ export class PoolCacher {
                         success = false,
                         tries = 0;
                     // sometimes Balancer getPool returns error and []
-                    // lets repeat
+                    // lets repeat on error
                     do {
                         try {
                             tries++;
