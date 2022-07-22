@@ -2,6 +2,7 @@ import fetch from 'isomorphic-fetch';
 import { PoolDataService, SubgraphPoolBase } from '../../src';
 import { getOnChainBalances } from './onchainData';
 import { Provider } from '@ethersproject/providers';
+import { wait } from '../../src/utils/tools';
 
 const queryWithLinear = `
       {
@@ -158,20 +159,34 @@ export class SubgraphPoolDataService implements PoolDataService {
 
     public async getPools(): Promise<SubgraphPoolBase[]> {
         const timeIdSubgraph = 'Subgraph getPools (balancer)';
-        console.time(timeIdSubgraph);
-        const response = await fetch(this.config.subgraphUrl, {
-            method: 'POST',
-            headers: {
-                Accept: 'application/json',
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ query: Query[this.config.chainId] }),
-        });
 
-        const { data } = await response.json();
-        console.timeEnd(timeIdSubgraph);
+        let pools,
+            data,
+            tries = 0;
+        do {
+            console.time(timeIdSubgraph);
+            try {
+                const response = await fetch(this.config.subgraphUrl, {
+                    method: 'POST',
+                    headers: {
+                        Accept: 'application/json',
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ query: Query[this.config.chainId] }),
+                });
 
-        const pools = [...data.pool0, ...data.pool1000];
+                const json = await response.json();
+                data = json.data;
+                pools = [...data.pool0, ...data.pool1000];
+            } catch (e) {
+                await wait(2000);
+            } finally {
+                console.timeEnd(timeIdSubgraph);
+                tries++;
+            }
+        } while (!data && tries < 5);
+
+        // fill platform to all pools
         for (const pool of pools) pool.platform = this.name;
 
         if (this.config.onchain) {

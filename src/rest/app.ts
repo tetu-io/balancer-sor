@@ -16,7 +16,7 @@ import {
 import { JsonRpcProvider } from '@ethersproject/providers';
 import * as api from '../../test/api/api';
 import { BigNumber } from '@ethersproject/bignumber';
-import { wait } from '../../test/api/api';
+import { wait } from '../utils/tools';
 const app = express();
 
 Sentry.init({
@@ -45,7 +45,7 @@ app.use(Sentry.Handlers.tracingHandler());
 app.use('/demo', express.static('demo'));
 
 const port = process.env.SOR_PORT || 8080;
-const API_VERSION = '1.1.0';
+const APP_VERSION = '1.1.2';
 
 const networkId = Network.POLYGON;
 let sor;
@@ -60,9 +60,15 @@ app.all('/', (req, res) => {
 
 // ------------ INFO --------------
 app.all('/info', (req, res) => {
+    const serverReady = Boolean(
+        sor?.havePools() && Object.keys(tokens || {}).length > 0
+    );
+    console.log('serverReady', serverReady);
+
     res.json({
         title: 'SOR (Smart Order Router)',
-        version: API_VERSION,
+        version: APP_VERSION,
+        serverReady: serverReady,
     });
 });
 
@@ -100,6 +106,9 @@ app.all('/swap', async (req, res) => {
                 swapRequest.swapAmount,
                 swapRequest.excludePlatforms
             );
+            console.log('swapInfo', swapInfo);
+            const json = JSON.stringify(swapInfo, undefined, ' ');
+            console.log('json', json);
             res.json(swapInfo);
         } catch (e) {
             console.error(e);
@@ -124,7 +133,7 @@ Object.defineProperties(BigNumber.prototype, {
 });
 
 async function initialize() {
-    console.log(`SOR (Smart Order Router) v${API_VERSION}`);
+    console.log(`SOR (Smart Order Router) v${APP_VERSION}`);
     provider = new JsonRpcProvider(PROVIDER_URLS[networkId]);
 
     let success = false;

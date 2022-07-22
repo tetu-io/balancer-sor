@@ -25,7 +25,7 @@ export interface UniswapSubgraphData {
     swapFee: string;
 }
 
-export const _SLIPPAGE_DENOMINATOR = 10000;
+// export const _SLIPPAGE_DENOMINATOR = 10000;
 
 interface ITokens {
     [address: string]: ITokenData;
@@ -149,9 +149,9 @@ export async function initSOR(
 ): Promise<SOR> {
     const sor = new SOR(provider, config, poolDataServices, tokenPriceService);
     console.log('Fetching pools...');
-    console.time('fetchPools');
+    console.time('api.fetchPools');
     await sor.fetchPools();
-    console.timeEnd('fetchPools');
+    console.timeEnd('api.fetchPools');
     return sor;
 }
 
@@ -237,8 +237,4 @@ export function getDexes(sor: SOR): IDexes {
             dexId: ds.dexId,
         } as IDex;
     });
-}
-
-export function wait(ms: number): Promise<void> {
-    return new Promise((resolve) => setTimeout(resolve, ms));
 }

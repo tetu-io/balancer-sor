@@ -77,6 +77,14 @@ export class SOR {
     }
 
     /**
+     * poolsFetched Returns true if pools fetched at least once
+     * @returns {boolean} True if pools already fetched, False if not yet.
+     */
+    havePools(): boolean {
+        return this.poolCacher.havePools();
+    }
+
+    /**
      * getSwaps Retrieve information for best swap tokenIn>tokenOut.
      * @param {string} tokenIn - Address of tokenIn.
      * @param {string} tokenOut - Address of tokenOut.

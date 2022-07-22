@@ -1,10 +1,9 @@
 import cloneDeep from 'lodash.clonedeep';
 import { PoolDataService, SubgraphPoolBase } from './types';
-import { wait } from '../test/api/api';
+import { wait } from './utils/tools';
 
 export class PoolCacher {
     private pools: SubgraphPoolBase[] = [];
-    private _finishedFetching = false;
     private _fetchingInProgress = false;
     private readonly poolDataServices: PoolDataService[];
 
@@ -14,10 +13,6 @@ export class PoolCacher {
         this.poolDataServices = Array.isArray(poolDataServiceOrServices)
             ? poolDataServiceOrServices
             : [poolDataServiceOrServices];
-    }
-
-    public get finishedFetching(): boolean {
-        return this._finishedFetching;
     }
 
     public havePools(): boolean {
@@ -43,7 +38,7 @@ export class PoolCacher {
                         success = false,
                         tries = 0;
                     // sometimes Balancer getPool returns error and []
-                    // lets repeat
+                    // lets repeat on error
                     do {
                         try {
                             tries++;
@@ -62,10 +57,11 @@ export class PoolCacher {
             );
             const poolsArrays = await Promise.all(poolsGetPoolsPromises); // TODO Promise.allSettled ?
             this.pools = poolsArrays.flat();
-            this._finishedFetching = true;
+            this._fetchingInProgress = false;
             return true;
         } catch (err) {
             this.pools = [];
+            this._fetchingInProgress = false;
             return false;
         } finally {
             this._fetchingInProgress = false;
