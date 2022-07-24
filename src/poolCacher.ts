@@ -5,6 +5,7 @@ import { wait } from './utils/tools';
 export class PoolCacher {
     private pools: SubgraphPoolBase[] = [];
     private _fetchingInProgress = false;
+    private _finishedFetching = false;
     private readonly poolDataServices: PoolDataService[];
 
     constructor(
@@ -13,6 +14,10 @@ export class PoolCacher {
         this.poolDataServices = Array.isArray(poolDataServiceOrServices)
             ? poolDataServiceOrServices
             : [poolDataServiceOrServices];
+    }
+
+    public get finishedFetching(): boolean {
+        return this._finishedFetching;
     }
 
     public havePools(): boolean {
@@ -58,13 +63,16 @@ export class PoolCacher {
             const poolsArrays = await Promise.all(poolsGetPoolsPromises); // TODO Promise.allSettled ?
             this.pools = poolsArrays.flat();
             this._fetchingInProgress = false;
+            this._finishedFetching = true;
             return true;
         } catch (err) {
             this.pools = [];
             this._fetchingInProgress = false;
+            this._finishedFetching = false;
             return false;
         } finally {
             this._fetchingInProgress = false;
+            this._finishedFetching = true;
         }
     }
 }

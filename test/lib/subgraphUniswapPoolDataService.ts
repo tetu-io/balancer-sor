@@ -74,7 +74,14 @@ export class SubgraphUniswapPoolDataService implements PoolDataService {
             body: JSON.stringify({ query: Query[this.config.chainId] }),
         });
 
-        const { data } = await response.json();
+        const json = await response.json();
+
+        if (!json.data) {
+            console.error('getPools() No data in response', json);
+            return [];
+        }
+
+        const { data } = json;
         // transform uniswap subgraph data to SubgraphPoolBase
         const pools: SubgraphPoolBase[] = data.pairs.map((pool) => {
             return {
