@@ -35,6 +35,8 @@ export class PoolCacher {
         if (this._fetchingInProgress) return true;
         this._fetchingInProgress = true;
 
+        let allPoolsLoadedSuccessfully = true;
+
         try {
             // fetch pools from all data services
             const poolsGetPoolsPromises = this.poolDataServices.map(
@@ -57,22 +59,23 @@ export class PoolCacher {
                             await wait(2000);
                         }
                     } while (!success && tries < 5); // repeat until success
+
+                    if (!success && allPoolsLoadedSuccessfully)
+                        allPoolsLoadedSuccessfully = false;
                     return pools;
                 }
             );
             const poolsArrays = await Promise.all(poolsGetPoolsPromises); // TODO Promise.allSettled ?
             this.pools = poolsArrays.flat();
-            this._fetchingInProgress = false;
-            this._finishedFetching = true;
-            return true;
         } catch (err) {
+            console.warn('PoolCacher.fetchPools() error:', err);
             this.pools = [];
-            this._fetchingInProgress = false;
-            this._finishedFetching = false;
-            return false;
+            allPoolsLoadedSuccessfully = false;
         } finally {
             this._fetchingInProgress = false;
-            this._finishedFetching = true;
+            this._finishedFetching = allPoolsLoadedSuccessfully;
         }
+
+        return allPoolsLoadedSuccessfully;
     }
 }

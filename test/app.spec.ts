@@ -15,7 +15,7 @@ import { URLSearchParams } from 'url';
 import { testTokens } from './api-test-data';
 import { wait } from '../src/utils/tools';
 
-describe('Express APP tests', function () {
+describe.skip('Express APP tests', function () {
     this.timeout(120000);
     const appUrl = 'http://localhost:8080/';
     console.log('Server url:', appUrl);
@@ -28,7 +28,7 @@ describe('Express APP tests', function () {
         let tries = 0;
         do {
             tries++;
-            console.log(tries, '\x1B[F\x1B[F');
+            console.log(tries, '\x1B[F');
             if (!firstCheck) await wait(2000);
             firstCheck = false;
             try {
