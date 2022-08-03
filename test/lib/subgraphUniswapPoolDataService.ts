@@ -77,7 +77,12 @@ export class SubgraphUniswapPoolDataService implements PoolDataService {
         const json = await response.json();
 
         if (!json.data) {
-            console.warn('getPools() No data in response', json);
+            console.warn(
+                'Subgraph getPools()',
+                this.name,
+                'No data in response',
+                json
+            );
             return [];
         }
 

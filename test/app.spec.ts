@@ -16,7 +16,7 @@ import { testTokens } from './api-test-data';
 import { wait } from '../src/utils/tools';
 
 describe.skip('Express APP tests', function () {
-    this.timeout(120000);
+    this.timeout(12000000);
     const appUrl = 'http://localhost:8080/';
     console.log('Server url:', appUrl);
 

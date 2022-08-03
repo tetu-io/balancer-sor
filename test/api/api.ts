@@ -177,16 +177,14 @@ export async function getSwap(
 
     // This calculates the cost to make a swap which is used as an input to sor to allow it to make gas efficient recommendations.
     // Note - tokenOut for SwapExactIn, tokenIn for SwapExactOut
-    console.time('getCostOfSwapInToken');
     const cost = await sor.getCostOfSwapInToken(
         tokenOut.address,
         tokenOut.decimals,
         gasPrice,
         BigNumber.from('35000')
     );
-    console.timeEnd('getCostOfSwapInToken');
 
-    console.time('getSwaps');
+    // console.time('getSwaps');
     const swapInfo: SwapInfo = await sor.getSwaps(
         tokenIn.address,
         tokenOut.address,
@@ -194,7 +192,7 @@ export async function getSwap(
         swapAmount,
         { gasPrice, maxPools, excludePlatforms, forceRefresh: true }
     );
-    console.timeEnd('getSwaps');
+    // console.timeEnd('getSwaps');
 
     const amtInScaled = formatFixed(swapAmount, tokenIn.decimals);
     const amtOutScaled = formatFixed(swapInfo.returnAmount, tokenOut.decimals);
@@ -207,12 +205,10 @@ export async function getSwap(
 
     const costToSwapScaled = formatFixed(cost, returnDecimals);
 
-    console.log(`Token In: ${tokenIn.symbol}, Amt: ${amtInScaled.toString()}`);
-    console.log(
-        `Token Out: ${tokenOut.symbol}, Amt: ${amtOutScaled.toString()}`
-    );
-    console.log(`Cost to swap: ${costToSwapScaled.toString()}`);
-    console.log(`Return Considering Fees: ${returnWithFeesScaled.toString()}`);
+    // console.log(`Token In: ${tokenIn.symbol}, Amt: ${amtInScaled.toString()}`);
+    // console.log(`Token Out: ${tokenOut.symbol}, Amt: ${amtOutScaled.toString()}`);
+    // console.log(`Cost to swap: ${costToSwapScaled.toString()}`);
+    // console.log(`Return Considering Fees: ${returnWithFeesScaled.toString()}`);
     // console.log('swapInfo', swapInfo);
 
     return swapInfo;

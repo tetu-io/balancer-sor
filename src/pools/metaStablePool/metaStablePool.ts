@@ -228,7 +228,8 @@ export class MetaStablePool implements PoolBase {
 
             return bnum(formatFixed(returnEvmWithRate, 18));
         } catch (err) {
-            console.error(`_evmoutGivenIn: ${err.message}`);
+            console.error(`metaStablePool_evmoutGivenIn: ${err.message}`);
+            console.log(err);
             return ZERO;
         }
     }
@@ -284,7 +285,7 @@ export class MetaStablePool implements PoolBase {
                 10 ** poolPairData.decimalsIn
             );
         } catch (err) {
-            console.error(`_evminGivenOut: ${err.message}`);
+            console.error(`metaStablePool_evminGivenOut: ${err.message}`);
             return ZERO;
         }
     }

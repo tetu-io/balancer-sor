@@ -208,7 +208,6 @@ export class SOR {
         );
 
         if (paths.length == 0) return cloneDeep(EMPTY_SWAPINFO);
-        console.log('paths.length', paths.length);
 
         // Path is guaranteed to contain both tokenIn and tokenOut
         let tokenInDecimals;
