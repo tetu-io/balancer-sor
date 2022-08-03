@@ -96,10 +96,11 @@ export interface SubgraphPoolBase {
     upperTarget?: string;
 
     // Gyro2 specific field
-    gyro2PriceBounds?: Gyro2PriceBounds;
+    sqrtAlpha?: string;
+    sqrtBeta?: string;
 
     // Gyro3 specific field
-    gyro3PriceBounds?: Gyro3PriceBounds;
+    root3Alpha?: string;
 
     // Dystopia (Solidly) specific fields
     dystStable?: boolean;
@@ -177,6 +178,8 @@ export enum PoolFilter {
     AaveLinear = 'AaveLinear',
     StablePhantom = 'StablePhantom',
     ERC4626Linear = 'ERC4626Linear',
+    Gyro2 = 'Gyro2',
+    Gyro3 = 'Gyro3',
 }
 
 export interface PoolBase {

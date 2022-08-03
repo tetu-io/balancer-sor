@@ -191,7 +191,9 @@ describe('API tests', function () {
         '0x255707B70BF90aa112006E1b07B9AeA6De021424'.toLowerCase(), // TETU
         '0x62F594339830b90AE4C084aE7D223fFAFd9658A7'.toLowerCase(), // DYST
     ];
+
     interface ISwapPair {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         tokenIn: any;
         tokenOut: any;
     }
@@ -204,8 +206,8 @@ describe('API tests', function () {
         let n = 0;
         const notFound: ISwapPair[] = [];
 
-        const tokensIn = tokens.slice(1, 2);
-        const tokensOut = tokens.slice(25, 30);
+        const tokensIn = tokens; //.slice(1, 2);
+        const tokensOut = tokens; //.slice(25, 30);
         const total = tokensIn.length * tokensOut.length;
 
         // const tokensIn = [tokens.find(t => t.symbol === 'AAVE')];
@@ -234,7 +236,7 @@ describe('API tests', function () {
                     amount,
                     []
                 );
-                console.log('swap', swap);
+                // if(swap.swaps.length) console.log('swap', swap);
                 if (swap.swaps.length === 0) {
                     notFound.push({ tokenIn, tokenOut });
                     console.log('  notFound.length', notFound.length);
