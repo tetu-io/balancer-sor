@@ -193,12 +193,11 @@ describe('API tests', function () {
     ];
 
     interface ISwapPair {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         tokenIn: any;
         tokenOut: any;
     }
 
-    it.skip('many swaps', async function () {
+    it.only('many swaps', async function () {
         const tokens = maticTokens.filter((t) =>
             tokensToTest.includes(t.address.toLowerCase())
         );
@@ -256,6 +255,7 @@ describe('API tests', function () {
             }
         }
         const notFoundPercentage = ((notFound.length / total) * 100).toFixed(2);
+        console.log('notFound', notFound);
         console.log('total             ', total);
         console.log('notFound.length   ', notFound.length);
         console.log('notFoundPercentage', notFoundPercentage);
