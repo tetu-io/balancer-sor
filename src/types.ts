@@ -180,6 +180,7 @@ export enum PoolFilter {
     ERC4626Linear = 'ERC4626Linear',
     Gyro2 = 'Gyro2',
     Gyro3 = 'Gyro3',
+    // TODO Uniswap, Dystopia Stable Pool
 }
 
 export interface PoolBase {
