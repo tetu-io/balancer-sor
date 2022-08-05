@@ -73,10 +73,96 @@ export const TOKENS = {
             decimals: 18,
             symbol: 'SAND',
         },
+
+        'USD+': {
+            address: '0x236eeC6359fb44CCe8f97E99387aa7F8cd5cdE1f'.toLowerCase(),
+            decimals: 6,
+            symbol: 'USD+',
+        },
+        USDT: {
+            address: '0xc2132D05D31c914a87C6611C10748AEb04B58e8F'.toLowerCase(),
+            decimals: 6,
+            symbol: 'USDT',
+        },
+        SPHERE: {
+            address: '0x62F594339830b90AE4C084aE7D223fFAFd9658A7'.toLowerCase(),
+            decimals: 18,
+            symbol: 'SPHERE',
+        },
+        stMATIC: {
+            address: '0x3A58a54C066FdC0f2D55FC9C89F0415C92eBf3C4'.toLowerCase(),
+            decimals: 18,
+            symbol: 'stMATIC',
+        },
+        FRAX: {
+            address: '0x45c32fA6DF82ead1e2EF74d17b76547EDdFaFF89'.toLowerCase(),
+            decimals: 18,
+            symbol: 'FRAX',
+        },
         DYST: {
             address: '0x39aB6574c289c3Ae4d88500eEc792AB5B947A5Eb'.toLowerCase(),
             decimals: 18,
             symbol: 'DYST',
+        },
+        PEN: {
+            address: '0x9008D70A5282a936552593f410AbcBcE2F891A97'.toLowerCase(),
+            decimals: 18,
+            symbol: 'PEN',
+        },
+        TUSD: {
+            address: '0x2e1AD108fF1D8C782fcBbB89AAd783aC49586756'.toLowerCase(),
+            decimals: 18,
+            symbol: 'TUSD',
+        },
+        MaticX: {
+            address: '0xfa68FB4628DFF1028CFEc22b4162FCcd0d45efb6'.toLowerCase(),
+            decimals: 18,
+            symbol: 'MaticX',
+        },
+        CLAM: {
+            address: '0xC250e9987A032ACAC293d838726C511E6E1C029d'.toLowerCase(),
+            decimals: 9,
+            symbol: 'CLAM',
+        },
+        miMATIC: {
+            address: '0xa3Fa99A148fA48D14Ed51d610c367C61876997F1'.toLowerCase(),
+            decimals: 18,
+            symbol: 'miMATIC',
+        },
+        Qi: {
+            address: '0x580A84C73811E1839F75d86d75d88cCa0c241fF4'.toLowerCase(),
+            decimals: 18,
+            symbol: 'Qi',
+        },
+        vQi: {
+            address: '0xB424dfDf817FaF38FF7acF6F2eFd2f2a843d1ACA'.toLowerCase(),
+            decimals: 18,
+            symbol: 'vQi',
+        },
+        FXS: {
+            address: '0x3e121107F6F22DA4911079845a470757aF4e1A1b'.toLowerCase(),
+            decimals: 18,
+            symbol: 'FXS',
+        },
+        tetuQi: {
+            address: '0x4Cd44ced63d9a6FEF595f6AD3F7CED13fCEAc768'.toLowerCase(),
+            decimals: 18,
+            symbol: 'tetuQi',
+        },
+        KOGECOIN: {
+            address: '0x13748d548D95D78a3c83fe3F32604B4796CFfa23'.toLowerCase(),
+            decimals: 9,
+            symbol: 'KOGECOIN',
+        },
+        SYN: {
+            address: '0xf8F9efC0db77d8881500bb06FF5D6ABc3070E695'.toLowerCase(),
+            decimals: 18,
+            symbol: 'SYN',
+        },
+        COMFI: {
+            address: '0x72bba3Aa59a1cCB1591D7CDDB714d8e4D5597E96'.toLowerCase(),
+            decimals: 18,
+            symbol: 'COMFI',
         },
     },
 };

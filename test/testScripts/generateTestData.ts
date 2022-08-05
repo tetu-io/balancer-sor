@@ -68,6 +68,24 @@ async function generateTestData(sor: SOR) {
         { tokenIn: a.TETU, tokenOut: a.USDC, amount: 100000 },
     ];
 
+    const pairsToCheckDyst =
+        'USDC/WMATIC, WMATIC/USDC, USDT/WMATIC, USD+/WMATIC, WMATIC/USD+, WMATIC/USDT, WETH/WMATIC, USD+/USDC, USDC/USD+, WMATIC/WETH, SPHERE/USD+, USDC/WETH, WETH/USDC, DYST/WMATIC, stMATIC/WMATIC, USD+/SPHERE, USD+/TETU, FXS/FRAX, FRAX/WMATIC, USD+/WETH, WETH/USD+, miMATIC/FRAX, USD+/stMATIC, TETU/USD+, stMATIC/USD+, WMATIC/stMATIC, KOGECOIN/USDC, DAI/USDC, USDC/FRAX, USDC/agEUR, WMATIC/FRAX, USD+/CLAM, MaticX/WMATIC, USDC/KOGECOIN, WMATIC/DYST, USDC/USDT, USDC/Qi, Qi/USDC, COMFI/WMATIC, miMATIC/USDC, Qi/vQi, USDC/miMATIC, WETH/WBTC, WMATIC/TETU, KOGECOIN/WMATIC, DYST/USD+, DYST/miMATIC'.split(
+            ', '
+        );
+
+    for (const pair of pairsToCheckDyst) {
+        const symbols = pair.split('/');
+        const tokenIn = a[symbols[0]];
+        const tokenOut = a[symbols[1]];
+        if (!tokenIn || !tokenOut)
+            console.warn(`No token found! (Pair:${pair})`);
+        else {
+            const amount = 1;
+            const testSwap = { tokenIn, tokenOut, amount };
+            testSwaps.push(testSwap);
+        }
+    }
+
     interface ITestData {
         [key: string]: SwapInfo;
     }
@@ -81,7 +99,6 @@ async function generateTestData(sor: SOR) {
             swap.tokenOut.symbol;
         console.log('\n-----------------------');
         console.log(key);
-        console.log('-----------------------');
         const amount = parseFixed(
             swap.amount.toString(),
             swap.tokenIn.decimals

@@ -1,7 +1,6 @@
 // TS_NODE_PROJECT='tsconfig.testing.json' npx mocha -r ts-node/register test/math.spec.ts
 
 import dotenv from 'dotenv'; // for INFURA=key
-import maticTokens from './testData/maticTokens.json';
 dotenv.config();
 
 import { expect } from 'chai';
@@ -19,6 +18,7 @@ import {
 import { JsonRpcProvider } from '@ethersproject/providers';
 import { testTokens } from './api-test-data';
 import { parseFixed } from '@ethersproject/bignumber';
+import { ITokenData } from './api/api';
 
 const networkId = Network.POLYGON;
 let sor;
@@ -126,6 +126,7 @@ describe('API tests', function () {
         expect(swap.tokenOut).eq('');
     });
 
+    /*
     const tokensToTest = [
         '0x0000000000000000000000000000000000000000'.toLowerCase(),
         '0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619'.toLowerCase(),
@@ -189,18 +190,61 @@ describe('API tests', function () {
         '0x39aB6574c289c3Ae4d88500eEc792AB5B947A5Eb'.toLowerCase(),
         '0x236eeC6359fb44CCe8f97E99387aa7F8cd5cdE1f'.toLowerCase(), // USD+
         '0x255707B70BF90aa112006E1b07B9AeA6De021424'.toLowerCase(), // TETU
-        '0x62F594339830b90AE4C084aE7D223fFAFd9658A7'.toLowerCase(), // DYST
+        '0x62F594339830b90AE4C084aE7D223fFAFd9658A7'.toLowerCase(), // SPHERE
+        '0x39aB6574c289c3Ae4d88500eEc792AB5B947A5Eb'.toLowerCase(), // DYST
+    ];
+*/
+
+    const tokensToTestDyst = [
+        '0x0d500B1d8E8eF31E21C99d1Db9A6444d3ADf1270'.toLowerCase(), // WMATIC
+        '0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174'.toLowerCase(), // USDC
+        '0x236eeC6359fb44CCe8f97E99387aa7F8cd5cdE1f'.toLowerCase(), // USD+
+        '0xc2132D05D31c914a87C6611C10748AEb04B58e8F'.toLowerCase(), // USDT
+        '0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619'.toLowerCase(), // WETH
+        '0x62F594339830b90AE4C084aE7D223fFAFd9658A7'.toLowerCase(), // SPHERE
+        '0x3A58a54C066FdC0f2D55FC9C89F0415C92eBf3C4'.toLowerCase(), // stMATIC
+        '0x45c32fA6DF82ead1e2EF74d17b76547EDdFaFF89'.toLowerCase(), // FRAX
+        '0x39aB6574c289c3Ae4d88500eEc792AB5B947A5Eb'.toLowerCase(), // DYST
+        '0x9008D70A5282a936552593f410AbcBcE2F891A97'.toLowerCase(), // PEN
+        '0x2e1AD108fF1D8C782fcBbB89AAd783aC49586756'.toLowerCase(), // TUSD
+        '0xfa68FB4628DFF1028CFEc22b4162FCcd0d45efb6'.toLowerCase(), // MaticX
+        '0xC250e9987A032ACAC293d838726C511E6E1C029d'.toLowerCase(), // CLAM
+        '0xa3Fa99A148fA48D14Ed51d610c367C61876997F1'.toLowerCase(), // miMATIC
+        '0x580A84C73811E1839F75d86d75d88cCa0c241fF4'.toLowerCase(), // Qi
+        '0xB424dfDf817FaF38FF7acF6F2eFd2f2a843d1ACA'.toLowerCase(), // vQi
+        '0x3e121107F6F22DA4911079845a470757aF4e1A1b'.toLowerCase(), // FXS
+        '0x4Cd44ced63d9a6FEF595f6AD3F7CED13fCEAc768'.toLowerCase(), // tetuQi
+        '0x13748d548D95D78a3c83fe3F32604B4796CFfa23'.toLowerCase(), // KOGECOIN
+        '0x255707B70BF90aa112006E1b07B9AeA6De021424'.toLowerCase(), // TETU
+        '0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063'.toLowerCase(), // DAI
+        '0xf8F9efC0db77d8881500bb06FF5D6ABc3070E695'.toLowerCase(), // SYN
+        '0x1BFD67037B42Cf73acF2047067bd4F2C47D9BfD6'.toLowerCase(), // WBTC
+        '0x72bba3Aa59a1cCB1591D7CDDB714d8e4D5597E96'.toLowerCase(), // COMFI
+
+        // '0xE0B52e49357Fd4DAf2c15e02058DCE6BC0057db4'.toLowerCase(), // agEUR
+        // '0x5b0522391d0A5a37FD117fE4C43e8876FB4e91E6'.toLowerCase(), // penDYST // no pool liquidity
     ];
 
+    const pairsToCheckDyst =
+        'USDC/WMATIC, WMATIC/USDC, USDT/WMATIC, USD+/WMATIC, WMATIC/USD+, WMATIC/USDT, WETH/WMATIC, USD+/USDC, USDC/USD+, WMATIC/WETH, SPHERE/USD+, USDC/WETH, WETH/USDC, DYST/WMATIC, stMATIC/WMATIC, USD+/SPHERE, WMATIC/PEN, USD+/TETU, penDYST/DYST, FXS/FRAX, FRAX/WMATIC, USD+/WETH, WETH/USD+, miMATIC/FRAX, USD+/stMATIC, TETU/USD+, stMATIC/USD+, WMATIC/stMATIC, KOGECOIN/USDC, DYST/penDYST, DAI/USDC, USDC/FRAX, USDC/agEUR, WMATIC/FRAX, PEN/WMATIC, USD+/CLAM, MaticX/WMATIC, USDC/KOGECOIN, WMATIC/DYST, DYST/PEN , USDC/USDT, USDC/Qi, Qi/USDC, COMFI/WMATIC, miMATIC/USDC, Qi/vQi, USDC/miMATIC, WETH/WBTC, WMATIC/TETU, KOGECOIN/WMATIC, DYST/USD+, PEN/DYST, DYST/miMATIC'.split(
+            ', '
+        );
+
+    // const errPairs = ['TETU/WETH']; //
     interface ISwapPair {
-        tokenIn: any;
-        tokenOut: any;
+        tokenIn: ITokenData;
+        tokenOut: ITokenData;
     }
 
-    it.only('many swaps', async function () {
-        const tokens = maticTokens.filter((t) =>
-            tokensToTest.includes(t.address.toLowerCase())
+    it('many swaps', async function () {
+        const allTokensArray = Object.values(
+            await api.getTokens(sor, CONTRACT_UTILS[networkId])
         );
+        const tokens = allTokensArray.filter((t) =>
+            tokensToTestDyst.includes(t.address.toLowerCase())
+        );
+        console.log('tokens', tokens);
+
         console.log('tokens.length', tokens.length);
         let n = 0;
         const notFound: ISwapPair[] = [];
@@ -214,19 +258,22 @@ describe('API tests', function () {
 
         for (const tokenIn of tokensIn) {
             if (!tokenIn) continue;
-            const amount = parseFixed('0.1', tokenIn.decimals);
             for (const tokenOut of tokensOut) {
                 if (!tokenOut) continue;
                 n++;
+                let amountIn = '1';
+                if (tokenIn.symbol === 'WBTC') amountIn = '0.0001';
+                else if (tokenIn.symbol === 'WETH') amountIn = '0.001';
+
+                const amount = parseFixed(amountIn, tokenIn.decimals);
+                // console.log('amountIn, amount', amountIn, amount.toString());
+
                 if (tokenIn == tokenOut) continue;
-                console.log(
-                    ((n / total) * 100).toFixed(1),
-                    '%',
-                    tokenIn.symbol,
-                    '=>',
-                    tokenOut.symbol,
-                    '                 '
-                );
+                const pair = tokenIn.symbol + '/' + tokenOut.symbol;
+                if (!pairsToCheckDyst.includes(pair)) continue;
+                // if (!errPairs.includes(pair)) continue;
+
+                console.log(((n / total) * 100).toFixed(1) + '%', pair);
 
                 const swap = await api.getSwap(
                     sor,
@@ -256,6 +303,11 @@ describe('API tests', function () {
         }
         const notFoundPercentage = ((notFound.length / total) * 100).toFixed(2);
         console.log('notFound', notFound);
+        console.log(
+            'notFound symbols:\n',
+            notFound.map((p) => p.tokenIn.symbol + '->' + p.tokenOut.symbol)
+        );
+
         console.log('total             ', total);
         console.log('notFound.length   ', notFound.length);
         console.log('notFoundPercentage', notFoundPercentage);

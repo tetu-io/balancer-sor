@@ -10,12 +10,12 @@ import dotenv from 'dotenv'; // for INFURA=key
 dotenv.config();
 
 import { expect } from 'chai';
-import fetch from 'node-fetch';
+import fetch from 'isomorphic-fetch';
 import { URLSearchParams } from 'url';
 import { testTokens } from './api-test-data';
 import { wait } from '../src/utils/tools';
 
-describe.skip('Express APP tests', function () {
+describe('Express APP tests', function () {
     this.timeout(12000000);
     const appUrl = 'http://localhost:8080/';
     console.log('Server url:', appUrl);
