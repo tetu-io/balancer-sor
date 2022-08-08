@@ -14,7 +14,7 @@ import {
 import { SwapCostCalculator } from './swapCostCalculator';
 import { getLidoStaticSwaps, isLidoStableSwap } from './pools/lido';
 import { isSameAddress } from './utils';
-import { EMPTY_SWAPINFO } from './constants';
+import { EMPTY_SWAPINFO, POOL_SWAP_FEE_RATE } from './constants';
 import {
     SwapInfo,
     SwapTypes,
@@ -253,6 +253,15 @@ export class SOR {
             totalConsideringFees,
             marketSp
         );
+
+        swapInfo.swaps.forEach((swap) => {
+            const pool = pools.find((p) => p.id === swap.poolId);
+            if (pool && pool.swapFee) {
+                swap.platformFee =
+                    parseFloat(pool.swapFee) * POOL_SWAP_FEE_RATE;
+                swapInfo.swapPlatforms[pool.id] = pool.platform ?? '';
+            }
+        });
 
         return swapInfo;
     }

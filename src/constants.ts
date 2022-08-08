@@ -1,6 +1,8 @@
 import { Zero } from '@ethersproject/constants';
 import { SwapInfo } from './types';
 
+export const POOL_SWAP_FEE_RATE = 10000;
+
 export const EMPTY_SWAPINFO: SwapInfo = {
     tokenAddresses: [],
     swaps: [],
@@ -14,4 +16,5 @@ export const EMPTY_SWAPINFO: SwapInfo = {
     returnAmountConsideringFees: Zero,
     returnAmountFromSwaps: Zero,
     marketSp: Zero.toString(),
+    swapPlatforms: {},
 };

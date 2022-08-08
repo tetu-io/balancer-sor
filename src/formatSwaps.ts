@@ -88,6 +88,7 @@ export const formatSequence = (
             assetOutIndex,
             amount: amountScaled,
             userData: '0x',
+            platformFee: 0,
         };
     });
 };
@@ -129,6 +130,7 @@ export function formatSwaps(
         tokenIn,
         tokenOut,
         marketSp,
+        swapPlatforms: {},
     };
 
     return swapInfo;

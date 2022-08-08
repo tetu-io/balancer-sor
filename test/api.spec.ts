@@ -93,6 +93,7 @@ describe('API tests', function () {
         expect(swap.tokenIn).eq(testTokens.USDC.address);
         expect(swap.tokenOut).eq(testTokens.WMATIC.address);
         expect(swap.swapAmount.toString()).eq(amount);
+        expect(swap.swapPlatforms[swap.swaps[0].poolId]).not.empty('string');
 
         expect(swap.swaps.length).gt(0, 'swaps length must be > 0');
         expect(swap.tokenAddresses.length).gte(
@@ -236,6 +237,7 @@ describe('API tests', function () {
         tokenOut: ITokenData;
     }
 
+    // TODO remove
     it('many swaps', async function () {
         const allTokensArray = Object.values(
             await api.getTokens(sor, CONTRACT_UTILS[networkId])

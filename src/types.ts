@@ -121,6 +121,11 @@ export interface SwapV2 {
     assetOutIndex: number;
     amount: string;
     userData: string;
+    platformFee: number;
+}
+
+export interface PoolDexNames {
+    [poolId: string]: string;
 }
 
 export interface SwapInfo {
@@ -137,6 +142,7 @@ export interface SwapInfo {
     tokenOut: string;
     tokenOutFromSwaps?: string; // Used with stETH/wstETH
     marketSp: string;
+    swapPlatforms: PoolDexNames;
 }
 
 export interface SwapData {
