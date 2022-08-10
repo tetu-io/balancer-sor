@@ -3,10 +3,13 @@ import { JsonRpcProvider } from '@ethersproject/providers';
 import { SOR, SwapInfo } from '../../src';
 import fs from 'fs';
 import * as api from '../api/api';
+import { ITokenData, UniswapSubgraphData } from '../api/api';
 import {
     BALANCER_SUBGRAPH_URLS,
     CONTRACT_UTILS,
     DYSTOPIA_SUBGRAPH_URLS,
+    EXCLUDE_TOKENS,
+    FEE_ON_TRANSFER_TOKENS,
     MULTIADDR,
     Network,
     PROVIDER_URLS,
@@ -14,7 +17,6 @@ import {
     UNISWAP_SUBGRAPHS,
 } from '../api/config';
 import { SorConfig } from '../../dist';
-import { ITokenData, UniswapSubgraphData } from '../api/api';
 import { TOKENS } from './tokenAddresses';
 
 export async function initAndGenerateTestData(
@@ -25,7 +27,9 @@ export async function initAndGenerateTestData(
     sorConfig: SorConfig,
     balancerSubgraphUrl: string,
     dystopiaSubgraphUrl: string,
-    uniswapSubgraphs: UniswapSubgraphData[]
+    uniswapSubgraphs: UniswapSubgraphData[],
+    excludeTokens: string[] = [],
+    feeOnTransferTokens: string[] = []
 ): Promise<void> {
     // Pools source can be Subgraph URL or pools data set passed directly
     // Update pools list with most recent onchain balances
@@ -53,6 +57,7 @@ export async function initAndGenerateTestData(
         amount: number;
     }
 
+    // this data needed for coverage and simle tests
     /* const testSwaps: ITestSwap[] = [
         // Coverage tests (do not change values)
         { tokenIn: a.WMATIC, tokenOut: a.USDC, amount: 1000000 },
@@ -68,6 +73,7 @@ export async function initAndGenerateTestData(
         { tokenIn: a.TETU, tokenOut: a.USDC, amount: 100000 },
     ];*/
 
+    // Dystopia-related pairs test data
     const testSwapsDyst: ITestSwap[] = [];
     const pairsToCheckDyst =
         'USDC/WMATIC, WMATIC/USDC, USDT/WMATIC, USD+/WMATIC, WMATIC/USD+, WMATIC/USDT, WETH/WMATIC, USD+/USDC, USDC/USD+, WMATIC/WETH, SPHERE/USD+, USDC/WETH, WETH/USDC, DYST/WMATIC, stMATIC/WMATIC, USD+/SPHERE, USD+/TETU, FXS/FRAX, FRAX/WMATIC, USD+/WETH, WETH/USD+, miMATIC/FRAX, USD+/stMATIC, TETU/USD+, stMATIC/USD+, WMATIC/stMATIC, KOGECOIN/USDC, DAI/USDC, USDC/FRAX, USDC/agEUR, WMATIC/FRAX, USD+/CLAM, MaticX/WMATIC, USDC/KOGECOIN, WMATIC/DYST, USDC/USDT, USDC/Qi, Qi/USDC, COMFI/WMATIC, miMATIC/USDC, Qi/vQi, USDC/miMATIC, WETH/WBTC, WMATIC/TETU, KOGECOIN/WMATIC, DYST/USD+, DYST/miMATIC'.split(
@@ -92,15 +98,28 @@ export async function initAndGenerateTestData(
 
     // Do not update testSwaps, if you do not want to update/fix tests at tetu-contracts-io
     // await generateTestData(sor, testSwaps, testDataFilename);
-    await generateTestData(sor, testSwapsDyst, testDataFilenameDyst);
+    await generateTestData(
+        sor,
+        testSwapsDyst,
+        testDataFilenameDyst,
+        excludeTokens,
+        feeOnTransferTokens
+    );
 }
 
 // noinspection JSUnusedLocalSymbols
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-async function generateTestData(sor: SOR, testSwaps, testDataFilename) {
+async function generateTestData(
+    sor: SOR,
+    testSwaps,
+    testDataFilename,
+    excludeTokens,
+    feeOnTransferTokens
+) {
     interface ITestData {
         [key: string]: SwapInfo;
     }
+
     const testData: ITestData = {};
     for (const swap of testSwaps) {
         const key =
@@ -111,17 +130,24 @@ async function generateTestData(sor: SOR, testSwaps, testDataFilename) {
             swap.tokenOut.symbol;
         console.log('\n-----------------------');
         console.log(key);
+
         const amount = parseFixed(
             swap.amount.toString(),
             swap.tokenIn.decimals
         );
-        // await sor.fetchPools();
-        testData[key] = await api.getSwap(
+
+        const swapData = await api.getSwap(
             sor,
             swap.tokenIn,
             swap.tokenOut,
-            amount
+            amount,
+            [],
+            excludeTokens,
+            feeOnTransferTokens
         );
+
+        if (swapData.swaps.length) testData[key] = swapData;
+        else console.warn('ROUTE NOT FOUND !!!!');
     }
 
     const latestBlock = await sor.provider.getBlock('latest');
@@ -155,5 +181,7 @@ initAndGenerateTestData(
     SOR_CONFIG[networkId],
     BALANCER_SUBGRAPH_URLS[networkId],
     DYSTOPIA_SUBGRAPH_URLS[networkId],
-    UNISWAP_SUBGRAPHS[networkId]
+    UNISWAP_SUBGRAPHS[networkId],
+    EXCLUDE_TOKENS[networkId],
+    FEE_ON_TRANSFER_TOKENS[networkId]
 ).then();

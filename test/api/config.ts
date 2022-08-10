@@ -1,4 +1,3 @@
-// import { Network } from './api';
 import { SorConfig } from '../../src';
 import 'dotenv/config';
 
@@ -105,5 +104,24 @@ export const UNISWAP_SUBGRAPHS = {
             url: 'https://api.thegraph.com/subgraphs/name/waultfinance/waultswap-polygon',
             swapFee: '0.002',
         },
+    ],
+};
+
+// Fee on transfer tokens
+export const FEE_ON_TRANSFER_TOKENS = {
+    [Network.POLYGON]: [
+        '0x62F594339830b90AE4C084aE7D223fFAFd9658A7'.toLowerCase(), // SPHERE
+        '0x839F1a22A59eAAf26c85958712aB32F80FEA23d9'.toLowerCase(), // Axion
+        '0xc08e94e12ca1357DF36F3c16c3A1df5F84c7B801'.toLowerCase(), // $GGWTT
+        '0xA0D675533b237D9C1e1Ed3fBCA6b3BF726375ECb'.toLowerCase(), // SCORPIO
+        '0xcd7361ac3307D1C5a46b63086a90742Ff44c63B3'.toLowerCase(), // RAIDER
+    ],
+};
+
+// Tokens with transfer disabled etc.
+export const EXCLUDE_TOKENS = {
+    [Network.POLYGON]: [
+        '0x17e9c5b37283ac5fbe527011cec257b832f03eb3'.toLowerCase(), // trade off, old SPHERE token
+        ...FEE_ON_TRANSFER_TOKENS[Network.POLYGON], // TODO remove when FEE_ON_TRANSFER_TOKENS will be implemented
     ],
 };

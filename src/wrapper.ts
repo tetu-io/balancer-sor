@@ -9,12 +9,17 @@ import { PoolCacher } from './poolCacher';
 import { RouteProposer } from './routeProposal';
 import {
     filterPoolsByPlatform,
+    filterPoolsByToken,
     filterPoolsByType,
 } from './routeProposal/filtering';
 import { SwapCostCalculator } from './swapCostCalculator';
 import { getLidoStaticSwaps, isLidoStableSwap } from './pools/lido';
 import { isSameAddress } from './utils';
-import { EMPTY_SWAPINFO, POOL_SWAP_FEE_RATE } from './constants';
+import {
+    EMPTY_SWAPINFO,
+    POOL_SWAP_FEE_DECIMALS,
+    POOL_SWAP_FEE_RATE,
+} from './constants';
 import {
     SwapInfo,
     SwapTypes,
@@ -28,6 +33,7 @@ import {
     SorConfig,
 } from './types';
 import { Zero } from '@ethersproject/constants';
+import { parseUnits } from '@ethersproject/units';
 
 export class SOR {
     private readonly poolCacher: PoolCacher;
@@ -42,6 +48,8 @@ export class SOR {
         timestamp: Math.floor(Date.now() / 1000),
         forceRefresh: false,
         excludePlatforms: [],
+        excludeTokens: [],
+        feeOnTransferTokens: [],
     };
 
     /**
@@ -108,17 +116,11 @@ export class SOR {
             ...swapOptions,
         };
 
-        const pools: SubgraphPoolBase[] = this.poolCacher.getPools();
+        let pools: SubgraphPoolBase[] = this.poolCacher.getPools();
 
-        const filteredByPlatform = filterPoolsByPlatform(
-            pools,
-            options.excludePlatforms || []
-        );
-
-        const filteredPools = filterPoolsByType(
-            filteredByPlatform,
-            options.poolTypeFilter
-        );
+        pools = filterPoolsByType(pools, options.poolTypeFilter);
+        pools = filterPoolsByPlatform(pools, options.excludePlatforms);
+        pools = filterPoolsByToken(pools, options.excludeTokens);
 
         const wrappedInfo = await getWrappedInfo(
             this.provider,
@@ -132,7 +134,7 @@ export class SOR {
         let swapInfo: SwapInfo;
         if (isLidoStableSwap(this.config.chainId, tokenIn, tokenOut)) {
             swapInfo = await getLidoStaticSwaps(
-                filteredPools,
+                pools,
                 this.config.chainId,
                 wrappedInfo.tokenIn.addressForSwaps,
                 wrappedInfo.tokenOut.addressForSwaps,
@@ -146,7 +148,7 @@ export class SOR {
                 wrappedInfo.tokenOut.addressForSwaps,
                 swapType,
                 wrappedInfo.swapAmountForSwaps,
-                filteredPools,
+                pools,
                 options
             );
         }
@@ -257,8 +259,19 @@ export class SOR {
         swapInfo.swaps.forEach((swap) => {
             const pool = pools.find((p) => p.id === swap.poolId);
             if (pool && pool.swapFee) {
-                swap.platformFee =
-                    parseFloat(pool.swapFee) * POOL_SWAP_FEE_RATE;
+                // console.log(pool.platform, 'pool.swapFee    ', pool.swapFee);
+
+                // we increase POOL_SWAP_FEE_DECIMALS twice and then divide by POOL_SWAP_FEE_RATE to avoid parseUnits
+                // to avoid parseUnits Error: fractional component exceeds decimals
+                // as some balancer pools has '0.00075' fee rate.
+                // swap.platformFee does not used at balancer pools
+                swap.platformFee = parseUnits(
+                    pool.swapFee,
+                    POOL_SWAP_FEE_DECIMALS * 2
+                )
+                    .div(POOL_SWAP_FEE_RATE)
+                    .toNumber();
+                // console.log(pool.platform, 'swap.platformFee', swap.platformFee);
                 swapInfo.swapPlatforms[pool.id] = pool.platform ?? '';
             }
         });

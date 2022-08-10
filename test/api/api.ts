@@ -1,6 +1,6 @@
 // Example showing SOR with Vault batchSwap and Subgraph pool data, run using: $ TS_NODE_PROJECT='tsconfig.testing.json' ts-node ./test/testScripts/swapExample.ts
 
-import { BigNumber, BigNumberish, formatFixed } from '@ethersproject/bignumber';
+import { BigNumber, BigNumberish } from '@ethersproject/bignumber';
 import { JsonRpcProvider } from '@ethersproject/providers';
 import { Contract } from '@ethersproject/contracts';
 import {
@@ -162,12 +162,24 @@ export interface ITokenData {
 }
 
 // Make API endpoint for this function (use server's SOR, but tokenIn, tokenOut and swapAmount - from client)
+/**
+ *
+ * @param sor
+ * @param tokenIn
+ * @param tokenOut
+ * @param swapAmount
+ * @param excludePlatforms - do not use platforms specified to build a route
+ * @param excludeTokens - do not use pools with tokens specified to build a route
+ * @param feeOnTransferTokens - fee on transfer tokens can be tokenIn or/and tokenOut, it will not be used to build interim swaps
+ */
 export async function getSwap(
     sor: SOR,
     tokenIn: ITokenData,
     tokenOut: ITokenData,
     swapAmount: BigNumberish,
-    excludePlatforms: string[] = []
+    excludePlatforms: string[] = [],
+    excludeTokens: string[] = [],
+    feeOnTransferTokens: string[] = []
 ): Promise<SwapInfo> {
     // gasPrice is used by SOR as a factor to determine how many pools to swap against.
     // i.e. higher cost means more costly to trade against lots of different pools.
@@ -177,12 +189,12 @@ export async function getSwap(
 
     // This calculates the cost to make a swap which is used as an input to sor to allow it to make gas efficient recommendations.
     // Note - tokenOut for SwapExactIn, tokenIn for SwapExactOut
-    const cost = await sor.getCostOfSwapInToken(
-        tokenOut.address,
-        tokenOut.decimals,
-        gasPrice,
-        BigNumber.from('35000')
-    );
+    // const cost = await sor.getCostOfSwapInToken(
+    //     tokenOut.address,
+    //     tokenOut.decimals,
+    //     gasPrice,
+    //     BigNumber.from('35000'),
+    // );
 
     // console.time('getSwaps');
     const swapInfo: SwapInfo = await sor.getSwaps(
@@ -190,20 +202,22 @@ export async function getSwap(
         tokenOut.address,
         SwapTypes.SwapExactIn,
         swapAmount,
-        { gasPrice, maxPools, excludePlatforms, forceRefresh: true }
+        {
+            gasPrice,
+            maxPools,
+            excludePlatforms,
+            excludeTokens,
+            feeOnTransferTokens,
+            forceRefresh: true,
+        }
     );
     // console.timeEnd('getSwaps');
 
-    const amtInScaled = formatFixed(swapAmount, tokenIn.decimals);
-    const amtOutScaled = formatFixed(swapInfo.returnAmount, tokenOut.decimals);
-    const returnDecimals = tokenOut.decimals;
-
-    const returnWithFeesScaled = formatFixed(
-        swapInfo.returnAmountConsideringFees,
-        returnDecimals
-    );
-
-    const costToSwapScaled = formatFixed(cost, returnDecimals);
+    // const amtInScaled = formatFixed(swapAmount, tokenIn.decimals);
+    // const amtOutScaled = formatFixed(swapInfo.returnAmount, tokenOut.decimals);
+    // const returnDecimals = tokenOut.decimals;
+    // const returnWithFeesScaled = formatFixed(swapInfo.returnAmountConsideringFees, returnDecimals);
+    // const costToSwapScaled = formatFixed(cost, returnDecimals);
 
     // console.log(`Token In: ${tokenIn.symbol}, Amt: ${amtInScaled.toString()}`);
     // console.log(`Token Out: ${tokenOut.symbol}, Amt: ${amtOutScaled.toString()}`);
