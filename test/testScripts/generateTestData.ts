@@ -57,7 +57,7 @@ export async function initAndGenerateTestData(
         amount: number;
     }
 
-    // this data needed for coverage and simle tests
+    // this data needed for coverage and simple tests
     /* const testSwaps: ITestSwap[] = [
         // Coverage tests (do not change values)
         { tokenIn: a.WMATIC, tokenOut: a.USDC, amount: 1000000 },

@@ -40,7 +40,6 @@ app.use(compression());
 app.use(Sentry.Handlers.requestHandler());
 // noinspection TypeScriptValidateJSTypes
 app.use(Sentry.Handlers.tracingHandler());
-
 // noinspection TypeScriptValidateJSTypes
 app.use('/demo', express.static('demo'));
 
