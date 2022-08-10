@@ -115,6 +115,7 @@ export const FEE_ON_TRANSFER_TOKENS = {
         '0xc08e94e12ca1357DF36F3c16c3A1df5F84c7B801'.toLowerCase(), // $GGWTT
         '0xA0D675533b237D9C1e1Ed3fBCA6b3BF726375ECb'.toLowerCase(), // SCORPIO
         '0xcd7361ac3307D1C5a46b63086a90742Ff44c63B3'.toLowerCase(), // RAIDER
+        '0xCB898b0eFb084Df14dd8E018dA37B4d0f06aB26D'.toLowerCase(), // SING
     ],
 };
 
