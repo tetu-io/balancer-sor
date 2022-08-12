@@ -49,7 +49,6 @@ export class SOR {
         forceRefresh: false,
         excludePlatforms: [],
         excludeTokens: [],
-        feeOnTransferTokens: [],
     };
 
     /**

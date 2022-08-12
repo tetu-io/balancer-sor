@@ -12,6 +12,7 @@ import {
     PROVIDER_URLS,
     SOR_CONFIG,
     UNISWAP_SUBGRAPHS,
+    EXCLUDE_TOKENS,
 } from '../../test/api/config';
 import { JsonRpcProvider } from '@ethersproject/providers';
 import * as api from '../../test/api/api';
@@ -103,7 +104,8 @@ app.all('/swap', async (req, res) => {
                 swapRequest.tokenIn,
                 swapRequest.tokenOut,
                 swapRequest.swapAmount,
-                swapRequest.excludePlatforms
+                swapRequest.excludePlatforms,
+                EXCLUDE_TOKENS[networkId]
             );
             // console.log('swapInfo', swapInfo);
             const json = JSON.stringify(swapInfo, undefined, '  ');

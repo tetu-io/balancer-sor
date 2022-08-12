@@ -40,7 +40,6 @@ export interface SwapOptions {
     forceRefresh: boolean;
     excludePlatforms: string[];
     excludeTokens: string[];
-    feeOnTransferTokens: string[];
 }
 
 export type PoolPairBase = {

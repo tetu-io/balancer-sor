@@ -9,7 +9,6 @@ import {
     CONTRACT_UTILS,
     DYSTOPIA_SUBGRAPH_URLS,
     EXCLUDE_TOKENS,
-    FEE_ON_TRANSFER_TOKENS,
     MULTIADDR,
     Network,
     PROVIDER_URLS,
@@ -28,8 +27,7 @@ export async function initAndGenerateTestData(
     balancerSubgraphUrl: string,
     dystopiaSubgraphUrl: string,
     uniswapSubgraphs: UniswapSubgraphData[],
-    excludeTokens: string[] = [],
-    feeOnTransferTokens: string[] = []
+    excludeTokens: string[] = []
 ): Promise<void> {
     // Pools source can be Subgraph URL or pools data set passed directly
     // Update pools list with most recent onchain balances
@@ -45,8 +43,8 @@ export async function initAndGenerateTestData(
         uniswapSubgraphs
     );
 
-    const dexes = api.getDexes(sor);
-    console.log('dexes', dexes);
+    // const dexes = api.getDexes(sor);
+    // console.log('dexes', dexes);
 
     // Generate test data for multiswap2 contract (tetu-contracts-io project)
     const a = TOKENS[sor.config.chainId];
@@ -76,7 +74,7 @@ export async function initAndGenerateTestData(
     // Dystopia-related pairs test data
     const testSwapsDyst: ITestSwap[] = [];
     const pairsToCheckDyst =
-        'USDC/WMATIC, WMATIC/USDC, USDT/WMATIC, USD+/WMATIC, WMATIC/USD+, WMATIC/USDT, WETH/WMATIC, USD+/USDC, USDC/USD+, WMATIC/WETH, SPHERE/USD+, USDC/WETH, WETH/USDC, DYST/WMATIC, stMATIC/WMATIC, USD+/SPHERE, USD+/TETU, FXS/FRAX, FRAX/WMATIC, USD+/WETH, WETH/USD+, miMATIC/FRAX, USD+/stMATIC, TETU/USD+, stMATIC/USD+, WMATIC/stMATIC, KOGECOIN/USDC, DAI/USDC, USDC/FRAX, USDC/agEUR, WMATIC/FRAX, USD+/CLAM, MaticX/WMATIC, USDC/KOGECOIN, WMATIC/DYST, USDC/USDT, USDC/Qi, Qi/USDC, COMFI/WMATIC, miMATIC/USDC, Qi/vQi, USDC/miMATIC, WETH/WBTC, WMATIC/TETU, KOGECOIN/WMATIC, DYST/USD+, DYST/miMATIC'.split(
+        'USDC/WMATIC, WMATIC/USDC, USDT/WMATIC, USD+/WMATIC, WMATIC/USD+, WMATIC/USDT, WETH/WMATIC, USD+/USDC, USDC/USD+, WMATIC/WETH, USDC/WETH, WETH/USDC, DYST/WMATIC, stMATIC/WMATIC, USD+/TETU, FXS/FRAX, FRAX/WMATIC, USD+/WETH, WETH/USD+, miMATIC/FRAX, USD+/stMATIC, TETU/USD+, stMATIC/USD+, WMATIC/stMATIC, KOGECOIN/USDC, DAI/USDC, USDC/FRAX, USDC/agEUR, WMATIC/FRAX, USD+/CLAM, MaticX/WMATIC, USDC/KOGECOIN, WMATIC/DYST, USDC/USDT, USDC/Qi, Qi/USDC, COMFI/WMATIC, miMATIC/USDC, Qi/vQi, USDC/miMATIC, WETH/WBTC, WMATIC/TETU, KOGECOIN/WMATIC, DYST/USD+, DYST/miMATIC'.split(
             ', '
         );
 
@@ -87,7 +85,7 @@ export async function initAndGenerateTestData(
         if (!tokenIn || !tokenOut)
             console.warn(`No token found! (Pair:${pair})`);
         else {
-            const amount = 1;
+            const amount = 10;
             const testSwap = { tokenIn, tokenOut, amount };
             testSwapsDyst.push(testSwap);
         }
@@ -102,8 +100,7 @@ export async function initAndGenerateTestData(
         sor,
         testSwapsDyst,
         testDataFilenameDyst,
-        excludeTokens,
-        feeOnTransferTokens
+        excludeTokens
     );
 }
 
@@ -113,8 +110,7 @@ async function generateTestData(
     sor: SOR,
     testSwaps,
     testDataFilename,
-    excludeTokens,
-    feeOnTransferTokens
+    excludeTokens
 ) {
     interface ITestData {
         [key: string]: SwapInfo;
@@ -142,12 +138,14 @@ async function generateTestData(
             swap.tokenOut,
             amount,
             [],
-            excludeTokens,
-            feeOnTransferTokens
+            excludeTokens
         );
 
         if (swapData.swaps.length) testData[key] = swapData;
-        else console.warn('ROUTE NOT FOUND !!!!');
+        else {
+            // console.warn('ROUTE NOT FOUND !!!!');
+            throw new Error('ROUTE NOT FOUND !!!!');
+        }
     }
 
     const latestBlock = await sor.provider.getBlock('latest');
@@ -182,6 +180,5 @@ initAndGenerateTestData(
     BALANCER_SUBGRAPH_URLS[networkId],
     DYSTOPIA_SUBGRAPH_URLS[networkId],
     UNISWAP_SUBGRAPHS[networkId],
-    EXCLUDE_TOKENS[networkId],
-    FEE_ON_TRANSFER_TOKENS[networkId]
+    EXCLUDE_TOKENS[networkId]
 ).then();

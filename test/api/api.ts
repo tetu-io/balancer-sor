@@ -109,7 +109,7 @@ export async function init(
         );
 
     const subgraphPoolDataServices: PoolDataService[] = [
-        subgraphBalancerPoolDataService,
+        subgraphBalancerPoolDataService, // TODO remove comment
         subgraphDystopiaPoolDataService,
         ...subgraphUniswapPoolDataServices,
     ];
@@ -170,7 +170,6 @@ export interface ITokenData {
  * @param swapAmount
  * @param excludePlatforms - do not use platforms specified to build a route
  * @param excludeTokens - do not use pools with tokens specified to build a route
- * @param feeOnTransferTokens - fee on transfer tokens can be tokenIn or/and tokenOut, it will not be used to build interim swaps
  */
 export async function getSwap(
     sor: SOR,
@@ -178,8 +177,7 @@ export async function getSwap(
     tokenOut: ITokenData,
     swapAmount: BigNumberish,
     excludePlatforms: string[] = [],
-    excludeTokens: string[] = [],
-    feeOnTransferTokens: string[] = []
+    excludeTokens: string[] = []
 ): Promise<SwapInfo> {
     // gasPrice is used by SOR as a factor to determine how many pools to swap against.
     // i.e. higher cost means more costly to trade against lots of different pools.
@@ -207,7 +205,6 @@ export async function getSwap(
             maxPools,
             excludePlatforms,
             excludeTokens,
-            feeOnTransferTokens,
             forceRefresh: true,
         }
     );
