@@ -83,12 +83,6 @@
         "symbol": "SOL",
         "fee": "0"
     },
-    "0x501ace9c35e60f03a2af4d484f49f9b1efde9f40": {
-        "address": "0x501ace9c35e60f03a2af4d484f49f9b1efde9f40",
-        "decimals": 18,
-        "symbol": "SOLACE",
-        "fee": "VM Exception while processing transaction: reverted with reason string 'ERC20: transfer amount exceeds balance'"
-    },
     "0x034b2090b579228482520c589dbd397c53fc51cc": {
         "address": "0x034b2090b579228482520c589dbd397c53fc51cc",
         "decimals": 18,
@@ -196,12 +190,6 @@
         "decimals": 18,
         "symbol": "BTC2x-FLI-P",
         "fee": "0"
-    },
-    "0xdb7cb471dd0b49b29cab4a1c14d070f27216a0ab": {
-        "address": "0xdb7cb471dd0b49b29cab4a1c14d070f27216a0ab",
-        "decimals": 18,
-        "symbol": "BANK",
-        "fee": "VM Exception while processing transaction: reverted with reason string 'ERC20: transfer amount exceeds balance'"
     },
     "0x9c2c5fd7b07e95ee044ddeba0e97a665f142394f": {
         "address": "0x9c2c5fd7b07e95ee044ddeba0e97a665f142394f",
@@ -833,12 +821,6 @@
         "symbol": "NETU21",
         "fee": "100"
     },
-    "0x3cef98bb43d732e2f285ee605a8158cde967d219": {
-        "address": "0x3cef98bb43d732e2f285ee605a8158cde967d219",
-        "decimals": 18,
-        "symbol": "BAT",
-        "fee": "VM Exception while processing transaction: reverted with reason string 'ERC20: transfer amount exceeds balance'"
-    },
     "0x84a6651b932aac7165884c05244bbf1e1e019cd4": {
         "address": "0x84a6651b932aac7165884c05244bbf1e1e019cd4",
         "decimals": 0,
@@ -910,12 +892,6 @@
         "decimals": 18,
         "symbol": "BREED",
         "fee": "0"
-    },
-    "0x60bb3d364b765c497c8ce50ae0ae3f0882c5bd05": {
-        "address": "0x60bb3d364b765c497c8ce50ae0ae3f0882c5bd05",
-        "decimals": 18,
-        "symbol": "IMX",
-        "fee": "VM Exception while processing transaction: reverted with reason string 'ERC20: transfer amount exceeds balance'"
     },
     "0xa3fc7e0021970f5af674ad837a8dc09e2f12f37b": {
         "address": "0xa3fc7e0021970f5af674ad837a8dc09e2f12f37b",
@@ -994,12 +970,6 @@
         "decimals": 18,
         "symbol": "PBIRB",
         "fee": "400"
-    },
-    "0x4731479cd56e3a55f8207db9734e3fdb5e136d43": {
-        "address": "0x4731479cd56e3a55f8207db9734e3fdb5e136d43",
-        "decimals": 18,
-        "symbol": "usd",
-        "fee": "VM Exception while processing transaction: reverted with reason string 'ERC20: transfer amount exceeds balance'"
     },
     "0x36a36eae690e1e138018b706567b0c2d9188b76a": {
         "address": "0x36a36eae690e1e138018b706567b0c2d9188b76a",
@@ -1085,23 +1055,11 @@
         "symbol": "BUSD",
         "fee": "0"
     },
-    "0x9a575498ce240fe43504f53d68eef6440f0cf280": {
-        "address": "0x9a575498ce240fe43504f53d68eef6440f0cf280",
-        "decimals": 18,
-        "symbol": "APENK",
-        "fee": "VM Exception while processing transaction: reverted with reason string 'ERC20: transfer amount exceeds balance'"
-    },
     "0x20d3922b4a1a8560e1ac99fba4fade0c849e2142": {
         "address": "0x20d3922b4a1a8560e1ac99fba4fade0c849e2142",
         "decimals": 18,
         "symbol": "maWETH",
         "fee": "0"
-    },
-    "0xa1ab42478ccd72b7518132e2a400bf90d1d34f38": {
-        "address": "0xa1ab42478ccd72b7518132e2a400bf90d1d34f38",
-        "decimals": 18,
-        "symbol": "Bits Dollar",
-        "fee": "VM Exception while processing transaction: reverted with reason string 'ERC20: transfer amount exceeds balance'"
     },
     "0x9da313d30f6da94114c21c9c3c174c4fc75c6644": {
         "address": "0x9da313d30f6da94114c21c9c3c174c4fc75c6644",
@@ -1120,12 +1078,6 @@
         "decimals": 18,
         "symbol": "STAR",
         "fee": "14"
-    },
-    "0x17840df7caa07e298b16e8612157b90ed231c973": {
-        "address": "0x17840df7caa07e298b16e8612157b90ed231c973",
-        "decimals": 18,
-        "symbol": "DAO",
-        "fee": "VM Exception while processing transaction: reverted with reason string 'ERC20: transfer amount exceeds balance'"
     },
     "0xbf9bd029c19a871f652fb403f9ac5a572e4cf2f8": {
         "address": "0xbf9bd029c19a871f652fb403f9ac5a572e4cf2f8",
@@ -1198,12 +1150,6 @@
         "decimals": 18,
         "symbol": "rUSD",
         "fee": "0"
-    },
-    "0xffa4d863c96e743a2e1513824ea006b8d0353c57": {
-        "address": "0xffa4d863c96e743a2e1513824ea006b8d0353c57",
-        "decimals": 18,
-        "symbol": "USDD",
-        "fee": "VM Exception while processing transaction: reverted with reason string 'ERC20: transfer amount exceeds balance'"
     },
     "0xf8101befdc322be3a79f930deaf6b4cf2f65e521": {
         "address": "0xf8101befdc322be3a79f930deaf6b4cf2f65e521",
@@ -1415,12 +1361,6 @@
         "symbol": "amUSDT",
         "fee": "0"
     },
-    "0x8df3aad3a84da6b69a4da8aec3ea40d9091b2ac4": {
-        "address": "0x8df3aad3a84da6b69a4da8aec3ea40d9091b2ac4",
-        "decimals": 18,
-        "symbol": "amWMATIC",
-        "fee": "VM Exception while processing transaction: reverted with reason string 'ERC20: transfer amount exceeds balance'"
-    },
     "0x6df5c1da0310a0725b919579d06de427cb578c83": {
         "address": "0x6df5c1da0310a0725b919579d06de427cb578c83",
         "decimals": 18,
@@ -1564,12 +1504,6 @@
         "decimals": 18,
         "symbol": "$DG",
         "fee": "0"
-    },
-    "0x1c954e8fe737f99f68fa1ccda3e51ebdb291948c": {
-        "address": "0x1c954e8fe737f99f68fa1ccda3e51ebdb291948c",
-        "decimals": 18,
-        "symbol": "KNC",
-        "fee": "VM Exception while processing transaction: reverted with reason string 'ERC20: transfer amount exceeds balance'"
     },
     "0xad8bf8e161ea34a9c708f93c3b4db703c9ccb71b": {
         "address": "0xad8bf8e161ea34a9c708f93c3b4db703c9ccb71b",
@@ -1721,12 +1655,6 @@
         "symbol": "GEO",
         "fee": "0"
     },
-    "0xce829a89d4a55a63418bcc43f00145adef0edb8e": {
-        "address": "0xce829a89d4a55a63418bcc43f00145adef0edb8e",
-        "decimals": 8,
-        "symbol": "renDOGE",
-        "fee": "VM Exception while processing transaction: reverted with reason string 'ERC20: transfer amount exceeds balance'"
-    },
     "0xfe4546fefe124f30788c4cc1bb9aa6907a7987f9": {
         "address": "0xfe4546fefe124f30788c4cc1bb9aa6907a7987f9",
         "decimals": 18,
@@ -1829,23 +1757,11 @@
         "symbol": "ST",
         "fee": "0"
     },
-    "0xe21fc865c08342cfa9f52fb5c162114a61467365": {
-        "address": "0xe21fc865c08342cfa9f52fb5c162114a61467365",
-        "decimals": 18,
-        "symbol": "dmoo",
-        "fee": "VM Exception while processing transaction: reverted with reason string 'ERC20: transfer amount exceeds balance'"
-    },
     "0x30b0d34dc2d1babb03dd9ef664259f4d11f01e9e": {
         "address": "0x30b0d34dc2d1babb03dd9ef664259f4d11f01e9e",
         "decimals": 18,
         "symbol": "HOP",
         "fee": "0"
-    },
-    "0x9a06db14d639796b25a6cec6a1bf614fd98815ec": {
-        "address": "0x9a06db14d639796b25a6cec6a1bf614fd98815ec",
-        "decimals": 18,
-        "symbol": "$ZKP",
-        "fee": "VM Exception while processing transaction: reverted with reason string 'ERC20: transfer amount exceeds balance'"
     },
     "0x9d8c6dcfdda4d0d71f2f26ece9230731b410c33d": {
         "address": "0x9d8c6dcfdda4d0d71f2f26ece9230731b410c33d",
@@ -2026,12 +1942,6 @@
         "decimals": 18,
         "symbol": "OMI",
         "fee": "0"
-    },
-    "0xaaf165e75b4c9370d22b971af08c630e76bfa70c": {
-        "address": "0xaaf165e75b4c9370d22b971af08c630e76bfa70c",
-        "decimals": 18,
-        "symbol": "wOMI",
-        "fee": "VM Exception while processing transaction: reverted with reason string 'ERC20: transfer amount exceeds balance'"
     },
     "0xb52cfbca305e13c4c6774846f8d42bb1f0ec51d0": {
         "address": "0xb52cfbca305e13c4c6774846f8d42bb1f0ec51d0",
@@ -2507,12 +2417,6 @@
         "symbol": "DOWN",
         "fee": "call revert exception (method=\"balanceOf(address)\", errorArgs=null, errorName=null, errorSignature=null, reason=null, code=CALL_EXCEPTION, version=abi/5.5.0)"
     },
-    "0x553d3d295e0f695b9228246232edf400ed3560b5": {
-        "address": "0x553d3d295e0f695b9228246232edf400ed3560b5",
-        "decimals": 18,
-        "symbol": "PAXG",
-        "fee": "VM Exception while processing transaction: reverted with reason string 'ERC20: transfer amount exceeds balance'"
-    },
     "0xe479fff28859f88f8361864675d72e1bb775bdc2": {
         "address": "0xe479fff28859f88f8361864675d72e1bb775bdc2",
         "decimals": 18,
@@ -2849,12 +2753,6 @@
         "symbol": "XZAR",
         "fee": "0"
     },
-    "0xe47a7ebf8ec907854ccabead79a5e720a329bd31": {
-        "address": "0xe47a7ebf8ec907854ccabead79a5e720a329bd31",
-        "decimals": 18,
-        "symbol": "$ORES",
-        "fee": "VM Exception while processing transaction: reverted with reason string 'ERC20: transfer amount exceeds balance'"
-    },
     "0xe9f0578d7672ee0025892ca87b2c38f719a0ee00": {
         "address": "0xe9f0578d7672ee0025892ca87b2c38f719a0ee00",
         "decimals": 6,
@@ -2956,24 +2854,6 @@
         "decimals": 9,
         "symbol": "BCT",
         "fee": "0"
-    },
-    "0x67eb41a14c0fe5cd701fc9d5a3d6597a72f641a6": {
-        "address": "0x67eb41a14c0fe5cd701fc9d5a3d6597a72f641a6",
-        "decimals": 18,
-        "symbol": "GIDDY",
-        "fee": "VM Exception while processing transaction: reverted with reason string 'ERC20: transfer amount exceeds balance'"
-    },
-    "0x12a34a6759c871c4c1e8a0a42cfc97e4d7aaf68d": {
-        "address": "0x12a34a6759c871c4c1e8a0a42cfc97e4d7aaf68d",
-        "decimals": 18,
-        "symbol": "TUT",
-        "fee": "VM Exception while processing transaction: reverted with reason string 'ERC20: transfer amount exceeds balance'"
-    },
-    "0xd838290e877e0188a4a44700463419ed96c16107": {
-        "address": "0xd838290e877e0188a4a44700463419ed96c16107",
-        "decimals": 18,
-        "symbol": "NCT",
-        "fee": "VM Exception while processing transaction: reverted with reason string 'ERC20: transfer amount exceeds balance'"
     },
     "0xcd7361ac3307d1c5a46b63086a90742ff44c63b3": {
         "address": "0xcd7361ac3307d1c5a46b63086a90742ff44c63b3",
@@ -3269,12 +3149,6 @@
         "symbol": "GRIMWEED",
         "fee": "0"
     },
-    "0x2df54842cd85c60f21b4871e09bcc6047b2dcc4d": {
-        "address": "0x2df54842cd85c60f21b4871e09bcc6047b2dcc4d",
-        "decimals": 18,
-        "symbol": "IMRTL",
-        "fee": "VM Exception while processing transaction: reverted with reason string 'AnyswapV3ERC20: transfer amount exceeds balance'"
-    },
     "0x2b88ad57897a8b496595925f43048301c37615da": {
         "address": "0x2b88ad57897a8b496595925f43048301c37615da",
         "decimals": 18,
@@ -3569,12 +3443,6 @@
         "symbol": "DHC",
         "fee": "0"
     },
-    "0x983c0083127b9b65000e918b10d65a0f5d7500f5": {
-        "address": "0x983c0083127b9b65000e918b10d65a0f5d7500f5",
-        "decimals": 18,
-        "symbol": "BLOCKS",
-        "fee": "VM Exception while processing transaction: reverted with reason string 'ERC20: transfer amount exceeds balance'"
-    },
     "0x049f12f5a27132d06de128d48a914f6d82d33d23": {
         "address": "0x049f12f5a27132d06de128d48a914f6d82d33d23",
         "decimals": 18,
@@ -3586,12 +3454,6 @@
         "decimals": 18,
         "symbol": "LICP",
         "fee": "0"
-    },
-    "0x1b815d120b3ef02039ee11dc2d33de7aa4a8c603": {
-        "address": "0x1b815d120b3ef02039ee11dc2d33de7aa4a8c603",
-        "decimals": 18,
-        "symbol": "WOO",
-        "fee": "VM Exception while processing transaction: reverted with reason string 'ERC20: transfer amount exceeds balance'"
     },
     "0x4f6cbaca3151f7746273004fd7295933a9b70e69": {
         "address": "0x4f6cbaca3151f7746273004fd7295933a9b70e69",
@@ -3719,12 +3581,6 @@
         "symbol": "wXRNBW",
         "fee": "0"
     },
-    "0x5b0a0cd03e9df1829e00128ebe277cc3247da346": {
-        "address": "0x5b0a0cd03e9df1829e00128ebe277cc3247da346",
-        "decimals": 18,
-        "symbol": "BFLY",
-        "fee": "VM Exception while processing transaction: reverted with reason string 'ERC20: transfer amount exceeds balance'"
-    },
     "0x6b1e22bc4d28dac283197cf44347639c8360ece6": {
         "address": "0x6b1e22bc4d28dac283197cf44347639c8360ece6",
         "decimals": 18,
@@ -3772,12 +3628,6 @@
         "decimals": 18,
         "symbol": "BYN",
         "fee": "0"
-    },
-    "0xc54a5024b6c5e565772729b783021f60a8f9139c": {
-        "address": "0xc54a5024b6c5e565772729b783021f60a8f9139c",
-        "decimals": 18,
-        "symbol": "SMOKE",
-        "fee": "VM Exception while processing transaction: reverted with reason string 'ERC20: transfer amount exceeds balance'"
     },
     "0x02649c1ff4296038de4b9ba8f491b42b940a8252": {
         "address": "0x02649c1ff4296038de4b9ba8f491b42b940a8252",
@@ -4283,12 +4133,6 @@
         "symbol": "$BANANA",
         "fee": "0"
     },
-    "0x10635bf5c17f5e4c0ed9012aef7c12f96a57a4dd": {
-        "address": "0x10635bf5c17f5e4c0ed9012aef7c12f96a57a4dd",
-        "decimals": 18,
-        "symbol": "TAP",
-        "fee": "VM Exception while processing transaction: reverted with reason string 'ERC20: transfer amount exceeds balance'"
-    },
     "0xf0059cc2b3e980065a906940fbce5f9db7ae40a7": {
         "address": "0xf0059cc2b3e980065a906940fbce5f9db7ae40a7",
         "decimals": 18,
@@ -4360,12 +4204,6 @@
         "decimals": 9,
         "symbol": "ZXVC",
         "fee": "0"
-    },
-    "0x9fdc23fe295104ac55fef09363c56451d0e37cfa": {
-        "address": "0x9fdc23fe295104ac55fef09363c56451d0e37cfa",
-        "decimals": 18,
-        "symbol": "rkl",
-        "fee": "VM Exception while processing transaction: reverted with reason string 'ERC20: transfer amount exceeds balance'"
     },
     "0x80244c2441779361f35803b8c711c6c8fc6054a3": {
         "address": "0x80244c2441779361f35803b8c711c6c8fc6054a3",
@@ -4492,12 +4330,6 @@
         "decimals": 18,
         "symbol": "GASB",
         "fee": "100"
-    },
-    "0xef3af9dfea19dd9892ae6c57be973fb390991530": {
-        "address": "0xef3af9dfea19dd9892ae6c57be973fb390991530",
-        "decimals": 18,
-        "symbol": "XIAZ2",
-        "fee": "VM Exception while processing transaction: reverted with reason string 'BEP20: transfer amount exceeds balance'"
     },
     "0x2a6f69709ca73a4ac31ec724dd8a385420e92b1f": {
         "address": "0x2a6f69709ca73a4ac31ec724dd8a385420e92b1f",
@@ -5639,12 +5471,6 @@
         "symbol": "MUAY",
         "fee": "199"
     },
-    "0x3ad736904e9e65189c3000c7dd2c8ac8bb7cd4e3": {
-        "address": "0x3ad736904e9e65189c3000c7dd2c8ac8bb7cd4e3",
-        "decimals": 18,
-        "symbol": "MATICx",
-        "fee": "VM Exception while processing transaction: reverted with reason string 'SuperfluidToken: move amount exceeds balance'"
-    },
     "0xe1e549ef22139f3f739cd2c2b1edb83f37c39502": {
         "address": "0xe1e549ef22139f3f739cd2c2b1edb83f37c39502",
         "decimals": 18,
@@ -6461,12 +6287,6 @@
         "symbol": "SHUNG",
         "fee": "0"
     },
-    "0xfd247766c18bc9adc2d48349577c6946a960133c": {
-        "address": "0xfd247766c18bc9adc2d48349577c6946a960133c",
-        "decimals": 18,
-        "symbol": "TEAR",
-        "fee": "VM Exception while processing transaction: reverted with reason string 'ERC20: transfer amount exceeds balance'"
-    },
     "0x7ea5e774d2db3b17da5218d8e66e95e11c37806c": {
         "address": "0x7ea5e774d2db3b17da5218d8e66e95e11c37806c",
         "decimals": 9,
@@ -6893,12 +6713,6 @@
         "symbol": "SQUID",
         "fee": "0"
     },
-    "0xebe0c8d842aa5a57d7bef8e524deaba676f91cd1": {
-        "address": "0xebe0c8d842aa5a57d7bef8e524deaba676f91cd1",
-        "decimals": 18,
-        "symbol": "mooMaiUSDC-miMATIC",
-        "fee": "VM Exception while processing transaction: reverted with reason string 'ERC20: transfer amount exceeds balance'"
-    },
     "0x034293f21f1cce5908bc605ce5850df2b1059ac0": {
         "address": "0x034293f21f1cce5908bc605ce5850df2b1059ac0",
         "decimals": 18,
@@ -7018,12 +6832,6 @@
         "decimals": 18,
         "symbol": "BIST",
         "fee": "call revert exception (method=\"balanceOf(address)\", errorArgs=null, errorName=null, errorSignature=null, reason=null, code=CALL_EXCEPTION, version=abi/5.5.0)"
-    },
-    "0x8829adf1a9a7face44c8fab3bc454f93f330e492": {
-        "address": "0x8829adf1a9a7face44c8fab3bc454f93f330e492",
-        "decimals": 18,
-        "symbol": "mooQuickSwapstMATIC-MATIC",
-        "fee": "VM Exception while processing transaction: reverted with reason string 'ERC20: transfer amount exceeds balance'"
     },
     "0x594ec833a676b761e44850ccfac877a348468dd6": {
         "address": "0x594ec833a676b761e44850ccfac877a348468dd6",
@@ -7679,12 +7487,6 @@
         "symbol": "B-52",
         "fee": "0"
     },
-    "0x7d06aacd5db736e8dc6f09d1b7e5f6e8fac7592d": {
-        "address": "0x7d06aacd5db736e8dc6f09d1b7e5f6e8fac7592d",
-        "decimals": 18,
-        "symbol": "EAGLE",
-        "fee": "VM Exception while processing transaction: reverted with reason string 'ERC20: transfer amount exceeds balance'"
-    },
     "0x2336976b1a5114dd31c3534bac28396d645a0eef": {
         "address": "0x2336976b1a5114dd31c3534bac28396d645a0eef",
         "decimals": 9,
@@ -7750,12 +7552,6 @@
         "decimals": 18,
         "symbol": "SING",
         "fee": "0"
-    },
-    "0x72e461dcfeea8a592669573b55984cb154560f1f": {
-        "address": "0x72e461dcfeea8a592669573b55984cb154560f1f",
-        "decimals": 18,
-        "symbol": "DVtest",
-        "fee": "VM Exception while processing transaction: reverted with reason string 'BEP20: transfer amount exceeds balance'"
     },
     "0xce99efa912255e49d0e6f15c1a62e0b3b05234ae": {
         "address": "0xce99efa912255e49d0e6f15c1a62e0b3b05234ae",
@@ -8105,12 +7901,6 @@
         "symbol": "HOPM",
         "fee": "0"
     },
-    "0xa965c8ecd1e5e8543176142299ceb8f075771c7d": {
-        "address": "0xa965c8ecd1e5e8543176142299ceb8f075771c7d",
-        "decimals": 18,
-        "symbol": "CST",
-        "fee": "VM Exception while processing transaction: reverted with reason string 'ERC20: transfer amount exceeds balance'"
-    },
     "0x4524a14808159fd380ad129dfb17e3d6692e505c": {
         "address": "0x4524a14808159fd380ad129dfb17e3d6692e505c",
         "decimals": 18,
@@ -8367,7 +8157,7 @@
         "address": "0x2f5ef983fe245e5dc827fe3f380dbe70cdcf216b",
         "decimals": 18,
         "symbol": "WOONE",
-        "fee": "VM Exception while processing transaction: reverted with reason string 'ERC20: transfer amount exceeds balance'"
+        "fee": "0"
     },
     "0xe4452852033af5568da2c704259cd0df35bff934": {
         "address": "0xe4452852033af5568da2c704259cd0df35bff934",
@@ -8615,12 +8405,6 @@
         "symbol": "MEGA",
         "fee": "0"
     },
-    "0x6d0c966c8a09e354df9c48b446a474ce3343d912": {
-        "address": "0x6d0c966c8a09e354df9c48b446a474ce3343d912",
-        "decimals": 18,
-        "symbol": "XVMC",
-        "fee": "VM Exception while processing transaction: reverted with reason string 'BEP20: transfer amount exceeds balance'"
-    },
     "0xfe1a200637464fbc9b60bc7aecb9b86c0e1d486e": {
         "address": "0xfe1a200637464fbc9b60bc7aecb9b86c0e1d486e",
         "decimals": 18,
@@ -8819,12 +8603,6 @@
         "symbol": "DOJO",
         "fee": "0"
     },
-    "0x000de668684839f97d4845f32a43e913366ec08c": {
-        "address": "0x000de668684839f97d4845f32a43e913366ec08c",
-        "decimals": 8,
-        "symbol": "BOND",
-        "fee": "VM Exception while processing transaction: reverted with reason string 'ERC20: transfer amount exceeds balance'"
-    },
     "0x1a32f0b6760f9f76a750c7154854e1d8916b4a34": {
         "address": "0x1a32f0b6760f9f76a750c7154854e1d8916b4a34",
         "decimals": 8,
@@ -8848,12 +8626,6 @@
         "decimals": 9,
         "symbol": "MITTO",
         "fee": "0"
-    },
-    "0x8063037ea50e4a066bf1430ea1e3e609cd5cef6b": {
-        "address": "0x8063037ea50e4a066bf1430ea1e3e609cd5cef6b",
-        "decimals": 18,
-        "symbol": "PAE",
-        "fee": "VM Exception while processing transaction: reverted with reason string 'AnyswapV6ERC20: transfer amount exceeds balance'"
     },
     "0x1894f703fefaf52bac0f780ebf0dd8e9bb5310eb": {
         "address": "0x1894f703fefaf52bac0f780ebf0dd8e9bb5310eb",
@@ -9143,12 +8915,6 @@
         "symbol": "RTT",
         "fee": "900"
     },
-    "0x1b12bdef2d562e19dd3b8cb66f61f1e1b714d491": {
-        "address": "0x1b12bdef2d562e19dd3b8cb66f61f1e1b714d491",
-        "decimals": 18,
-        "symbol": "XA9",
-        "fee": "VM Exception while processing transaction: reverted with reason string 'ERC20: transfer amount exceeds balance'"
-    },
     "0x6e9cc1745042374509f5761abc2f03b6d9a7a97e": {
         "address": "0x6e9cc1745042374509f5761abc2f03b6d9a7a97e",
         "decimals": 2,
@@ -9166,12 +8932,6 @@
         "decimals": 18,
         "symbol": "PYRO",
         "fee": "0"
-    },
-    "0x87f654c4b347230c60cad8d7ea9cf0d7238bcc79": {
-        "address": "0x87f654c4b347230c60cad8d7ea9cf0d7238bcc79",
-        "decimals": 18,
-        "symbol": "YAMP",
-        "fee": "VM Exception while processing transaction: reverted with reason string 'Yamp::_transferTokens: transfer amount exceeds balance'"
     },
     "0xff02b6590cdfa354b6f724b16e6588d7a672f255": {
         "address": "0xff02b6590cdfa354b6f724b16e6588d7a672f255",
@@ -9591,7 +9351,7 @@
         "address": "0x3129662808bec728a27ab6a6b9afd3cbaca8a43c",
         "decimals": 18,
         "symbol": "FTS",
-        "fee": "VM Exception while processing transaction: reverted with reason string 'AnyswapV3ERC20: transfer amount exceeds balance'"
+        "fee": "0"
     },
     "0x588d693921929b8552bd576db60b5bcd23be1394": {
         "address": "0x588d693921929b8552bd576db60b5bcd23be1394",
@@ -9741,7 +9501,7 @@
         "address": "0x558711fe4fbef11d44e7219f303fb4454d3fb0ce",
         "decimals": 18,
         "symbol": "pWINGS-LP",
-        "fee": "VM Exception while processing transaction: reverted with reason string 'ds-math-sub-underflow'"
+        "fee": "0"
     },
     "0xcdd049c1f74dad7ffb31649e6806745bed56a43c": {
         "address": "0xcdd049c1f74dad7ffb31649e6806745bed56a43c",
@@ -9820,12 +9580,6 @@
         "decimals": 18,
         "symbol": "ZEN",
         "fee": "0"
-    },
-    "0xd02064bed4126accce79431a52f206c558479648": {
-        "address": "0xd02064bed4126accce79431a52f206c558479648",
-        "decimals": 18,
-        "symbol": "vAlphaKogeCoin",
-        "fee": "VM Exception while processing transaction: reverted with reason string 'ERC20: transfer amount exceeds balance'"
     },
     "0x876e80943badf1f46a3322754f5ad32448913771": {
         "address": "0x876e80943badf1f46a3322754f5ad32448913771",
@@ -9959,23 +9713,11 @@
         "symbol": "USDC",
         "fee": "0"
     },
-    "0xd5fa77a860fea9cff31da91bbf9e0faea9538290": {
-        "address": "0xd5fa77a860fea9cff31da91bbf9e0faea9538290",
-        "decimals": 18,
-        "symbol": "COLLAR",
-        "fee": "VM Exception while processing transaction: reverted with reason string 'ERC20: transfer amount exceeds balance'"
-    },
     "0xe52bf8472d9817b9a0a698f5594bf1b705d6843e": {
         "address": "0xe52bf8472d9817b9a0a698f5594bf1b705d6843e",
         "decimals": 9,
         "symbol": "OMOON",
         "fee": "0"
-    },
-    "0xf28ca9d779ca6a1945a85ac50bdb7dd5d0038c1f": {
-        "address": "0xf28ca9d779ca6a1945a85ac50bdb7dd5d0038c1f",
-        "decimals": 18,
-        "symbol": "NUTS",
-        "fee": "VM Exception while processing transaction: reverted with reason string 'BEP20: transfer amount exceeds balance'"
     },
     "0x59b8e1ef875336949673db6365b8364ae954addc": {
         "address": "0x59b8e1ef875336949673db6365b8364ae954addc",
@@ -10246,12 +9988,6 @@
         "decimals": 9,
         "symbol": "YKK",
         "fee": "200"
-    },
-    "0x0a243b11244417847933cc14f0435c494f54bd09": {
-        "address": "0x0a243b11244417847933cc14f0435c494f54bd09",
-        "decimals": 18,
-        "symbol": "KRYPT",
-        "fee": "VM Exception while processing transaction: reverted with reason string 'ERC20: transfer amount exceeds balance'"
     },
     "0xe44f790e3c183f9269e7153deac4e597d6e79ac8": {
         "address": "0xe44f790e3c183f9269e7153deac4e597d6e79ac8",
@@ -10751,12 +10487,6 @@
         "symbol": "HRC",
         "fee": "0"
     },
-    "0x3053ad3b31600074e9a90440770f78d5e8fc5a54": {
-        "address": "0x3053ad3b31600074e9a90440770f78d5e8fc5a54",
-        "decimals": 18,
-        "symbol": "WAULTx",
-        "fee": "VM Exception while processing transaction: reverted with reason string 'AnyswapV3ERC20: transfer amount exceeds balance'"
-    },
     "0x75eb9fd8608e2ff9418821062398e4f4b8d53644": {
         "address": "0x75eb9fd8608e2ff9418821062398e4f4b8d53644",
         "decimals": 18,
@@ -10803,7 +10533,7 @@
         "address": "0x1c8dd8d22c5417b3fe8033c8e73690956a2cbfe1",
         "decimals": 18,
         "symbol": "GIGAHOGE",
-        "fee": "VM Exception while processing transaction: reverted with reason string 'ERC20: transfer amount exceeds balance'"
+        "fee": "0"
     },
     "0xedf8e3cde2411c46132b2126524eb0fe195028dd": {
         "address": "0xedf8e3cde2411c46132b2126524eb0fe195028dd",
@@ -11225,16 +10955,22 @@
         "symbol": "miMATIC",
         "fee": "0"
     },
-    "0xc2132d05d31c914a87c6611c10748aeb04b58e8f": {
-        "address": "0xc2132d05d31c914a87c6611c10748aeb04b58e8f",
-        "decimals": 6,
-        "symbol": "USDT",
-        "fee": "VM Exception while processing transaction: reverted with reason string 'ERC20: transfer amount exceeds balance'"
-    },
     "0x7ceb23fd6bc0add59e62ac25578270cff1b9f619": {
         "address": "0x7ceb23fd6bc0add59e62ac25578270cff1b9f619",
         "decimals": 18,
         "symbol": "WETH",
         "fee": "0"
+    },
+    "0x3ad736904e9e65189c3000c7dd2c8ac8bb7cd4e3": {
+        "address": "0x3ad736904e9e65189c3000c7dd2c8ac8bb7cd4e3",
+        "decimals": 18,
+        "symbol": "MATICx",
+        "fee": "VM Exception while processing transaction: reverted with reason string 'SuperfluidToken: move amount exceeds balance'"
+    },
+    "0x3053ad3b31600074e9a90440770f78d5e8fc5a54": {
+        "address": "0x3053ad3b31600074e9a90440770f78d5e8fc5a54",
+        "decimals": 18,
+        "symbol": "WAULTx",
+        "fee": "request to https://polygonscan.com/token/generic-tokenholders2?m=normal&a=0x3053ad3b31600074e9a90440770f78d5e8fc5a54 failed, reason: connect ETIMEDOUT 104.26.13.96:443"
     }
 }

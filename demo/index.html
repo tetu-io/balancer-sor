@@ -327,7 +327,7 @@
             const gasLimit = 3000000;
             // noinspection SpellCheckingInspection
             const multiSwapAddress =
-                '0x4b16B97720968609f1CC41D9F79DE589e24fc097';
+                '0xB6A771eC805a6e69711d822577D4d0516da51378';
 
             let excludePlatforms = JSON.parse(
                 localStorage['excludePlatforms'] ?? '[]'
@@ -464,7 +464,7 @@
                         .catch((e) => {
                             console.log('reason', e.reason);
                             $('#swapStaticResult').html(
-                                `Tx error: ${e.reason}`
+                                `Tx forecast: ${e.reason}`
                             );
                         });
                 } finally {
