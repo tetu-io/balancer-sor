@@ -143,8 +143,8 @@ async function generateTestData(
 
         if (swapData.swaps.length) testData[key] = swapData;
         else {
-            // console.warn('ROUTE NOT FOUND !!!!');
-            throw new Error('ROUTE NOT FOUND !!!!');
+            console.warn('ROUTE NOT FOUND !!!!');
+            // throw new Error('ROUTE NOT FOUND !!!!');
         }
     }
 

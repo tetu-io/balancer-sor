@@ -255,12 +255,11 @@ export class SOR {
             marketSp
         );
 
+        // Fill in platform fees
         swapInfo.swaps.forEach((swap) => {
             const pool = pools.find((p) => p.id === swap.poolId);
             if (pool && pool.swapFee) {
-                // console.log(pool.platform, 'pool.swapFee    ', pool.swapFee);
-
-                // we increase POOL_SWAP_FEE_DECIMALS twice and then divide by POOL_SWAP_FEE_RATE to avoid parseUnits
+                // we increase POOL_SWAP_FEE_DECIMALS twice and then divide by POOL_SWAP_FEE_RATE
                 // to avoid parseUnits Error: fractional component exceeds decimals
                 // as some balancer pools has '0.00075' fee rate.
                 // swap.platformFee does not used at balancer pools
