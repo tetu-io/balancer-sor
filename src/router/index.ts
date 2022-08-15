@@ -13,10 +13,10 @@ export const getBestPaths = (
     outputDecimals: number,
     maxPools: number,
     costReturnToken: BigNumber
-): [Swap[][], OldBigNumber, OldBigNumber, OldBigNumber] => {
+): [Swap[][], OldBigNumber, OldBigNumber, OldBigNumber, NewPath[]] => {
     // No paths available or totalSwapAmount == 0, return empty solution
     if (paths.length == 0 || totalSwapAmount.isZero()) {
-        return [[], ZERO, ZERO, ZERO];
+        return [[], ZERO, ZERO, ZERO, []];
     }
 
     // Before we start the main loop, we first check if there is enough liquidity for this totalSwapAmount
@@ -31,7 +31,7 @@ export const getBestPaths = (
 
     // If the cumulative limit across all paths is lower than totalSwapAmount then no solution is possible
     if (totalSwapAmount.gt(sumLimitAmounts[sumLimitAmounts.length - 1])) {
-        return [[], ZERO, ZERO, ZERO]; // Not enough liquidity, return empty
+        return [[], ZERO, ZERO, ZERO, []]; // Not enough liquidity, return empty
     }
 
     // We use the highest limits to define the initial number of pools considered and the initial guess for swapAmounts.
@@ -71,7 +71,13 @@ export const getBestPaths = (
         bestSwapAmounts
     );
 
-    if (bestTotalReturn.eq(0)) return [[], ZERO, ZERO, ZERO];
+    if (bestTotalReturn.eq(0)) return [[], ZERO, ZERO, ZERO, []];
 
-    return [swaps, bestTotalReturn, marketSp, bestTotalReturnConsideringFees];
+    return [
+        swaps,
+        bestTotalReturn,
+        marketSp,
+        bestTotalReturnConsideringFees,
+        bestPaths,
+    ];
 };

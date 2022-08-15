@@ -18,7 +18,8 @@ import { isSameAddress } from './utils';
 import {
     EMPTY_SWAPINFO,
     POOL_SWAP_FEE_DECIMALS,
-    POOL_SWAP_FEE_RATE,
+    POOL_SWAP_FEE_ONE,
+    PRICE_IMPACT_ONE,
 } from './constants';
 import {
     SwapInfo,
@@ -233,7 +234,7 @@ export class SOR {
         );
 
         // Returns list of swaps
-        const [swaps, total, marketSp, totalConsideringFees] =
+        const [swaps, total, marketSp, totalConsideringFees, bestPaths] =
             this.getBestPaths(
                 paths,
                 swapAmount,
@@ -243,6 +244,29 @@ export class SOR {
                 costOutputToken,
                 swapOptions.maxPools
             );
+        const price = totalConsideringFees
+            .mul(PRICE_IMPACT_ONE)
+            .div(swapAmount);
+
+        const swapAmountSP = parseUnits('0.1', tokenInDecimals);
+        const [, , , totalConsideringFeesSP] = this.getBestPaths(
+            bestPaths,
+            swapAmountSP,
+            swapType,
+            tokenInDecimals,
+            tokenOutDecimals,
+            costOutputToken,
+            swapOptions.maxPools
+        );
+
+        const priceSP = totalConsideringFeesSP
+            .mul(PRICE_IMPACT_ONE)
+            .div(swapAmountSP);
+        const priceImpact = priceSP.eq(0)
+            ? Zero
+            : price.mul(PRICE_IMPACT_ONE).div(priceSP).toNumber() /
+                  PRICE_IMPACT_ONE -
+              1;
 
         const swapInfo = formatSwaps(
             swaps,
@@ -252,7 +276,8 @@ export class SOR {
             tokenOut,
             total,
             totalConsideringFees,
-            marketSp
+            marketSp,
+            priceImpact.toString()
         );
 
         // Fill in platform fees
@@ -267,7 +292,7 @@ export class SOR {
                     pool.swapFee,
                     POOL_SWAP_FEE_DECIMALS * 2
                 )
-                    .div(POOL_SWAP_FEE_RATE)
+                    .div(POOL_SWAP_FEE_ONE)
                     .toNumber();
                 // console.log(pool.platform, 'swap.platformFee', swap.platformFee);
                 swapInfo.swapPlatforms[pool.id] = pool.platform ?? '';
@@ -289,7 +314,7 @@ export class SOR {
         tokenOutDecimals: number,
         costOutputToken: BigNumber,
         maxPools: number
-    ): [Swap[][], BigNumber, string, BigNumber] {
+    ): [Swap[][], BigNumber, string, BigNumber, NewPath[]] {
         // swapExactIn - total = total amount swap will return of tokenOut
         // swapExactOut - total = total amount of tokenIn required for swap
 
@@ -298,15 +323,16 @@ export class SOR {
                 ? [tokenInDecimals, tokenOutDecimals]
                 : [tokenOutDecimals, tokenInDecimals];
 
-        const [swaps, total, marketSp, totalConsideringFees] = getBestPaths(
-            paths,
-            swapType,
-            swapAmount,
-            inputDecimals,
-            outputDecimals,
-            maxPools,
-            costOutputToken
-        );
+        const [swaps, total, marketSp, totalConsideringFees, bestPaths] =
+            getBestPaths(
+                paths,
+                swapType,
+                swapAmount,
+                inputDecimals,
+                outputDecimals,
+                maxPools,
+                costOutputToken
+            );
 
         return [
             swaps,
@@ -321,6 +347,7 @@ export class SOR {
                     .toString(),
                 outputDecimals
             ),
+            bestPaths,
         ];
     }
 }

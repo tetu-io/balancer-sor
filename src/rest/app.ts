@@ -44,7 +44,7 @@ app.use(Sentry.Handlers.tracingHandler());
 // noinspection TypeScriptValidateJSTypes
 app.use('/demo', express.static('demo'));
 
-const port = process.env.SOR_PORT || 8080;
+const port = process.env.SOR_PORT || 8088;
 const APP_VERSION = '1.1.2';
 
 const networkId = Network.POLYGON;

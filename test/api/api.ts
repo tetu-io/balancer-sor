@@ -109,7 +109,7 @@ export async function init(
         );
 
     const subgraphPoolDataServices: PoolDataService[] = [
-        subgraphBalancerPoolDataService, // TODO remove comment
+        subgraphBalancerPoolDataService,
         subgraphDystopiaPoolDataService,
         ...subgraphUniswapPoolDataServices,
     ];

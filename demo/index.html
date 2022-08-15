@@ -168,6 +168,10 @@
                     Swap
                 </button>
 
+                <div class="text-secondary" style="text-align: center">
+                    Price impact: <span id="priceImpact"></span>%&nbsp;
+                </div>
+
                 <div
                     class="text-secondary"
                     style="text-align: center; font-size: small"
@@ -320,7 +324,7 @@
 
             const dev = window.location.hostname === 'localhost';
             const apiUrl = dev
-                ? 'http://localhost:8080/'
+                ? 'http://localhost:8088/'
                 : window.location.origin + '/';
             const scanUrl = 'https://polygonscan.com/';
             const _SLIPPAGE_PRECISION = 10000;
@@ -386,6 +390,8 @@
                 $returnAmount.val(''); // clear returnAmount
 
                 $('#swapStaticResult').html('');
+                // noinspection JSJQueryEfficiency
+                $('#priceImpact').html('');
 
                 // do not search route for empty or 0 swapAmount or same tokens
                 if (
@@ -442,6 +448,10 @@
                     );
                     $('#priceTokenOut').html(
                         `1 ${tokenOut.symbol} = ${tokenOutPrice} ${tokenIn.symbol}`
+                    );
+
+                    $('#priceImpact').html(
+                        (parseFloat(swap.priceImpact) * 100).toFixed(2)
                     );
 
                     // emulate swap by static call to check output price

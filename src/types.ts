@@ -143,6 +143,7 @@ export interface SwapInfo {
     tokenOut: string;
     tokenOutFromSwaps?: string; // Used with stETH/wstETH
     marketSp: string;
+    priceImpact: string;
     swapPlatforms: PoolDexNames;
 }
 

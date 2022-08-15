@@ -101,7 +101,8 @@ export function formatSwaps(
     tokenOut: string,
     returnAmount: BigNumber,
     returnAmountConsideringFees: BigNumber,
-    marketSp: string
+    marketSp: string,
+    priceImpact: string
 ): SwapInfo {
     if (swapsOriginal.length === 0) {
         return cloneDeep(EMPTY_SWAPINFO);
@@ -130,6 +131,7 @@ export function formatSwaps(
         tokenIn,
         tokenOut,
         marketSp,
+        priceImpact,
         swapPlatforms: {},
     };
 
