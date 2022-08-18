@@ -139,6 +139,9 @@ export async function getOnChainBalances(
     Object.entries(pools).forEach(([poolId, onchainData], index) => {
         try {
             const { poolTokens, swapFee, weights } = onchainData;
+            // for some reason it returns sometime undefined swapFee -
+            // looks like some Balancer pool bootstrapped wrong
+            if (!swapFee) return;
 
             if (
                 subgraphPools[index].poolType === 'Stable' ||
