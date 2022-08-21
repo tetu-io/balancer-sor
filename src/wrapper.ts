@@ -19,7 +19,6 @@ import {
     EMPTY_SWAPINFO,
     POOL_SWAP_FEE_DECIMALS,
     POOL_SWAP_FEE_ONE,
-    PRICE_IMPACT_ONE,
 } from './constants';
 import {
     SwapInfo,
@@ -234,7 +233,7 @@ export class SOR {
         );
 
         // Returns list of swaps
-        const [swaps, total, marketSp, totalConsideringFees, bestPaths] =
+        const [swaps, total, marketSp, totalConsideringFees, priceImpact] =
             this.getBestPaths(
                 paths,
                 swapAmount,
@@ -244,29 +243,6 @@ export class SOR {
                 costOutputToken,
                 swapOptions.maxPools
             );
-        const price = totalConsideringFees
-            .mul(PRICE_IMPACT_ONE)
-            .div(swapAmount);
-
-        const swapAmountSP = parseUnits('0.1', tokenInDecimals);
-        const [, , , totalConsideringFeesSP] = this.getBestPaths(
-            bestPaths,
-            swapAmountSP,
-            swapType,
-            tokenInDecimals,
-            tokenOutDecimals,
-            costOutputToken,
-            swapOptions.maxPools
-        );
-
-        const priceSP = totalConsideringFeesSP
-            .mul(PRICE_IMPACT_ONE)
-            .div(swapAmountSP);
-        const priceImpact = priceSP.eq(0)
-            ? Zero
-            : price.mul(PRICE_IMPACT_ONE).div(priceSP).toNumber() /
-                  PRICE_IMPACT_ONE -
-              1;
 
         const swapInfo = formatSwaps(
             swaps,
@@ -314,7 +290,7 @@ export class SOR {
         tokenOutDecimals: number,
         costOutputToken: BigNumber,
         maxPools: number
-    ): [Swap[][], BigNumber, string, BigNumber, NewPath[]] {
+    ): [Swap[][], BigNumber, string, BigNumber, number] {
         // swapExactIn - total = total amount swap will return of tokenOut
         // swapExactOut - total = total amount of tokenIn required for swap
 
@@ -323,7 +299,7 @@ export class SOR {
                 ? [tokenInDecimals, tokenOutDecimals]
                 : [tokenOutDecimals, tokenInDecimals];
 
-        const [swaps, total, marketSp, totalConsideringFees, bestPaths] =
+        const [swaps, total, marketSp, totalConsideringFees, priceImpact] =
             getBestPaths(
                 paths,
                 swapType,
@@ -347,7 +323,7 @@ export class SOR {
                     .toString(),
                 outputDecimals
             ),
-            bestPaths,
+            priceImpact,
         ];
     }
 }

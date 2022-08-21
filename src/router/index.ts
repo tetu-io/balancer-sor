@@ -1,9 +1,11 @@
 import { BigNumber as OldBigNumber, bnum, ZERO } from '../utils/bignumber';
 import { getHighestLimitAmountsForPaths } from './helpersClass';
-import { formatSwaps, optimizeSwapAmounts } from './sorClass';
+import { calcTotalReturn, formatSwaps, optimizeSwapAmounts } from './sorClass';
 import { NewPath, Swap, SwapTypes } from '../types';
 import { BigNumber, formatFixed } from '@ethersproject/bignumber';
 import { Zero } from '@ethersproject/constants';
+import { parseUnits } from '@ethersproject/units';
+import { PRICE_IMPACT_ONE } from '../constants';
 
 export const getBestPaths = (
     paths: NewPath[],
@@ -13,10 +15,10 @@ export const getBestPaths = (
     outputDecimals: number,
     maxPools: number,
     costReturnToken: BigNumber
-): [Swap[][], OldBigNumber, OldBigNumber, OldBigNumber, NewPath[]] => {
+): [Swap[][], OldBigNumber, OldBigNumber, OldBigNumber, number] => {
     // No paths available or totalSwapAmount == 0, return empty solution
     if (paths.length == 0 || totalSwapAmount.isZero()) {
-        return [[], ZERO, ZERO, ZERO, []];
+        return [[], ZERO, ZERO, ZERO, 0];
     }
 
     // Before we start the main loop, we first check if there is enough liquidity for this totalSwapAmount
@@ -31,7 +33,7 @@ export const getBestPaths = (
 
     // If the cumulative limit across all paths is lower than totalSwapAmount then no solution is possible
     if (totalSwapAmount.gt(sumLimitAmounts[sumLimitAmounts.length - 1])) {
-        return [[], ZERO, ZERO, ZERO, []]; // Not enough liquidity, return empty
+        return [[], ZERO, ZERO, ZERO, 0]; // Not enough liquidity, return empty
     }
 
     // We use the highest limits to define the initial number of pools considered and the initial guess for swapAmounts.
@@ -71,13 +73,43 @@ export const getBestPaths = (
         bestSwapAmounts
     );
 
-    if (bestTotalReturn.eq(0)) return [[], ZERO, ZERO, ZERO, []];
+    if (bestTotalReturn.eq(0)) return [[], ZERO, ZERO, ZERO, 0];
+
+    // Price Impact
+
+    const bestReturn = calcTotalReturn(
+        bestPaths,
+        swapType,
+        bestSwapAmounts,
+        inputDecimals
+    );
+
+    const spotAmount = parseUnits('0.001', inputDecimals);
+    const spotAmounts = bestSwapAmounts.map((a) =>
+        a.times(spotAmount.toString()).div(totalSwapAmount.toString())
+    );
+    const spotReturn = calcTotalReturn(
+        bestPaths,
+        swapType,
+        spotAmounts,
+        inputDecimals
+    );
+    const spotPrice = spotReturn
+        .times(PRICE_IMPACT_ONE)
+        .div(spotAmount.toString());
+    const bestPrice = bestReturn
+        .times(PRICE_IMPACT_ONE)
+        .div(totalSwapAmount.toString());
+    const priceImpact = Math.max(
+        bnum(1).minus(bestPrice.div(spotPrice)).toNumber(),
+        0
+    );
 
     return [
         swaps,
         bestTotalReturn,
         marketSp,
         bestTotalReturnConsideringFees,
-        bestPaths,
+        priceImpact,
     ];
 };
