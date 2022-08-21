@@ -84,26 +84,35 @@ export const getBestPaths = (
         inputDecimals
     );
 
-    const spotAmount = parseUnits('0.001', inputDecimals);
-    const spotAmounts = bestSwapAmounts.map((a) =>
-        a.times(spotAmount.toString()).div(totalSwapAmount.toString())
-    );
-    const spotReturn = calcTotalReturn(
-        bestPaths,
-        swapType,
-        spotAmounts,
-        inputDecimals
-    );
-    const spotPrice = spotReturn
-        .times(PRICE_IMPACT_ONE)
-        .div(spotAmount.toString());
-    const bestPrice = bestReturn
-        .times(PRICE_IMPACT_ONE)
-        .div(totalSwapAmount.toString());
-    const priceImpact = Math.max(
-        bnum(1).minus(bestPrice.div(spotPrice)).toNumber(),
-        0
-    );
+    let spotAmount = parseUnits('0.001', inputDecimals);
+    let priceImpact;
+    let maxIterations = 6;
+    do {
+        console.log('spotAmount', spotAmount, inputDecimals);
+        const spotAmounts = bestSwapAmounts.map((a) =>
+            a.times(spotAmount.toString()).div(totalSwapAmount.toString())
+        );
+        const spotReturn = calcTotalReturn(
+            bestPaths,
+            swapType,
+            spotAmounts,
+            inputDecimals
+        );
+        const spotPrice = spotReturn
+            .times(PRICE_IMPACT_ONE)
+            .div(spotAmount.toString());
+        const bestPrice = bestReturn
+            .times(PRICE_IMPACT_ONE)
+            .div(totalSwapAmount.toString());
+        priceImpact = bestPrice.eq(0)
+            ? 0
+            : 1 - bestPrice.div(spotPrice).toNumber();
+        console.log('bestPrice', bestPrice.toString());
+        console.log('spotPrice', spotPrice.toString());
+        console.log('priceImpact', priceImpact);
+        // increase 'spot' amount x10 times, for next (if any) check
+        spotAmount = spotAmount.mul(10);
+    } while (priceImpact < 0 && maxIterations--);
 
     return [
         swaps,
