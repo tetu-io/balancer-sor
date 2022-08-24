@@ -55,8 +55,12 @@ export async function initAndGenerateTestData(
         amount: number;
     }
 
+    const path = '../tetu-contracts-io/test/infrastructure/json/';
+
     // this data needed for coverage and simple tests
-    /* const testSwaps: ITestSwap[] = [
+    // Do not update testSwaps, if you do not want to update/fix tests at tetu-contracts-io
+    /*
+     const testSwaps: ITestSwap[] = [
         // Coverage tests (do not change values)
         { tokenIn: a.WMATIC, tokenOut: a.USDC, amount: 1000000 },
         { tokenIn: a.USDC, tokenOut: a.WMATIC, amount: 1000000 },
@@ -69,8 +73,10 @@ export async function initAndGenerateTestData(
         // Tetu
         { tokenIn: a.USDC, tokenOut: a.TETU, amount: 1000 },
         { tokenIn: a.TETU, tokenOut: a.USDC, amount: 100000 },
-    ];*/
-
+    ];
+    const testDataFilename = path + 'MultiSwap2TestData.json';
+    await generateTestData(sor, testSwaps, testDataFilename, excludeTokens);
+*/
     // Dystopia-related pairs test data
     const testSwapsDyst: ITestSwap[] = [];
     const pairsToCheckDyst =
@@ -90,18 +96,14 @@ export async function initAndGenerateTestData(
             testSwapsDyst.push(testSwap);
         }
     }
-    const path = '../tetu-contracts-io/test/infrastructure/json/';
-    // const testDataFilename = path + 'MultiSwap2TestData.json';
     const testDataFilenameDyst = path + 'MultiSwap2TestDataDyst.json';
-
-    // Do not update testSwaps, if you do not want to update/fix tests at tetu-contracts-io
-    // await generateTestData(sor, testSwaps, testDataFilename);
     await generateTestData(
         sor,
         testSwapsDyst,
         testDataFilenameDyst,
         excludeTokens
     );
+    // -------- Dyst end ----------------
 }
 
 // noinspection JSUnusedLocalSymbols
