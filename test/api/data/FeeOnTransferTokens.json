@@ -2169,7 +2169,7 @@
         "address": "0x13748d548d95d78a3c83fe3f32604b4796cffa23",
         "decimals": 9,
         "symbol": "KOGECOIN",
-        "fee": "VM Exception while processing transaction: reverted with reason string 'SafeMath: subtraction overflow'"
+        "fee": "0"
     },
     "0x5e0294af1732498c77f8db015a2d52a76298542b": {
         "address": "0x5e0294af1732498c77f8db015a2d52a76298542b",
