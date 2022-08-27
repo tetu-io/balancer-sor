@@ -1083,7 +1083,7 @@
         "address": "0xbf9bd029c19a871f652fb403f9ac5a572e4cf2f8",
         "decimals": 8,
         "symbol": "WBTC",
-        "fee": "call revert exception (method=\"balanceOf(address)\", errorArgs=null, errorName=null, errorSignature=null, reason=null, code=CALL_EXCEPTION, version=abi/5.5.0)"
+        "fee": "0"
     },
     "0x0075a4610de0a3778265a910ba5d2269f2b10145": {
         "address": "0x0075a4610de0a3778265a910ba5d2269f2b10145",
@@ -2667,7 +2667,7 @@
         "address": "0x9008d70a5282a936552593f410abcbce2f891a97",
         "decimals": 18,
         "symbol": "PEN",
-        "fee": "call revert exception (method=\"balanceOf(address)\", errorArgs=null, errorName=null, errorSignature=null, reason=null, code=CALL_EXCEPTION, version=abi/5.5.0)"
+        "fee": "0"
     },
     "0x4cd44ced63d9a6fef595f6ad3f7ced13fceac768": {
         "address": "0x4cd44ced63d9a6fef595f6ad3f7ced13fceac768",
@@ -2685,7 +2685,7 @@
         "address": "0x5b0522391d0a5a37fd117fe4c43e8876fb4e91e6",
         "decimals": 18,
         "symbol": "penDYST",
-        "fee": "call revert exception (method=\"balanceOf(address)\", errorArgs=null, errorName=null, errorSignature=null, reason=null, code=CALL_EXCEPTION, version=abi/5.5.0)"
+        "fee": "0"
     },
     "0xf8f9efc0db77d8881500bb06ff5d6abc3070e695": {
         "address": "0xf8f9efc0db77d8881500bb06ff5d6abc3070e695",
