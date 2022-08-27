@@ -28,6 +28,7 @@ export enum PoolTypes {
     Linear,
     Gyro2,
     Gyro3,
+    // UniswapV2, // TODO
 }
 
 export interface SwapOptions {
@@ -37,6 +38,8 @@ export interface SwapOptions {
     maxPools: number;
     poolTypeFilter: PoolFilter;
     forceRefresh: boolean;
+    excludePlatforms: string[];
+    excludeTokens: string[];
 }
 
 export type PoolPairBase = {
@@ -50,6 +53,7 @@ export type PoolPairBase = {
     decimalsOut: number;
     balanceIn: BigNumber;
     balanceOut: BigNumber;
+    dystStable?: boolean;
 };
 
 export interface Swap {
@@ -64,6 +68,7 @@ export interface Swap {
 }
 
 export interface SubgraphPoolBase {
+    platform?: string; // for platform filtering etc.
     id: string;
     address: string;
     poolType: string;
@@ -97,6 +102,9 @@ export interface SubgraphPoolBase {
 
     // Gyro3 specific field
     root3Alpha?: string;
+
+    // Dystopia (Solidly) specific fields
+    dystStable?: boolean;
 }
 
 export type SubgraphToken = {
@@ -114,9 +122,15 @@ export interface SwapV2 {
     assetOutIndex: number;
     amount: string;
     userData: string;
+    platformFee: number;
+}
+
+export interface PoolDexNames {
+    [poolId: string]: string;
 }
 
 export interface SwapInfo {
+    swapData?: SwapData;
     tokenAddresses: string[];
     swaps: SwapV2[];
     swapAmount: BigNumber;
@@ -129,6 +143,15 @@ export interface SwapInfo {
     tokenOut: string;
     tokenOutFromSwaps?: string; // Used with stETH/wstETH
     marketSp: string;
+    priceImpact: string;
+    swapPlatforms: PoolDexNames;
+}
+
+export interface SwapData {
+    tokenIn: string;
+    tokenOut: string;
+    swapAmount: BigNumber;
+    returnAmount: BigNumber;
 }
 
 export interface PoolDictionary {
@@ -165,9 +188,11 @@ export enum PoolFilter {
     ERC4626Linear = 'ERC4626Linear',
     Gyro2 = 'Gyro2',
     Gyro3 = 'Gyro3',
+    // TODO Uniswap, Dystopia Stable Pool
 }
 
 export interface PoolBase {
+    platform?: string;
     poolType: PoolTypes;
     id: string;
     address: string;
@@ -225,5 +250,21 @@ export interface TokenPriceService {
 }
 
 export interface PoolDataService {
+    name?: string;
+    dexType?: string;
+    dexId?: number;
+    poolIdMask?: string;
     getPools(): Promise<SubgraphPoolBase[]>;
 }
+
+export type Gyro2PriceBounds = {
+    lowerBound: string;
+    upperBound: string;
+    tokenInAddress: string;
+    tokenOutAddress: string;
+};
+
+export type Gyro3PriceBounds = {
+    alpha: string; // Assume symmetric price bounds for Gyro 3 pool
+    // (The price range for any asset pair is equal to [alpha, 1/alpha])
+};

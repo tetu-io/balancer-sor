@@ -64,13 +64,12 @@ export class SwapCostCalculator {
                     tokenAddress
                 );
 
-            //cache the price so we don't need to refetch it
+            //cache the price, so we don't need to re-fetch it
             this.setNativeAssetPriceInToken(tokenAddress, ethPriceInToken);
 
             return ethPriceInToken;
         } catch (err) {
             console.log('Error Getting Token Price. Defaulting to 0.');
-            console.log(err);
             return '0';
         }
     }

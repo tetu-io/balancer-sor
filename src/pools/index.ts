@@ -4,6 +4,7 @@ import { MetaStablePool } from './metaStablePool/metaStablePool';
 import { LinearPool } from './linearPool/linearPool';
 import { ElementPool } from './elementPool/elementPool';
 import { PhantomStablePool } from './phantomStablePool/phantomStablePool';
+import { UniswapV2Pool } from './uniswapV2Pool/uniswapV2Pool';
 import { Gyro2Pool } from './gyro2Pool/gyro2Pool';
 import { Gyro3Pool } from './gyro3Pool/gyro3Pool';
 import {
@@ -19,6 +20,7 @@ import {
     PoolPairBase,
     PoolTypes,
 } from '../types';
+import { DystopiaStablePool } from './dystopiaStablePool/dystopiaStablePool';
 
 export function parseNewPool(
     pool: SubgraphPoolBase,
@@ -32,6 +34,7 @@ export function parseNewPool(
     | PhantomStablePool
     | Gyro2Pool
     | Gyro3Pool
+    | UniswapV2Pool
     | undefined {
     // We're not interested in any pools which don't allow swapping
     if (!pool.swapEnabled) return undefined;
@@ -44,7 +47,8 @@ export function parseNewPool(
         | MetaStablePool
         | PhantomStablePool
         | Gyro2Pool
-        | Gyro3Pool;
+        | Gyro3Pool
+        | UniswapV2Pool;
 
     try {
         if (pool.poolType === 'Weighted' || pool.poolType === 'Investment') {
@@ -64,7 +68,11 @@ export function parseNewPool(
             newPool = PhantomStablePool.fromPool(pool);
         else if (pool.poolType === 'Gyro2') newPool = Gyro2Pool.fromPool(pool);
         else if (pool.poolType === 'Gyro3') newPool = Gyro3Pool.fromPool(pool);
-        else {
+        else if (pool.poolType === 'UniswapV2') {
+            newPool = UniswapV2Pool.fromPool(pool);
+        } else if (pool.poolType === 'DystopiaStable') {
+            newPool = DystopiaStablePool.fromPool(pool);
+        } else {
             console.error(
                 `Unknown pool type or type field missing: ${pool.poolType} ${pool.id}`
             );

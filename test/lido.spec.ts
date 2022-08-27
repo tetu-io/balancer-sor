@@ -40,7 +40,7 @@ const {
 // npx mocha -r ts-node/register test/lido.spec.ts
 describe(`Tests for Lido USD routes.`, () => {
     /*
-    06/08/21 - 
+    06/08/21 -
     As initial roll out for Lido, until phantom BPTs are ready, we are using single wstETH/WETH pool.
     Because current SOR doesn't support more than one hop we hard code the following pairs/routes:
     DAI/wstETH: DAI > WETH > wstETH

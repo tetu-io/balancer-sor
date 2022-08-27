@@ -1,25 +1,23 @@
 import { expect } from 'chai';
 import cloneDeep from 'lodash.clonedeep';
-import { formatFixed, parseFixed, BigNumber } from '@ethersproject/bignumber';
-import { WeiPerEther as ONE } from '@ethersproject/constants';
+import { formatFixed, parseFixed } from '@ethersproject/bignumber';
 import { USDC, DAI } from './lib/constants';
 // Add new PoolType
 import { Gyro2Pool } from '../src/pools/gyro2Pool/gyro2Pool';
 // Add new pool test data in Subgraph Schema format
 import testPools from './testData/gyro2Pools/gyro2TestPool.json';
 import {
+    _addFee,
+    _calculateInvariant,
+    _reduceFee,
     _calculateQuadratic,
     _calculateQuadraticTerms,
     _findVirtualParams,
-} from '../src/pools/gyro2Pool/gyro2Math';
-import {
-    _addFee,
-    _reduceFee,
     _normalizeBalances,
-} from '../src/pools/gyro2Pool/helpers';
+} from '../src/pools/gyro2Pool/gyro2Math';
 
 describe('gyro2Math tests', () => {
-    const testPool: any = cloneDeep(testPools).pools[0];
+    const testPool = cloneDeep(testPools).pools[0];
     const pool = Gyro2Pool.fromPool(testPool);
 
     const poolPairData = pool.parsePoolPairData(USDC.address, DAI.address);
@@ -46,22 +44,19 @@ describe('gyro2Math tests', () => {
                 poolPairData.decimalsIn,
                 poolPairData.decimalsOut
             );
-            const [a, mb, bSquare, mc] = _calculateQuadraticTerms(
+            const [a, mb, mc] = _calculateQuadraticTerms(
                 normalizedBalances,
                 poolPairData.sqrtAlpha,
                 poolPairData.sqrtBeta
             );
 
-            expect(formatFixed(a, 18)).to.equal('0.00099950047470021');
-            expect(formatFixed(mb, 18)).to.equal('2230.884220626971757449');
-            expect(formatFixed(bSquare, 18)).to.equal(
-                '4976844.405842411200429555'
-            );
+            expect(formatFixed(a, 18)).to.equal('0.000999500499625375');
+            expect(formatFixed(mb, 18)).to.equal('2230.884220610725033295');
             expect(formatFixed(mc, 18)).to.equal('1232000.0');
 
-            const L = _calculateQuadratic(a, mb, mb.mul(mb).div(ONE), mc);
+            const L = _calculateQuadratic(a, mb, mc);
 
-            expect(formatFixed(L, 18)).to.equal('2232551.271501112084098627');
+            expect(formatFixed(L, 18)).to.equal('2232551.215824107930236259');
         });
 
         it(`should correctly calculate virtual parameters`, async () => {
@@ -71,8 +66,8 @@ describe('gyro2Math tests', () => {
                 poolPairData.sqrtBeta
             );
 
-            expect(formatFixed(a, 18)).to.equal('2231434.660924038777489798');
-            expect(formatFixed(b, 18)).to.equal('2231435.776865147462654764');
+            expect(formatFixed(a, 18)).to.equal('2231434.661007672178972479');
+            expect(formatFixed(b, 18)).to.equal('2231435.776725839468265783');
         });
     });
 });

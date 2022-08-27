@@ -1,18 +1,14 @@
-import 'dotenv/config';
 // TS_NODE_PROJECT='tsconfig.testing.json' npx mocha -r ts-node/register test/gyro2Pool.spec.ts
 import { expect } from 'chai';
 import cloneDeep from 'lodash.clonedeep';
-import { formatFixed, parseFixed, BigNumber } from '@ethersproject/bignumber';
-import { JsonRpcProvider } from '@ethersproject/providers';
+import { formatFixed, parseFixed } from '@ethersproject/bignumber';
 import { bnum } from '../src/utils/bignumber';
-import { USDC, DAI, sorConfigEth } from './lib/constants';
-import { SwapTypes, SOR, SwapInfo } from '../src';
+import { USDC, DAI } from './lib/constants';
+import { SwapTypes } from '../src';
 // Add new PoolType
 import { Gyro2Pool } from '../src/pools/gyro2Pool/gyro2Pool';
 // Add new pool test data in Subgraph Schema format
 import testPools from './testData/gyro2Pools/gyro2TestPool.json';
-import { MockPoolDataService } from './lib/mockPoolDataService';
-import { mockTokenPriceService } from './lib/mockTokenPriceService';
 
 describe('Gyro2Pool tests USDC > DAI', () => {
     const testPool = cloneDeep(testPools).pools[0];
@@ -76,7 +72,7 @@ describe('Gyro2Pool tests USDC > DAI', () => {
                 pool.getNormalizedLiquidity(poolPairData);
 
             expect(Number(normalizedLiquidity.toString())).to.be.approximately(
-                2252709.0984593313,
+                2252709.0423891,
                 0.00001
             );
         });
@@ -86,7 +82,7 @@ describe('Gyro2Pool tests USDC > DAI', () => {
                 pool.getNormalizedLiquidity(poolPairData2);
 
             expect(Number(normalizedLiquidity.toString())).to.be.approximately(
-                2252944.3314978145,
+                2252944.2752,
                 0.00001
             );
         });
@@ -101,7 +97,7 @@ describe('Gyro2Pool tests USDC > DAI', () => {
                     poolPairData,
                     amountIn
                 );
-                expect(amountOut.toString()).to.eq('13.379816831223414577');
+                expect(amountOut.toString()).to.eq('13.379816829921106482');
             });
             it('should correctly calculate newSpotPrice', async () => {
                 const newSpotPrice =
@@ -109,7 +105,7 @@ describe('Gyro2Pool tests USDC > DAI', () => {
                         poolPairData,
                         amountIn
                     );
-                expect(newSpotPrice.toString()).to.eq('1.008988469190824523');
+                expect(newSpotPrice.toString()).to.eq('1.008988469289267733');
             });
             it('should correctly calculate derivative of spot price function at newSpotPrice', async () => {
                 const derivative =
@@ -117,7 +113,7 @@ describe('Gyro2Pool tests USDC > DAI', () => {
                         poolPairData,
                         amountIn
                     );
-                expect(derivative.toString()).to.eq('0.000000895794688507');
+                expect(derivative.toString()).to.eq('0.000000895794710891');
             });
         });
 
@@ -129,7 +125,7 @@ describe('Gyro2Pool tests USDC > DAI', () => {
                     poolPairData,
                     amountOut
                 );
-                expect(amountIn.toString()).to.eq('45.977973896504501314');
+                expect(amountIn.toString()).to.eq('45.977973900999006919');
             });
             it('should correctly calculate newSpotPrice', async () => {
                 const newSpotPrice =
@@ -137,7 +133,7 @@ describe('Gyro2Pool tests USDC > DAI', () => {
                         poolPairData,
                         amountOut
                     );
-                expect(newSpotPrice.toString()).to.eq('1.00901756299705875');
+                expect(newSpotPrice.toString()).to.eq('1.009017563096232974');
             });
             it('should correctly calculate derivative of spot price function at newSpotPrice', async () => {
                 const derivative =
@@ -145,56 +141,7 @@ describe('Gyro2Pool tests USDC > DAI', () => {
                         poolPairData,
                         amountOut
                     );
-                expect(derivative.toString()).to.eq('0.000000903885604863');
-            });
-        });
-
-        context('FullSwap', () => {
-            it(`Full Swap - swapExactIn, Token>Token`, async () => {
-                const pools: any = cloneDeep(testPools.pools);
-                const tokenIn = USDC.address;
-                const tokenOut = DAI.address;
-                const swapType = SwapTypes.SwapExactIn;
-                const swapAmt = parseFixed('13.5', 6);
-
-                const gasPrice = parseFixed('30', 9);
-                const maxPools = 4;
-                const provider = new JsonRpcProvider(
-                    `https://mainnet.infura.io/v3/${process.env.INFURA}`
-                );
-
-                const sor = new SOR(
-                    provider,
-                    sorConfigEth,
-                    new MockPoolDataService(pools),
-                    mockTokenPriceService
-                );
-                const fetchSuccess = await sor.fetchPools();
-                expect(fetchSuccess).to.be.true;
-
-                const swapInfo: SwapInfo = await sor.getSwaps(
-                    tokenIn,
-                    tokenOut,
-                    swapType,
-                    swapAmt,
-                    { gasPrice, maxPools }
-                );
-
-                console.log(`Return amt:`);
-                console.log(swapInfo.returnAmount.toString());
-                // This value is hard coded as sanity check if things unexpectedly change. Taken from V2 test run (with extra fee logic added).
-                // TO DO - expect(swapInfo.returnAmount.toString()).eq('999603');
-                expect(swapInfo.swaps.length).eq(1);
-                expect(swapInfo.swaps[0].amount.toString()).eq(
-                    swapAmt.toString()
-                );
-                expect(swapInfo.swaps[0].poolId).eq(testPools.pools[0].id);
-                expect(
-                    swapInfo.tokenAddresses[swapInfo.swaps[0].assetInIndex]
-                ).eq(tokenIn);
-                expect(
-                    swapInfo.tokenAddresses[swapInfo.swaps[0].assetOutIndex]
-                ).eq(tokenOut);
+                expect(derivative.toString()).to.eq('0.000000903885627537');
             });
         });
     });

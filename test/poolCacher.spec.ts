@@ -31,6 +31,7 @@ describe('PoolCacher', () => {
                 },
             });
             const fetchSuccess = await poolCache.fetchPools();
+            console.log('fetchSuccess', fetchSuccess);
             expect(fetchSuccess).to.be.false;
             expect(poolCache.finishedFetching).to.be.false;
         });

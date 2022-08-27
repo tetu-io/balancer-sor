@@ -326,32 +326,43 @@ export function EVMgetOutputAmountSwap(
             return INFINITY;
     }
     if (swapType === SwapTypes.SwapExactIn) {
-        if (pool.poolType === PoolTypes.Element) {
-            // TODO this will just be part of below once maths available
+        // TODO we will be able to remove pooltype check once Element EVM maths is available
+        if (
+            pool.poolType === PoolTypes.Weighted ||
+            pool.poolType === PoolTypes.Stable ||
+            pool.poolType === PoolTypes.MetaStable ||
+            pool.poolType === PoolTypes.Linear
+        ) {
+            // Will accept/return normalised values
+            returnAmount = pool._exactTokenInForTokenOut(poolPairData, amount);
+        } else if (pool.poolType === PoolTypes.Element) {
+            // TODO this will just be part of above once maths available
             returnAmount = getOutputAmountSwap(
                 pool,
                 poolPairData,
                 swapType,
                 amount
             );
-        } else if (pool.poolType in PoolTypes) {
-            // Will accept/return normalised values
-            returnAmount = pool._exactTokenInForTokenOut(poolPairData, amount);
         } else {
             throw Error('Unsupported swap');
         }
     } else {
-        if (pool.poolType === PoolTypes.Element) {
-            // TODO this will just be part of below once maths available
+        // TODO we will be able to remove pooltype check once Element EVM maths is available
+        if (
+            pool.poolType === PoolTypes.Weighted ||
+            pool.poolType === PoolTypes.Stable ||
+            pool.poolType === PoolTypes.MetaStable ||
+            pool.poolType === PoolTypes.Linear
+        ) {
+            returnAmount = pool._tokenInForExactTokenOut(poolPairData, amount);
+        } else if (pool.poolType === PoolTypes.Element) {
+            // TODO this will just be part of above once maths available
             returnAmount = getOutputAmountSwap(
                 pool,
                 poolPairData,
                 swapType,
                 amount
             );
-        } else if (pool.poolType in PoolTypes) {
-            // Will accept/return normalised values
-            returnAmount = pool._tokenInForExactTokenOut(poolPairData, amount);
         } else {
             throw Error('Unsupported swap');
         }

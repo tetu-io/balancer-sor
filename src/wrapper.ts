@@ -7,11 +7,19 @@ import { getWrappedInfo, setWrappedInfo } from './wrapInfo';
 import { formatSwaps } from './formatSwaps';
 import { PoolCacher } from './poolCacher';
 import { RouteProposer } from './routeProposal';
-import { filterPoolsByType } from './routeProposal/filtering';
+import {
+    filterPoolsByPlatform,
+    filterPoolsByToken,
+    filterPoolsByType,
+} from './routeProposal/filtering';
 import { SwapCostCalculator } from './swapCostCalculator';
 import { getLidoStaticSwaps, isLidoStableSwap } from './pools/lido';
 import { isSameAddress } from './utils';
-import { EMPTY_SWAPINFO } from './constants';
+import {
+    EMPTY_SWAPINFO,
+    POOL_SWAP_FEE_DECIMALS,
+    POOL_SWAP_FEE_ONE,
+} from './constants';
 import {
     SwapInfo,
     SwapTypes,
@@ -25,6 +33,7 @@ import {
     SorConfig,
 } from './types';
 import { Zero } from '@ethersproject/constants';
+import { parseUnits } from '@ethersproject/units';
 
 export class SOR {
     private readonly poolCacher: PoolCacher;
@@ -38,21 +47,23 @@ export class SOR {
         maxPools: 4,
         timestamp: Math.floor(Date.now() / 1000),
         forceRefresh: false,
+        excludePlatforms: [],
+        excludeTokens: [],
     };
 
     /**
      * @param {Provider} provider - Provider.
      * @param {SorConfig} config - Chain specific configuration for the SOR.
-     * @param {PoolDataService} poolDataService - Generic service that fetches pool data from an external data source.
+     * @param {poolDataServiceOrServices} poolDataServiceOrServices - Generic services that fetches pool data from an external data source.
      * @param {TokenPriceService} tokenPriceService - Generic service that fetches token prices from an external price feed. Used in calculating swap cost.
      */
     constructor(
         public provider: Provider,
-        private readonly config: SorConfig,
-        poolDataService: PoolDataService,
+        public readonly config: SorConfig,
+        public poolDataServiceOrServices: PoolDataService | PoolDataService[],
         tokenPriceService: TokenPriceService
     ) {
-        this.poolCacher = new PoolCacher(poolDataService);
+        this.poolCacher = new PoolCacher(poolDataServiceOrServices);
         this.routeProposer = new RouteProposer(config);
         this.swapCostCalculator = new SwapCostCalculator(
             config,
@@ -73,11 +84,20 @@ export class SOR {
     }
 
     /**
+     * poolsFetched Returns true if pools fetched at least once
+     * @returns {boolean} True if pools already fetched, False if not yet.
+     */
+    havePools(): boolean {
+        return this.poolCacher.havePools();
+    }
+
+    /**
      * getSwaps Retrieve information for best swap tokenIn>tokenOut.
      * @param {string} tokenIn - Address of tokenIn.
      * @param {string} tokenOut - Address of tokenOut.
      * @param {SwapTypes} swapType - SwapExactIn where the amount of tokens in (sent to the Pool) is known or SwapExactOut where the amount of tokens out (received from the Pool) is known.
      * @param {BigNumberish} swapAmount - Either amountIn or amountOut depending on the `swapType` value.
+     * @param {Partial<SwapOptions>} swapOptions - Additional swap options. See SwapOptions declaration.
      * @returns {SwapInfo} Swap information including return amount and swaps structure to be submitted to Vault.
      */
     async getSwaps(
@@ -87,7 +107,7 @@ export class SOR {
         swapAmount: BigNumberish,
         swapOptions?: Partial<SwapOptions>
     ): Promise<SwapInfo> {
-        if (!this.poolCacher.finishedFetching) return cloneDeep(EMPTY_SWAPINFO);
+        if (!this.poolCacher.havePools()) return cloneDeep(EMPTY_SWAPINFO);
 
         // Set any unset options to their defaults
         const options: SwapOptions = {
@@ -95,9 +115,11 @@ export class SOR {
             ...swapOptions,
         };
 
-        const pools: SubgraphPoolBase[] = this.poolCacher.getPools();
+        let pools: SubgraphPoolBase[] = this.poolCacher.getPools();
 
-        const filteredPools = filterPoolsByType(pools, options.poolTypeFilter);
+        pools = filterPoolsByType(pools, options.poolTypeFilter);
+        pools = filterPoolsByPlatform(pools, options.excludePlatforms);
+        pools = filterPoolsByToken(pools, options.excludeTokens);
 
         const wrappedInfo = await getWrappedInfo(
             this.provider,
@@ -111,7 +133,7 @@ export class SOR {
         let swapInfo: SwapInfo;
         if (isLidoStableSwap(this.config.chainId, tokenIn, tokenOut)) {
             swapInfo = await getLidoStaticSwaps(
-                filteredPools,
+                pools,
                 this.config.chainId,
                 wrappedInfo.tokenIn.addressForSwaps,
                 wrappedInfo.tokenOut.addressForSwaps,
@@ -125,10 +147,18 @@ export class SOR {
                 wrappedInfo.tokenOut.addressForSwaps,
                 swapType,
                 wrappedInfo.swapAmountForSwaps,
-                filteredPools,
+                pools,
                 options
             );
         }
+
+        // prepare data for multiswap2 call
+        swapInfo.swapData = {
+            tokenIn: swapInfo.tokenIn,
+            tokenOut: swapInfo.tokenOut,
+            swapAmount: swapInfo.swapAmount,
+            returnAmount: swapInfo.returnAmount,
+        };
 
         if (swapInfo.returnAmount.isZero()) return swapInfo;
 
@@ -203,7 +233,7 @@ export class SOR {
         );
 
         // Returns list of swaps
-        const [swaps, total, marketSp, totalConsideringFees] =
+        const [swaps, total, marketSp, totalConsideringFees, priceImpact] =
             this.getBestPaths(
                 paths,
                 swapAmount,
@@ -222,12 +252,33 @@ export class SOR {
             tokenOut,
             total,
             totalConsideringFees,
-            marketSp
+            marketSp,
+            priceImpact.toString()
         );
+
+        // Fill in platform fees
+        swapInfo.swaps.forEach((swap) => {
+            const pool = pools.find((p) => p.id === swap.poolId);
+            if (pool && pool.swapFee) {
+                // we increase POOL_SWAP_FEE_DECIMALS twice and then divide by POOL_SWAP_FEE_RATE
+                // to avoid parseUnits Error: fractional component exceeds decimals
+                // as some balancer pools has '0.00075' fee rate.
+                // swap.platformFee does not used at balancer pools
+                swap.platformFee = parseUnits(
+                    pool.swapFee,
+                    POOL_SWAP_FEE_DECIMALS * 2
+                )
+                    .div(POOL_SWAP_FEE_ONE)
+                    .toNumber();
+                // console.log(pool.platform, 'swap.platformFee', swap.platformFee);
+                swapInfo.swapPlatforms[pool.id] = pool.platform ?? '';
+            }
+        });
 
         return swapInfo;
     }
 
+    // noinspection JSMethodCanBeStatic
     /**
      * Find optimal routes for trade from given candidate paths
      */
@@ -239,7 +290,7 @@ export class SOR {
         tokenOutDecimals: number,
         costOutputToken: BigNumber,
         maxPools: number
-    ): [Swap[][], BigNumber, string, BigNumber] {
+    ): [Swap[][], BigNumber, string, BigNumber, number] {
         // swapExactIn - total = total amount swap will return of tokenOut
         // swapExactOut - total = total amount of tokenIn required for swap
 
@@ -248,15 +299,16 @@ export class SOR {
                 ? [tokenInDecimals, tokenOutDecimals]
                 : [tokenOutDecimals, tokenInDecimals];
 
-        const [swaps, total, marketSp, totalConsideringFees] = getBestPaths(
-            paths,
-            swapType,
-            swapAmount,
-            inputDecimals,
-            outputDecimals,
-            maxPools,
-            costOutputToken
-        );
+        const [swaps, total, marketSp, totalConsideringFees, priceImpact] =
+            getBestPaths(
+                paths,
+                swapType,
+                swapAmount,
+                inputDecimals,
+                outputDecimals,
+                maxPools,
+                costOutputToken
+            );
 
         return [
             swaps,
@@ -271,6 +323,7 @@ export class SOR {
                     .toString(),
                 outputDecimals
             ),
+            priceImpact,
         ];
     }
 }

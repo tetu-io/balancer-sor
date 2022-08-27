@@ -211,7 +211,7 @@ export class StablePool implements PoolBase {
                 1
             );
         } catch (err) {
-            console.error(`_evmoutGivenIn: ${err.message}`);
+            console.error(`stablePool_evmoutGivenIn: ${err.message}`);
             return ZERO;
         }
     }
@@ -249,7 +249,7 @@ export class StablePool implements PoolBase {
                 10 ** poolPairData.decimalsIn
             );
         } catch (err) {
-            console.error(`_evminGivenOut: ${err.message}`);
+            console.error(`stablePool_evminGivenOut: ${err.message}`);
             return ZERO;
         }
     }
