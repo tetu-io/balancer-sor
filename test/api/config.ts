@@ -57,7 +57,7 @@ export const UNISWAP_SUBGRAPHS = {
             url: 'https://api.thegraph.com/subgraphs/name/tetu-io/tetu-swap',
             swapFee: '0.001',
         },
-        {
+        /*  {
             name: 'SushiSwap',
             dexId: dexId++,
             url: 'https://api.thegraph.com/subgraphs/name/sushiswap/matic-exchange',
@@ -105,7 +105,7 @@ export const UNISWAP_SUBGRAPHS = {
             dexId: dexId++,
             url: 'https://api.thegraph.com/subgraphs/name/waultfinance/waultswap-polygon',
             swapFee: '0.002',
-        },
+        },*/
     ],
 };
 
