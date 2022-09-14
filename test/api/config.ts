@@ -25,7 +25,7 @@ export const SOR_CONFIG: Record<Network, SorConfig> = {
 };
 
 export const PROVIDER_URLS = {
-    [Network.POLYGON]: `https://polygon-mainnet.infura.io/v3/${process.env.INFURA}`,
+    [Network.POLYGON]: `${process.env.POLYGON_RPC}`,
 };
 
 export const MULTIADDR = {
